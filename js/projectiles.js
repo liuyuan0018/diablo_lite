@@ -8,6 +8,7 @@ import { damagePlayer } from './player.js';
 import { spawnParticles } from './particles.js';
 import { hitDummy } from './testfield.js';
 import { getSynergyEffects } from './synergies.js';
+import { addFloatingNumber } from './renderer.js';
 
 export function updateProjectiles(dt){
   for(let i=game.projectiles.length-1;i>=0;i--){
@@ -100,6 +101,7 @@ export function updateProjectiles(dt){
             dmg-=absorb;
           }
           m.hp-=dmg;
+          if(dmg>=1)addFloatingNumber(m.x,m.y,dmg);
           if(m.type==='shadowMage'&&Math.random()<0.1){
             const ta=Math.random()*Math.PI*2;
             m.x+=Math.cos(ta)*100;

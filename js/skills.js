@@ -8,6 +8,8 @@ import { spawnParticles } from './particles.js';
 import { calcPlayerStats, damagePlayer } from './player.js';
 import { getSetEffects } from './sets.js';
 import { getSynergyEffects } from './synergies.js';
+import { recordDamage } from './testfield.js';
+import { addFloatingNumber } from './renderer.js';
 
 export function castSkill(wx,wy){
   const p=game.player;
@@ -16,7 +18,7 @@ export function castSkill(wx,wy){
   const fx=stats.legendary;
   const cdr=stats.cdr;
   if(p.skillCooldowns[idx]>0)return;
-  const sets = getSetEffects();
+  const sets = getSetEffects(!!game.sandboxEquipment);
   const hasElementalist = sets.elementalist && sets.elementalist.active.two;
   let castElement = null;
   switch(idx){
@@ -177,6 +179,19 @@ export function castSkill(wx,wy){
   }
 }
 
+function damageDummies(x, y, radius, damage) {
+  if (!game.trainingDummies || game.trainingDummies.length === 0) return;
+  for (const d of game.trainingDummies) {
+    if (dist(d.x, d.y, x, y) < radius + d.size) {
+      const dmg = Math.round(damage * (1 - (d.damageReduction || 0)));
+      if (dmg > 0) {
+        recordDamage(dmg);
+        if (damage >= 1) addFloatingNumber(d.x, d.y, dmg);
+      }
+    }
+  }
+}
+
 export function updateSkillEffects(dt){
   for(let i=game.skillEffects.length-1;i>=0;i--){
     const e=game.skillEffects[i];
@@ -194,6 +209,7 @@ export function updateSkillEffects(dt){
             m.hp-=e.damage*dt;
           }
         }
+        damageDummies(e.x,e.y,e.radius,e.damage*dt);
         const pd=dist(game.player.x,game.player.y,e.x,e.y);
         if(pd<e.radius&&pd>1){
           const f=e.pullForce*dt*0.3;
@@ -216,8 +232,10 @@ export function updateSkillEffects(dt){
               }
               m.hp-=e.damage;
               spawnParticles(m.x,m.y,3,'#88aaff',60,3);
+              if(e.damage>=1)addFloatingNumber(m.x,m.y,Math.round(e.damage));
             }
           }
+          damageDummies(e.x,e.y,e.radius,e.damage);
         }
         // Deep Frost synergy
         const synDf = getSynergyEffects();
@@ -254,8 +272,10 @@ export function updateSkillEffects(dt){
             if (dist(m.x, m.y, e.x, e.y) < e.radius) {
               m.hp -= e.damage;
               spawnParticles(m.x, m.y, 5, '#ffaa00', 60, 3);
+              addFloatingNumber(m.x,m.y,Math.round(e.damage));
             }
           }
+          damageDummies(e.x,e.y,e.radius,e.damage);
         }
         spawnParticles(e.x + rand(-e.radius, e.radius), e.y + rand(-e.radius, e.radius), 1, '#ffd700', 40, 2);
         break;
@@ -291,8 +311,10 @@ export function updateSkillEffects(dt){
           for (const m of game.monsters) {
             if (dist(m.x, m.y, e.x, e.y) < e.radius * 1.5) {
               m.hp -= e.damage;
+              addFloatingNumber(m.x,m.y,Math.round(e.damage));
             }
           }
+          damageDummies(e.x,e.y,e.radius*1.5,e.damage);
           spawnParticles(e.x, e.y, 50, '#ff6600', 200, 7);
         }
         break;

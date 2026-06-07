@@ -2,9 +2,10 @@
 import { game } from './game-state.js';
 import { SET_DEFS } from './config.js';
 
-export function getSetEffects() {
+export function getSetEffects(sandbox) {
   const counts = {};
-  for (const [slot, eq] of Object.entries(game.equipment)) {
+  const eqSource = sandbox ? (game.sandboxEquipment || game.equipment) : game.equipment;
+  for (const [slot, eq] of Object.entries(eqSource)) {
     if (eq && eq.setName) {
       counts[eq.setName] = (counts[eq.setName] || 0) + 1;
     }

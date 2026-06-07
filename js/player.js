@@ -49,7 +49,7 @@ export function calcPlayerStats(sandbox){
   const bSpeedVal=BASE_BULLET_SPEED+bSpeed;
   const fx=getLegendaryEffects(sandbox);
 
-  const sets = getSetEffects();
+  const sets = getSetEffects(sandbox);
   let setDmgMult = 1;
   let setDmgReduc = 0;
 
@@ -115,7 +115,7 @@ export function updatePlayer(dt){
   }
 
   // Chronomancer 4-piece: standing in singularity field resets teleport CD
-  const sets2 = getSetEffects();
+  const sets2 = getSetEffects(!!game.sandboxEquipment);
   if (sets2.chronomancer && sets2.chronomancer.active.four) {
     for (const f of p.singularityFields) {
       if (!f.imploded) {
@@ -160,12 +160,10 @@ export function updatePlayer(dt){
     p.fireTimer=1/p.fireRate;
     spawnParticles(p.x+Math.cos(a)*25,p.y+Math.sin(a)*25,2,'#ffaa00',30,2);
     // Auto-attack fireball = fire element
-    const sets = getSetEffects();
+    const sets = getSetEffects(!!game.sandboxEquipment);
     if (sets.elementalist && sets.elementalist.active.two) {
       if (p.elementalistLastElement !== 'fire') {
         p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
-      } else {
-        p.elementalistStacks = 0;
       }
       p.elementalistLastElement = 'fire';
     }
