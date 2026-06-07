@@ -4,6 +4,11 @@
 import { game, getActiveCharacter, syncPlayerToChar, syncCharToPlayer, createCharacter } from './game-state.js';
 import { calcPlayerStats } from './player.js';
 
+const defaultEquipment = {
+  weapon:null, helmet:null, armor:null, ring:null, amulet:null, boots:null,
+  bracers:null, belt:null, artifact:null
+};
+
 function defaultStages(){
   return [true,false,false,false,false,false,false,false,false,false];
 }
@@ -39,7 +44,7 @@ export function loadGame(){
         c.level=data.level||1;
         c.exp=data.exp||0;
         c.expToNext=data.expToNext||100;
-        c.equipment=data.equipment||{weapon:null,helmet:null,armor:null,ring:null,amulet:null,boots:null};
+        c.equipment={...defaultEquipment,...(data.equipment||{})};
         c.backpack=[];
         game.characters=[c];
         game.soulCoins=data.soulCoins||0;
@@ -47,6 +52,9 @@ export function loadGame(){
         game.activeCharacterId=c.id;
       }else{
         game.characters=data.characters||[];
+        for(const c of game.characters){
+          c.equipment={...defaultEquipment,...(c.equipment||{})};
+        }
         game.soulCoins=data.soulCoins||0;
         game.unlockedStages=data.unlockedStages||defaultStages();
         game.activeCharacterId=data.activeCharacterId||(game.characters[0]&&game.characters[0].id)||null;

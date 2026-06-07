@@ -74,12 +74,18 @@ export function syncPlayerToChar(){
   c.expToNext=game.player.expToNext;
 }
 
+const _defaultEquipment = {
+  weapon:null, helmet:null, armor:null, ring:null, amulet:null, boots:null,
+  bracers:null, belt:null, artifact:null
+};
+
 export function syncCharToPlayer(){
   const c=getActiveCharacter();
   if(!c)return;
   game.player.level=c.level;
   game.player.exp=c.exp;
   game.player.expToNext=c.expToNext;
+  c.equipment={..._defaultEquipment,...(c.equipment||{})};
   game.equipment=c.equipment;
   game.backpack=c.backpack;
 }
