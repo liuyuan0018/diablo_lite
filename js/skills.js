@@ -5,7 +5,7 @@ import { game } from './game-state.js';
 import { PLAYER_RADIUS, MAP_W, MAP_H, SKILL_CONFIG } from './config.js';
 import { clamp, rand, normalize, dist } from './helpers.js';
 import { spawnParticles } from './particles.js';
-import { calcPlayerStats, damagePlayer } from './player.js';
+import { calcPlayerStats, damagePlayer, getRingMultiplier } from './player.js';
 import { getSetEffects } from './sets.js';
 import { getSynergyEffects } from './synergies.js';
 import { recordDamage } from './testfield.js';
@@ -232,7 +232,7 @@ export function updateSkillEffects(dt){
                 m.slowMult=e.slowPct;
                 m.slowTimer=0.5;
               }
-              const dmg=m.vulnerable?Math.round(e.damage*1.5):e.damage;
+              const dmg=m.vulnerable?Math.round(e.damage*1.5*getRingMultiplier('ice')):Math.round(e.damage*getRingMultiplier('ice'));
               m.hp-=dmg;
               spawnParticles(m.x,m.y,3,'#88aaff',60,3);
               if(dmg>=1)addFloatingNumber(m.x,m.y,dmg);

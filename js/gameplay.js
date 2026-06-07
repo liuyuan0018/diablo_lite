@@ -51,6 +51,7 @@ export function startTestStage(){
   game.player.elementalistAura = null;
   game.player.singularityFields = [];
   game.player.temporalResonanceTimer = 0;
+  game.player.ringElement = 0; game.player.ringCycleTimer = 0;
   game.player.hitInvuln=0;
   game.monsters=[];
   game.projectiles=[];
@@ -105,6 +106,7 @@ export function startGame(stageIndex){
   game.player.elementalistAura = null;
   game.player.singularityFields = [];
   game.player.temporalResonanceTimer = 0;
+  game.player.ringElement = 0; game.player.ringCycleTimer = 0;
   game.player.hitInvuln=0;
   game.monsters=[];
   game.projectiles=[];
@@ -155,6 +157,7 @@ export function startTestfield() {
   game.player.elementalistAura = null;
   game.player.singularityFields = [];
   game.player.temporalResonanceTimer = 0;
+  game.player.ringElement = 0; game.player.ringCycleTimer = 0;
   game.monsters = [];
   game.projectiles = [];
   game.skillEffects = [];

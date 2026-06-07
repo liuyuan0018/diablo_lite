@@ -85,7 +85,22 @@ export function calcPlayerStats(sandbox){
     }
   }
 
-  return {maxHP: baseHP + bHP, atk: artifactAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, moveMult, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects()};
+  const ringEl = game.player.ringElement;
+  const ringMult = game.player.ringCycleTimer; // for display
+  return {maxHP: baseHP + bHP, atk: artifactAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, moveMult, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects(), ringElement: ringEl, ringTimer: ringMult};
+}
+
+export function getRingMultiplier(element) {
+  const p = game.player;
+  const hasRing = (game.equipment.artifact && game.equipment.artifact.artifactId === 'elementalRing') ||
+                  (game.sandboxEquipment && game.sandboxEquipment.artifact && game.sandboxEquipment.artifact.artifactId === 'elementalRing');
+  if (!hasRing || !element) return 1;
+  const elMap = { fire: 0, ice: 1, arcane: 2 };
+  if (elMap[element] === p.ringElement) {
+    const progress = p.ringCycleTimer / 4; // 0→1 within window
+    return 1 + progress * 1.5; // ramp from 1x to 2.5x
+  }
+  return 1;
 }
 
 export function updatePlayer(dt){
@@ -96,6 +111,12 @@ export function updatePlayer(dt){
     if(p.skillCooldowns[i]<0)p.skillCooldowns[i]=0;
   }
   if(p.hitInvuln>0)p.hitInvuln-=dt;
+  // Elemental Ring cycle: fire(0) → ice(1) → arcane(2), 4s each
+  const hasRing = game.equipment.artifact && game.equipment.artifact.artifactId === 'elementalRing';
+  if (hasRing || (game.sandboxEquipment && game.sandboxEquipment.artifact && game.sandboxEquipment.artifact.artifactId === 'elementalRing')) {
+    p.ringCycleTimer += dt;
+    if (p.ringCycleTimer >= 4) { p.ringCycleTimer -= 4; p.ringElement = (p.ringElement + 1) % 3; }
+  }
   for(let i=p.buffs.length-1;i>=0;i--){
     const b=p.buffs[i];
     b.timer-=dt;

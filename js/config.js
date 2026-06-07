@@ -136,6 +136,7 @@ export const ARTIFACT_DEFS = [
   { id:'fieldGenerator', name:'力场发生器', setName:'chronomancer', desc:'力场持续+3s，不被坍缩消耗' },
   { id:'feather', name:'缓落之羽', setName:null, desc:'HP>80%时技能伤害+25%移速+20%' },
   { id:'criticalFragment', name:'临界碎片', setName:null, desc:'任一技能CD<3s时所有技能伤害+30%' },
+  { id:'elementalRing', name:'元素戒指', setName:null, desc:'火/冰/奥术每4秒轮换，匹配时增伤最高150%' },
 ];
 
 export function ilvlFactor(ilv){ return 0.35 + ilv*0.0236; }

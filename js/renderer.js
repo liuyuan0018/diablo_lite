@@ -935,6 +935,13 @@ function renderBuffBar(W, H){
       const anyLow = p.skillCooldowns.some(cd => cd > 0 && cd < 3);
       if (anyLow) buffs.push({ label: '临界', color: '#ff6644', detail: '增伤' });
     }
+    if (art.artifactId === 'elementalRing') {
+      const elNames = ['火', '冰', '奥'];
+      const elColors = ['#ff4400', '#4488ff', '#aa44ff'];
+      const el = p.ringElement;
+      const pct = Math.round((p.ringCycleTimer / 4) * 150);
+      buffs.push({ label: '戒·'+elNames[el], color: elColors[el], detail: '+' + pct + '%' });
+    }
   }
 
   if (buffs.length === 0) return;

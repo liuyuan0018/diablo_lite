@@ -42,6 +42,7 @@ export const game = {
     elementalistAura: null,
     singularityFields: [],
     temporalResonanceTimer: 0,
+    ringElement: 0, ringCycleTimer: 0,
   },
   monsters:[],
   projectiles:[],

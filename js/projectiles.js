@@ -4,7 +4,7 @@
 import { game } from './game-state.js';
 import { PLAYER_RADIUS, MAP_W, MAP_H } from './config.js';
 import { dist, clamp } from './helpers.js';
-import { damagePlayer } from './player.js';
+import { damagePlayer, getRingMultiplier } from './player.js';
 import { spawnParticles } from './particles.js';
 import { hitDummy } from './testfield.js';
 import { getSynergyEffects } from './synergies.js';
@@ -96,6 +96,7 @@ export function updateProjectiles(dt){
             dmg *= 2;
           }
           if (m.vulnerable) dmg = Math.round(dmg * 1.5);
+          dmg = Math.round(dmg * getRingMultiplier('fire'));
           if(m.shield>0){
             const absorb=Math.min(m.shield,dmg);
             m.shield-=absorb;
