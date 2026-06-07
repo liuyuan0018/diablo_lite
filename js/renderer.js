@@ -935,6 +935,8 @@ function renderBuffBar(W, H){
       const anyLow = p.skillCooldowns.some(cd => cd > 0 && cd < 3);
       if (anyLow) buffs.push({ label: '临界', color: '#ff6644', detail: '增伤' });
     }
+  }
+
   // Elemental ring (legendary power)
   const eqSrc = game.sandboxEquipment || game.equipment;
   let ringMax = 0;
@@ -950,8 +952,6 @@ function renderBuffBar(W, H){
     const remain = Math.ceil(4 - p.ringCycleTimer);
     buffs.push({ label: '戒·'+elNames[el], color: elColors[el], detail: '+' + ringMax + '% ' + remain + 's' });
   }
-
-  if (buffs.length === 0) return;
 
   if (buffs.length === 0) return;
 
