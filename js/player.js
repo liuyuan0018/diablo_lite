@@ -5,6 +5,7 @@ import { game } from './game-state.js';
 import { PLAYER_RADIUS, MAP_W, MAP_H, BASE_FIRE_RATE, BASE_BULLET_SPEED, BASE_PICKUP_RANGE, DETECTION_RANGE, SKILL_CONFIG } from './config.js';
 import { normalize, clamp, dist, angle } from './helpers.js';
 import { spawnParticles } from './particles.js';
+import { getSetEffects } from './sets.js';
 
 export function damagePlayer(amount){
   const p=game.player;
@@ -42,8 +43,22 @@ export function calcPlayerStats(){
   }
   const bSpeedVal=BASE_BULLET_SPEED+bSpeed;
   const fx=getLegendaryEffects();
+
+  const sets = getSetEffects();
+  let setDmgMult = 1;
+  let setDmgReduc = 0;
+
+  // Elementalist 2-piece: +15% per harmony stack
+  if (sets.elementalist && sets.elementalist.active.two) {
+    setDmgMult += game.player.elementalistStacks * 0.15;
+  }
+  // Elementalist 4-piece: 10% DR per harmony stack
+  if (sets.elementalist && sets.elementalist.active.four) {
+    setDmgReduc += game.player.elementalistStacks * 0.10;
+  }
+
   const fireRate=BASE_FIRE_RATE+(bSpeedVal-BASE_BULLET_SPEED)*0.01;
-  return{maxHP:baseHP+bHP,atk:Math.round(baseATK+bATK*(1+fx.fireballDmg/100)),cdr:Math.min(bCDR+fx.globalCDR,60),bulletSpeed:bSpeedVal,pickupRange:BASE_PICKUP_RANGE+bRange,movespeed:bMove,fireRate,legendary:fx};
+  return{maxHP:baseHP+bHP,atk:Math.round(baseATK+bATK*(1+fx.fireballDmg/100)),cdr:Math.min(bCDR+fx.globalCDR,60),bulletSpeed:bSpeedVal,pickupRange:BASE_PICKUP_RANGE+bRange,movespeed:bMove,fireRate,legendary:fx,sets,setDmgMult,setDmgReduc};
 }
 
 export function updatePlayer(dt){
