@@ -1,0 +1,54 @@
+# Diablo Lite — 知识索引
+
+> 最后更新: 2026-06-07
+> 
+> **代码是唯一事实来源。** 本索引用于快速导航和理解设计意图，具体实现以对应系统代码为准。
+
+## 核心概念
+
+- [[concepts/Character-Management|角色管理系统]] — 多角色存档架构，独立装备/等级，自动迁移旧存档
+- [[concepts/LootDetailView|装备悬停对比弹窗]] — 悬停物品触发左右对比弹窗，属性差异绿/红/金标记
+- [[concepts/Equipment|装备系统]] — ilvl、品质、掉落机制、背包规则（战斗8件/准备无限）
+- [[concepts/LegendaryPowers|传奇词缀]] — 8 种传奇效果详解
+- [[concepts/Build|Build 系统]] — 流派分化与装备组合
+- [[concepts/Difficulty|难度曲线]] — 10 关指数难度设计
+- [[concepts/Skills|技能系统]] — 3 技能 + 自动攻击
+- [[concepts/ProjectilePierce|火球穿透机制]] — 穿透计数器、命中记录、同帧多目标
+
+## 实体
+
+- [[entities/Player|玩家]] — 属性、等级、移动
+- [[entities/Monsters|怪物]] — 10 种怪物 + 精英词缀 + Boss
+- [[entities/EquipmentSlots|装备槽位]] — 6 槽位属性映射
+
+## D3 Wizard Builds 调研 (2026-06-07)
+
+- [[questions/Research-D3-Wizard-Builds|D3 法师 Build 发展史]] — 2012-2026 设计范式演变
+- [[concepts/Wizard-Build-History|法师 Build 历史演变]] — 四大纪元 + 五条设计线索
+- [[comparisons/D3-Build-Design-Lessons|设计经验提取 → Diablo Lite]] — 7 条原则 + 优先级建议
+- [[concepts/Critical-Mass-Permafreeze|Critical Mass Permafreeze (CMWW)]] — 正反馈失控的经典案例
+- [[concepts/Attack-Speed-Breakpoints|攻速断点 (Hydra)]] — 离散阈值替代连续梯度
+- [[concepts/Arcane-Dynamo-Snapshotting|Arcane Dynamo 快照]] — 释放时机 > 持续按键
+
+### D3 套装实体
+- [[entities/Tal-Rasha-Set|Tal Rasha's Elements]] — 元素多样性范式载体
+- [[entities/Typhon-Veil-Set|The Typhon's Veil]] — 宠物快照+断点优化载体
+- [[entities/Firebird-Set|Firebird's Finery]] — 条件式攻防一体设计
+- [[entities/Vyr-Amazing-Arcana|Vyr's Amazing Arcana]] — 变身窗口期节奏设计
+- [[entities/Delsere-Magnum-Opus|Delsere's Magnum Opus]] — 空间即资源设计
+
+### D3 调研来源
+- [[sources/Maxroll-Typhon-Hydra-Guide|Maxroll Typhon Hydra Guide]]
+- [[sources/Maxroll-LoD-Twister-Guide|Maxroll LoD Twister Guide]]
+- [[sources/Maxroll-LoD-Hydra-Guide|Maxroll LoD Hydra Guide]]
+- [[sources/Blizzard-Forum-Typhon-TK|Blizzard Forum Typhon TK]]
+
+## 设计决策
+
+- [[meta/GameArchitecture|游戏架构]] — ES 模块架构，18 文件拆分
+
+## 文件索引
+
+- `index.html` — HTML 外壳（21 行），加载 `js/main.js`
+- `js/` — 18 个 ES 模块（2603 行总计，零依赖，无打包器）
+- `server.py` — 无缓存 HTTP 服务器
