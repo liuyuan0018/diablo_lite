@@ -59,6 +59,18 @@ export const game = {
   characters:[],
   activeCharacterId:null,
   showCharSelect:false,
+  sandboxEquipment: null,       // shallow copy of equipment for testfield sandbox
+  damageStats: {                 // damage tracking for testfield
+    totalDamage: 0,
+    peakDamage: 0,
+    dpsHistory: [],              // [{ time, damage }]
+    startTime: 0,
+    skillCounts: [0, 0, 0],
+  },
+  trainingDummies: [],           // dummy monsters for testfield
+  testfieldTime: 0,              // elapsed time in testfield
+  showLoadoutPanel: true,        // loadout panel visible toggle
+  loadoutTab: 'presets',         // 'presets' | 'custom'
 };
 
 // Character management helpers
