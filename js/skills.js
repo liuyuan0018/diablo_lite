@@ -17,6 +17,7 @@ export function castSkill(wx,wy){
   if(p.skillCooldowns[idx]>0)return;
   const sets = getSetEffects();
   const hasElementalist = sets.elementalist && sets.elementalist.active.two;
+  let castElement = null;
   switch(idx){
     case 0:{
       const oldX=p.x,oldY=p.y;
@@ -39,8 +40,8 @@ export function castSkill(wx,wy){
       game.skillEffects.push({type:'blackhole',x:wx,y:wy,radius:220,duration:dur,timer:dur,pullForce:180,damage:8*(1+fx.fireballDmg/100)});
       spawnParticles(wx,wy,20,'#6622aa',100,5);
       // Arcane element tracking for Elementalist set
+      castElement = 'arcane';
       if (hasElementalist) {
-        const castElement = 'arcane';
         if (castElement !== p.elementalistLastElement) {
           p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
         } else {
@@ -57,8 +58,8 @@ export function castSkill(wx,wy){
       game.skillEffects.push({type:'blizzard',x:wx,y:wy,radius:r,duration:3,timer:3,tickTimer:0.5,damage:22*(1+fx.fireballDmg/100),slowPct:Math.min(slow,0.9)});
       spawnParticles(wx,wy,25,'#4488ff',80,4);
       // Ice element tracking for Elementalist set
+      castElement = 'ice';
       if (hasElementalist) {
-        const castElement = 'ice';
         if (castElement !== p.elementalistLastElement) {
           p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
         } else {
@@ -72,7 +73,7 @@ export function castSkill(wx,wy){
   }
 
   // Harmony Burst trigger — at 3 stacks, spawn meteors
-  if (hasElementalist && p.elementalistStacks === 3 && idx !== 0) { // not teleport
+  if (hasElementalist && castElement && p.elementalistStacks === 3) {
     const stats = calcPlayerStats();
     for (let i = 0; i < 3; i++) {
       const spreadAngle = (i - 1) * 0.5;

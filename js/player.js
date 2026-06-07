@@ -10,8 +10,11 @@ import { getSynergyEffects } from './synergies.js';
 
 export function damagePlayer(amount){
   const p=game.player;
+  const stats=calcPlayerStats();
+  const dr=stats.setDmgReduc||0;
   const ghostBuff=p.buffs.find(b=>b.type==='ghost');
-  const dmg=ghostBuff?amount*0.5:amount;
+  let dmg=ghostBuff?amount*0.5:amount;
+  dmg=dmg*(1-Math.min(dr,0.8)); // cap DR at 80%
   p.hp-=dmg;
 }
 
