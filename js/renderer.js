@@ -935,15 +935,23 @@ function renderBuffBar(W, H){
       const anyLow = p.skillCooldowns.some(cd => cd > 0 && cd < 3);
       if (anyLow) buffs.push({ label: '临界', color: '#ff6644', detail: '增伤' });
     }
-    if (art.artifactId === 'elementalRing') {
-      const elNames = ['火', '冰', '奥'];
-      const elColors = ['#ff4400', '#4488ff', '#aa44ff'];
-      const el = p.ringElement;
-      const maxPct = art.ringMax || 150;
-      const remain = Math.ceil(4 - p.ringCycleTimer);
-      buffs.push({ label: '戒·'+elNames[el], color: elColors[el], detail: '+' + maxPct + '% ' + remain + 's' });
+  // Elemental ring (legendary power)
+  const eqSrc = game.sandboxEquipment || game.equipment;
+  let ringMax = 0;
+  for (const eq of Object.values(eqSrc)) {
+    if (eq && eq.power && eq.power.stat === 'ringElement' && eq.power.value > ringMax) {
+      ringMax = eq.power.value;
     }
   }
+  if (ringMax > 0) {
+    const elNames = ['火', '冰', '奥'];
+    const elColors = ['#ff4400', '#4488ff', '#aa44ff'];
+    const el = p.ringElement;
+    const remain = Math.ceil(4 - p.ringCycleTimer);
+    buffs.push({ label: '戒·'+elNames[el], color: elColors[el], detail: '+' + ringMax + '% ' + remain + 's' });
+  }
+
+  if (buffs.length === 0) return;
 
   if (buffs.length === 0) return;
 
@@ -2044,11 +2052,6 @@ export function applySlotItem(slot, option) {
   } else if (option.key.startsWith('artifact_')) {
     const ad = ARTIFACT_DEFS.find(a => a.id === option.artifactId);
     game.sandboxEquipment[slot] = { slot: 'artifact', quality: 3, ilvl, statValue: 0, name: QUALITY_NAMES[3] + ad.name + ' [70]', color: QUALITY_COLORS[3], stat: 'artifact', power: null, artifactId: ad.id, setName: ad.setName };
-    if (ad.id === 'elementalRing') {
-      const frac = (ilvl - 1) / 69;
-      game.sandboxEquipment[slot].ringMax = Math.round(50 + frac * 100);
-      game.sandboxEquipment[slot].name += ' +' + game.sandboxEquipment[slot].ringMax + '%';
-    }
   }
   const stats = calcPlayerStats(true);
   game.player.maxHp = stats.maxHP; game.player.hp = stats.maxHP;

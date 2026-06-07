@@ -92,10 +92,17 @@ export function calcPlayerStats(sandbox){
 
 export function getRingMultiplier(element) {
   const p = game.player;
-  const art = game.sandboxEquipment ? game.sandboxEquipment.artifact : game.equipment.artifact;
-  if (!art || art.artifactId !== 'elementalRing' || !element) return 1;
+  if (!element) return 1;
+  // Find best ringElement power from equipped items
+  let maxPct = 0;
+  const eqSource = game.sandboxEquipment || game.equipment;
+  for (const eq of Object.values(eqSource)) {
+    if (eq && eq.power && eq.power.stat === 'ringElement' && eq.power.value > maxPct) {
+      maxPct = eq.power.value;
+    }
+  }
+  if (maxPct === 0) return 1;
   const elMap = { fire: 0, ice: 1, arcane: 2 };
-  const maxPct = art.ringMax || 150;
   if (elMap[element] === p.ringElement) return 1 + maxPct / 100;
   return 1;
 }
@@ -109,8 +116,12 @@ export function updatePlayer(dt){
   }
   if(p.hitInvuln>0)p.hitInvuln-=dt;
   // Elemental Ring cycle: fire(0) → ice(1) → arcane(2), 4s each
-  const ringArt = (game.sandboxEquipment || game.equipment).artifact;
-  if (ringArt && ringArt.artifactId === 'elementalRing') {
+  let hasRing = false;
+  const eqSrc = game.sandboxEquipment || game.equipment;
+  for (const eq of Object.values(eqSrc)) {
+    if (eq && eq.power && eq.power.stat === 'ringElement') { hasRing = true; break; }
+  }
+  if (hasRing) {
     p.ringCycleTimer += dt;
     if (p.ringCycleTimer >= 4) { p.ringCycleTimer -= 4; p.ringElement = (p.ringElement + 1) % 3; }
   }

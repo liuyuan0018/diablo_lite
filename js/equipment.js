@@ -58,11 +58,6 @@ export function generateArtifact(boss,stageIdx){
     artifactId:artDef.id,
     setName:artDef.setName,
   };
-  if (artDef.id === 'elementalRing') {
-    const frac = (ilvl - 1) / 69;
-    eq.ringMax = Math.round(50 + frac * 100 * (0.5 + Math.random() * 0.5));
-    eq.name += ' +' + eq.ringMax + '%';
-  }
   return eq;
 }
 

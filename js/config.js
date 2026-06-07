@@ -91,6 +91,7 @@ export const LEGENDARY_POWERS = [
   { name:'火焰风暴', desc:'火球伤害+{v}%', min:15, max:50, stat:'fireballDmg' },
   { name:'急冻光环', desc:'暴风雪减速效果+{v}%', min:10, max:30, stat:'blizzardSlow' },
   { name:'虚空行者', desc:'传送冷却-{v}秒', min:1, max:4, stat:'teleportCD' },
+  { name:'元素戒指', desc:'火/冰/奥每4s轮换，匹配时增伤+{v}%', min:50, max:150, stat:'ringElement' },
 ];
 
 export const SET_DEFS = {
@@ -136,7 +137,6 @@ export const ARTIFACT_DEFS = [
   { id:'fieldGenerator', name:'力场发生器', setName:'chronomancer', desc:'力场持续+3s，不被坍缩消耗' },
   { id:'feather', name:'缓落之羽', setName:null, desc:'HP>80%时技能伤害+25%移速+20%' },
   { id:'criticalFragment', name:'临界碎片', setName:null, desc:'任一技能CD<3s时所有技能伤害+30%' },
-  { id:'elementalRing', name:'元素戒指', setName:null, desc:'火/冰/奥术每4秒轮换，匹配时增伤最高150%' },
 ];
 
 export function ilvlFactor(ilv){ return 0.35 + ilv*0.0236; }
