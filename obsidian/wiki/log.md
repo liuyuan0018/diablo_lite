@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-07] save | Build 测试场
+- 类型: concept (new) + update × 3
+- 文件: wiki/concepts/Build-Testfield.md (new)
+- 来源: 新增独立 build 验证工具 — 6 个训练木桩（单体/减伤/群体）、5 个预设配装模板 + 自由搭配面板、DPS/总伤/峰值统计、沙箱装备隔离、复用准备界面装备网格和悬停对比弹窗。8 个提交，+700 行。
+
 ## [2026-06-07] autoresearch | D4 暗金装备与 Sorcerer Build 的关系
 - 轮次: 1 (广撒网 + 深挖)
 - 搜索: 8 次
