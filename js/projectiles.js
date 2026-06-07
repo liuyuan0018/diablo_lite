@@ -6,6 +6,7 @@ import { PLAYER_RADIUS, MAP_W, MAP_H } from './config.js';
 import { dist, clamp } from './helpers.js';
 import { damagePlayer } from './player.js';
 import { spawnParticles } from './particles.js';
+import { hitDummy } from './testfield.js';
 import { getSynergyEffects } from './synergies.js';
 
 export function updateProjectiles(dt){
@@ -53,6 +54,19 @@ export function updateProjectiles(dt){
         hit=true;
       }
     }else{
+      // Check dummy hits (testfield mode)
+      if (game.trainingDummies && game.trainingDummies.length > 0 && !p.isEnemy) {
+        const dummyResult = hitDummy(p, p.x, p.y);
+        if (dummyResult.hit) {
+          if (!p._hitDummies) p._hitDummies = new Set();
+          if (!p._hitDummies.has(dummyResult.dummy.id)) {
+            p._hitDummies.add(dummyResult.dummy.id);
+            if (!p._dummyHits) p._dummyHits = [];
+            p._dummyHits.push(dummyResult);
+            spawnParticles(dummyResult.x, dummyResult.y, 4, '#ffaa00', 50, 2);
+          }
+        }
+      }
       for(let j=game.monsters.length-1;j>=0;j--){
         const m=game.monsters[j];
         if(dist(p.x,p.y,m.x,m.y)<p.size+m.size){
