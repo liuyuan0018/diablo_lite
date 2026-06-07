@@ -20,6 +20,7 @@ import { updateParticles } from './particles.js';
 import { updateTowers } from './towers.js';
 import { updatePickup } from './equipment.js';
 import { updateCamera } from './camera.js';
+import { updateSetEffects } from './sets.js';
 
 export function startTestStage(){
   game.screen='playing';
@@ -43,6 +44,12 @@ export function startTestStage(){
   game.player.fireTimer=0;
   game.player.skillCooldowns=[0,0,0];
   game.player.buffs=[];
+  // Reset set/synergy state
+  game.player.elementalistStacks = 0;
+  game.player.elementalistLastElement = null;
+  game.player.elementalistAura = null;
+  game.player.singularityFields = [];
+  game.player.temporalResonanceTimer = 0;
   game.player.hitInvuln=0;
   game.monsters=[];
   game.projectiles=[];
@@ -90,6 +97,12 @@ export function startGame(stageIndex){
   game.player.fireTimer=0;
   game.player.skillCooldowns=[0,0,0];
   game.player.buffs=[];
+  // Reset set/synergy state
+  game.player.elementalistStacks = 0;
+  game.player.elementalistLastElement = null;
+  game.player.elementalistAura = null;
+  game.player.singularityFields = [];
+  game.player.temporalResonanceTimer = 0;
   game.player.hitInvuln=0;
   game.monsters=[];
   game.projectiles=[];
@@ -188,6 +201,7 @@ export function gameLoop(timestamp){
   if(game.screen==='playing'&&!game.showBackpack&&!game.showPauseMenu){
     game.time+=dt;
     updatePlayer(dt);
+    updateSetEffects(dt);
     updateSkillEffects(dt);
     updateMonsters(dt);
     updateSpawner(dt);
