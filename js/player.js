@@ -91,6 +91,25 @@ export function updatePlayer(dt){
     p.y=clamp(p.y+n.y*game.moveSpeed*dt,PLAYER_RADIUS,MAP_H-PLAYER_RADIUS);
   }
 
+  // Chronomancer 4-piece: standing in singularity field resets teleport CD
+  const sets2 = getSetEffects();
+  if (sets2.chronomancer && sets2.chronomancer.active.four) {
+    for (const f of p.singularityFields) {
+      if (!f.imploded) {
+        const d = dist(p.x, p.y, f.x, f.y);
+        if (d < f.radius) {
+          if (!f._playerInsideSince) f._playerInsideSince = game.time;
+          if (game.time - f._playerInsideSince >= 2) {
+            p.skillCooldowns[0] = 0;
+            f._playerInsideSince = game.time;
+          }
+        } else {
+          f._playerInsideSince = null;
+        }
+      }
+    }
+  }
+
   const range=DETECTION_RANGE;
   let nearest=null, nearDist=range;
   for(const m of game.monsters){

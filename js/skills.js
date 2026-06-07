@@ -37,8 +37,19 @@ export function castSkill(wx,wy){
     }
     case 1:{
       const dur=2.5+fx.blackholeDur;
-      game.skillEffects.push({type:'blackhole',x:wx,y:wy,radius:220,duration:dur,timer:dur,pullForce:180,damage:8*(1+fx.fireballDmg/100)});
+      const bhRadius = sets.chronomancer && sets.chronomancer.active.two ? 220 * 1.3 : 220;
+      game.skillEffects.push({type:'blackhole',x:wx,y:wy,radius:bhRadius,duration:dur,timer:dur,pullForce:180,damage:8*(1+fx.fireballDmg/100)});
       spawnParticles(wx,wy,20,'#6622aa',100,5);
+      // Chronomancer 2-piece: singularity field
+      if (sets.chronomancer && sets.chronomancer.active.two) {
+        game.skillEffects.push({
+          type: 'singularitySpawn',
+          x: wx, y: wy,
+          radius: 220,
+          timer: dur, duration: dur,
+          damage: 0,
+        });
+      }
       // Arcane element tracking for Elementalist set
       castElement = 'arcane';
       if (hasElementalist) {
@@ -57,6 +68,34 @@ export function castSkill(wx,wy){
       const slow=0.5*(1+fx.blizzardSlow/100);
       game.skillEffects.push({type:'blizzard',x:wx,y:wy,radius:r,duration:3,timer:3,tickTimer:0.5,damage:22*(1+fx.fireballDmg/100),slowPct:Math.min(slow,0.9)});
       spawnParticles(wx,wy,25,'#4488ff',80,4);
+      // Chronomancer 3-piece: implosion check
+      if (sets.chronomancer && sets.chronomancer.active.three) {
+        for (const f of p.singularityFields) {
+          if (!f.imploded && dist(wx, wy, f.x, f.y) < f.radius) {
+            f.imploded = true;
+            game.skillEffects.push({
+              type: 'singularityImplosion',
+              x: f.x, y: f.y,
+              radius: f.radius,
+              timer: 1.0, duration: 1.0,
+              damage: stats.atk * 5,
+            });
+            spawnParticles(f.x, f.y, 30, '#8844ff', 150, 6);
+            // 4-piece: reduce all CDs by 3s
+            if (sets.chronomancer.active.four) {
+              for (let i = 0; i < 3; i++) {
+                p.skillCooldowns[i] = Math.max(0, p.skillCooldowns[i] - 3);
+              }
+            }
+            // Consume field unless fieldGenerator artifact
+            const hasFieldGen = game.equipment.artifact && game.equipment.artifact.artifactId === 'fieldGenerator';
+            if (!hasFieldGen) {
+              f.timer = 0;
+            }
+            break; // only one field per cast
+          }
+        }
+      }
       // Ice element tracking for Elementalist set
       castElement = 'ice';
       if (hasElementalist) {
@@ -162,6 +201,45 @@ export function updateSkillEffects(dt){
           }
         }
         spawnParticles(e.x + rand(-e.radius, e.radius), e.y + rand(-e.radius, e.radius), 1, '#ffd700', 40, 2);
+        break;
+      }
+      case 'singularitySpawn': {
+        e.timer -= dt;
+        if (e.timer <= 0) {
+          const hasFieldGen = game.equipment.artifact && game.equipment.artifact.artifactId === 'fieldGenerator';
+          const fieldDuration = hasFieldGen ? 7 : 4;
+          game.player.singularityFields.push({
+            x: e.x, y: e.y,
+            radius: 220,
+            timer: fieldDuration,
+            imploded: false,
+          });
+          spawnParticles(e.x, e.y, 15, '#6688cc', 100, 4);
+        }
+        break;
+      }
+      case 'singularityImplosion': {
+        e.timer -= dt;
+        const progress = 1 - e.timer / e.duration;
+        // Pull enemies inward during the charge-up
+        for (const m of game.monsters) {
+          const d = dist(m.x, m.y, e.x, e.y);
+          if (d < e.radius * (1 + progress * 0.5) && d > 1) {
+            const force = 400 * dt * (1 + progress);
+            const n = normalize(e.x - m.x, e.y - m.y);
+            m.x += n.x * force;
+            m.y += n.y * force;
+          }
+        }
+        if (e.timer <= 0) {
+          // Final burst
+          for (const m of game.monsters) {
+            if (dist(m.x, m.y, e.x, e.y) < e.radius * 1.5) {
+              m.hp -= e.damage;
+            }
+          }
+          spawnParticles(e.x, e.y, 50, '#ff6600', 200, 7);
+        }
         break;
       }
     }
