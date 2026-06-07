@@ -46,7 +46,7 @@ export function generateArtifact(boss,stageIdx){
   const ilvl=rollIlvl(stageIdx);
   const quality=boss?rollBossQuality(stageIdx):rollQuality(stageIdx);
   const artDef=randChoice(ARTIFACT_DEFS);
-  return {
+  const eq = {
     slot:'artifact',
     quality:Math.min(quality,3),
     ilvl,
@@ -58,6 +58,12 @@ export function generateArtifact(boss,stageIdx){
     artifactId:artDef.id,
     setName:artDef.setName,
   };
+  if (artDef.id === 'elementalRing') {
+    const frac = (ilvl - 1) / 69;
+    eq.ringMax = Math.round(50 + frac * 100 * (0.5 + Math.random() * 0.5));
+    eq.name += ' +' + eq.ringMax + '%';
+  }
+  return eq;
 }
 
 export function rollQuality(stageIdx){
