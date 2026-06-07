@@ -4,6 +4,7 @@ title: "Critical Mass Permafreeze (CMWW)"
 domain: d3-wizard-builds
 aliases: ["CMWW", "无限冰", "冰法", "暴击回CD"]
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds, vanilla-d3]
 status: seed
 related: ["[[Energy-Twister]]", "[[Critical-Mass-Passive]]", "[[Frost-Nova]]"]

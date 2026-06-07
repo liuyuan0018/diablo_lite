@@ -13,6 +13,7 @@ key_claims:
   - "武器伤害类型（电伤）可提供额外 Elemental Exposure 叠加层"
   - "Mammoth Hydra 只有一颗头，不适合 Typhon 套装，必须走 LoD"
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds]
 status: seed
 related: ["[[Legacy-of-Dreams-Gem]]", "[[Attack-Speed-Breakpoints]]", "[[Arcane-Dynamo-Snapshotting]]"]

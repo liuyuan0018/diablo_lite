@@ -3,6 +3,7 @@ type: comparison
 title: "D3 法师 Build 设计经验 → Diablo Lite"
 domain: game-design
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds, diablo-lite-design]
 status: seed
 related: ["[[Wizard-Build-History]]", "[[concepts/Build]]", "[[concepts/Skills]]", "[[concepts/LegendaryPowers]]"]

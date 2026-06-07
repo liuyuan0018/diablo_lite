@@ -6,6 +6,7 @@ game: Diablo 3
 class: Wizard
 introduced: Reaper of Souls (2014)
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds, d3-items]
 status: seed
 related: ["[[Wizard-Build-History]]", "[[Chantodo-Set]]"]

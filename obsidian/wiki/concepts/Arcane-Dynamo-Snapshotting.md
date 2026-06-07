@@ -4,6 +4,7 @@ title: "Arcane Dynamo Snapshotting"
 domain: d3-wizard-builds
 aliases: ["奥能迸发快照", "Dynamo snapshot", "5层快照"]
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds, game-mechanics]
 status: seed
 related: ["[[Attack-Speed-Breakpoints]]", "[[Typhon-Veil-Set]]"]

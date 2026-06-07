@@ -4,6 +4,7 @@ title: "Attack Speed Breakpoints (Hydra)"
 domain: d3-wizard-builds
 aliases: ["攻速断点", "FPA breakpoints"]
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds, game-mechanics]
 status: seed
 related: ["[[Typhon-Veil-Set]]", "[[Maxroll-Typhon-Hydra-Guide]]", "[[Arcane-Dynamo-Snapshotting]]"]

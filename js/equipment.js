@@ -11,7 +11,7 @@ import { saveGame } from './persistence.js';
 export function generateEquipment(slot,boss,stageIdx){
   if(!boss&&Math.random()>0.15)return null;
   const ilvl=rollIlvl(stageIdx);
-  const quality=boss?rollBossQuality():rollQuality();
+  const quality=boss?rollBossQuality(stageIdx):rollQuality(stageIdx);
   const statValue=rollStatValue(slot,quality,ilvl);
   const eq={
     slot, quality, ilvl, statValue,
@@ -44,7 +44,7 @@ export function generateEquipment(slot,boss,stageIdx){
 
 export function generateArtifact(boss,stageIdx){
   const ilvl=rollIlvl(stageIdx);
-  const quality=boss?rollBossQuality():rollQuality();
+  const quality=boss?rollBossQuality(stageIdx):rollQuality(stageIdx);
   const artDef=randChoice(ARTIFACT_DEFS);
   return {
     slot:'artifact',
@@ -60,18 +60,19 @@ export function generateArtifact(boss,stageIdx){
   };
 }
 
-export function rollQuality(){
+export function rollQuality(stageIdx){
   const r=Math.random();
   if(r<0.40)return 0;
   if(r<0.68)return 1;
   if(r<0.85)return 2;
-  if(r<0.96)return 3;
+  if(r<0.96||stageIdx<3)return 3; // set only at ilvl 70 (stage 3+), else legendary
   return 4;
 }
 
-export function rollBossQuality(){
+export function rollBossQuality(stageIdx){
   const r=Math.random();
   if(r<0.40)return 2;
+  if(stageIdx<3)return 3; // set only at ilvl 70 (stage 3+), else legendary
   if(r<0.82)return 3;
   return 4;
 }

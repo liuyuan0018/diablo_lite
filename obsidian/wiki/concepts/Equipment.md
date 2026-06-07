@@ -3,7 +3,7 @@ type: concept
 title: "装备系统"
 created: 2026-06-07
 updated: 2026-06-07
-design_decision: "Stage 4+ drops always ilvl 70 — late-game focuses on quality/affix filter, removing level lottery"
+design_decision: "Stage 4+ drops always ilvl 70 — late-game focuses on quality/affix filter, removing level lottery. Set items only drop at ilvl 70 (stage 3+); non-set legendaries available at all levels to maintain anticipation."
 tags: [equipment, ilvl, quality, legendary]
 status: developing
 related: ["[[Build 系统]]", "[[难度曲线]]", "[[传奇词缀]]"]
@@ -37,12 +37,17 @@ related: ["[[Build 系统]]", "[[难度曲线]]", "[[传奇词缀]]"]
 
 | 品质 | 色码 | 属性倍率 | 掉落率 |
 |------|------|----------|--------|
-| 普通 | #aaaaaa | 1x | 45% |
-| 魔法 | #4488ff | 1.4x | 30% |
-| 稀有 | #ffd700 | 1.9x | 18% |
-| 传说 | #ff6600 | 2.5x | 7% |
+| 普通 | #aaaaaa | 1x | 40% |
+| 魔法 | #4488ff | 1.4x | 28% |
+| 稀有 | #ffd700 | 1.9x | 17% |
+| 传说 | #ff6600 | 2.5x | 11% (篇章 0-2: 15%) |
+| 套装 | #44ff44 | 2.5x | 4% (篇章 0-2: 0%) |
 
-传说装备额外附带一个传奇词缀，词缀数值随 ilvl 随机。
+Boss 掉落：稀有 40%、传说 42%（篇章 0-2: 60%）、套装 18%（篇章 0-2: 0%）。
+
+传说装备额外附带一个随机传奇词缀，词缀数值随 ilvl 缩放。
+
+套装目前有两套：[[entities/Elementalist-Set|元素使套装]]（4 件）和 [[entities/Chronomancer-Set|时空术士套装]]（4 件），分别提供 2/3/4 件套效果。套装物品只会以 ilvl 70 掉落（篇章 3+）。
 
 ## 背包系统
 
@@ -62,6 +67,11 @@ related: ["[[Build 系统]]", "[[难度曲线]]", "[[传奇词缀]]"]
 - 关卡内捡装备进背包，**关卡内不能穿戴**
 - 通关后在结算界面管理战利品，回到准备界面才能装备
 
+### 套装等级限制
+
+套装物品仅在篇章 3+（ilvl 70）掉落。篇章 0-2 的套装概率合并到传说品质，使散件传奇掉率提高（普通怪 15%、Boss 60%）。这保证玩家在练级阶段（1-70 级）能频繁获得散件传奇，维持掉落期待感；而套装作为终局追求，锁定在满级后出现。
+
 ## 关键洞察
 
-低 ilvl 的传说可能不如高 ilvl 的稀有——品质和等级需要平衡取舍。这使得掉落总有期待感，不会出现"传说永远最好"的简单结论。
+- 低 ilvl 的传说可能不如高 ilvl 的稀有——品质和等级需要平衡取舍。这使得掉落总有期待感，不会出现"传说永远最好"的简单结论。
+- 散件传奇全等级可用 vs 套装仅满级掉落：练级阶段玩家通过散件传奇体验词缀搭配和协同效应，满级后套装成为新的追求目标，形成两阶段养成节奏。

@@ -14,6 +14,7 @@ key_claims:
   - "机动性是这个 build 的最大短板"
   - "Black Hole 会干扰蛮子拉怪，需要配合默契"
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds, d3-group-meta]
 status: seed
 related: ["[[Typhon-Veil-Set]]", "[[Maxroll-Typhon-Hydra-Guide]]"]

@@ -14,6 +14,7 @@ key_claims:
   - "Ranslor's Folly 护腕每 0.5 秒将 30 码内普通怪物拉向旋风"
   - "Reverse Archon 变体使用 Shi Mizu's Haori 100% 暴击 + Swami/Fazula 48 秒循环"
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds]
 status: seed
 related: ["[[Legacy-of-Dreams-Gem]]", "[[Arcane-Dynamo-Snapshotting]]", "[[Attack-Speed-Breakpoints]]"]

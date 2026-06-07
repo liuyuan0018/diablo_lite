@@ -14,6 +14,7 @@ key_claims:
   - "Typhon is one of the best Bounty farming builds and viable for solo GR push"
   - "In Season 38, Wizardspike Ethereal enables 24 FPA breakpoint"
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds]
 status: seed
 related: ["[[Typhon-Veil-Set]]", "[[Serpent-Sparker]]", "[[The-Magistrate]]", "[[Arcane-Dynamo-Snapshotting]]"]

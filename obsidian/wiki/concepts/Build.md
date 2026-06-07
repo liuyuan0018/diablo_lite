@@ -3,14 +3,16 @@ type: concept
 title: "Build 系统"
 created: 2026-06-07
 updated: 2026-06-07
-tags: [build, legendary, powers, synergy]
-status: seed
-related: ["[[装备系统]]", "[[传奇词缀]]", "[[技能系统]]"]
+tags: [build, legendary, powers, synergy, set, artifact]
+status: developing
+related: ["[[concepts/Equipment]]", "[[concepts/LegendaryPowers]]", "[[concepts/Skills]]", "[[concepts/Build-Constraint-System]]"]
 ---
 
 # Build 系统
 
-Diablo Lite 的 Build 系统通过 **传奇词缀** 实现流派分化。6 个装备槽最多能叠加 6 种不同传奇效果。
+> **v2 (2026-06-07):** Build 已升级为三层约束体系。详见 [[concepts/Build-Constraint-System|Build 约束体系]]。
+
+Diablo Lite 的 Build 系统通过 **传奇词缀 + 套装 + 传奇协同 + 法器** 实现流派分化。9 个装备槽支持多层组合。
 
 ## 流派方向
 

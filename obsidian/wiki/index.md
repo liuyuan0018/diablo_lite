@@ -6,11 +6,12 @@
 
 ## 核心概念
 
+- [[concepts/Build-Constraint-System|Build 约束体系]] — 套装(2套×3层) + 传奇协同(4组) + 法器(4个)，9 槽位体系
 - [[concepts/Character-Management|角色管理系统]] — 多角色存档架构，独立装备/等级，自动迁移旧存档
 - [[concepts/LootDetailView|装备悬停对比弹窗]] — 悬停物品触发左右对比弹窗，属性差异绿/红/金标记
 - [[concepts/Equipment|装备系统]] — ilvl、品质、掉落机制、背包规则（战斗8件/准备无限）
 - [[concepts/LegendaryPowers|传奇词缀]] — 8 种传奇效果详解
-- [[concepts/Build|Build 系统]] — 流派分化与装备组合
+- [[concepts/Build|Build 系统]] — 流派分化与装备组合（v2：三层约束体系）
 - [[concepts/Difficulty|难度曲线]] — 10 关指数难度设计
 - [[concepts/Skills|技能系统]] — 3 技能 + 自动攻击
 - [[concepts/ProjectilePierce|火球穿透机制]] — 穿透计数器、命中记录、同帧多目标
@@ -20,6 +21,10 @@
 - [[entities/Player|玩家]] — 属性、等级、移动
 - [[entities/Monsters|怪物]] — 10 种怪物 + 精英词缀 + Boss
 - [[entities/EquipmentSlots|装备槽位]] — 6 槽位属性映射
+
+### Diablo Lite 套装
+- [[entities/Elementalist-Set|元素使套装]] — 交替元素 → 谐律爆发
+- [[entities/Chronomancer-Set|时空术士套装]] — 造场 → 引爆 → 回 CD
 
 ## D3 Wizard Builds 调研 (2026-06-07)
 
@@ -36,6 +41,16 @@
 - [[entities/Firebird-Set|Firebird's Finery]] — 条件式攻防一体设计
 - [[entities/Vyr-Amazing-Arcana|Vyr's Amazing Arcana]] — 变身窗口期节奏设计
 - [[entities/Delsere-Magnum-Opus|Delsere's Magnum Opus]] — 空间即资源设计
+
+## D4 Sorcerer Builds 调研 (2026-06-07)
+
+- [[questions/Research-D4-Sorcerer-Builds|D4 Sorcerer Build 发展史]] — 2023-2026 赛季演变 + D3 对比
+- [[concepts/D4-Sorcerer-Build-Evolution|D4 Sorcerer 完整演变叙事]] — 五个阶段 + 三条设计线索
+- [[concepts/D4-Enchantment-System|D4 Enchantment 系统]] — 被动技能的法师进化版
+
+### D4 暗金装备与 Build 关系
+- [[questions/Research-D4-Sorcerer-Uniques|D4 暗金如何定义 Sorcerer Build]] — 行为改造 vs 数值放大、Give and Take 争议、双暗金锁
+- [[concepts/D4-Uniques-Build-Relationship|暗金-Build 关系深度分析]] — 三个设计层级 + 对 Diablo Lite 的具体启示
 
 ### D3 调研来源
 - [[sources/Maxroll-Typhon-Hydra-Guide|Maxroll Typhon Hydra Guide]]

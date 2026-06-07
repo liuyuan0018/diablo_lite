@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "wiki/questions/Research-D3-Wizard-Builds.md",
+                "file": "wiki/concepts/Build-Constraint-System.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Research-D3-Wizard-Builds"
+              "title": "Build-Constraint-System"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "wiki/questions/Research-D3-Wizard-Builds.md",
+                "file": "wiki/concepts/Build-Constraint-System.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Research-D3-Wizard-Builds 的反向链接列表"
+              "title": "Build-Constraint-System 的反向链接列表"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "wiki/questions/Research-D3-Wizard-Builds.md",
+                "file": "wiki/concepts/Build-Constraint-System.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Research-D3-Wizard-Builds 的出链列表"
+              "title": "Build-Constraint-System 的出链列表"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "wiki/questions/Research-D3-Wizard-Builds.md",
+                "file": "wiki/concepts/Build-Constraint-System.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Research-D3-Wizard-Builds 的大纲"
+              "title": "Build-Constraint-System 的大纲"
             }
           }
         ]
@@ -185,37 +185,41 @@
   },
   "active": "b559cb0012b6c20f",
   "lastOpenFiles": [
-    "wiki/hot.md.tmp.57964.6991a5be8061",
-    "wiki/index.md.tmp.57964.6f8240145e87",
-    "wiki/concepts/Character-Management.md",
-    "wiki/concepts/Character-Management.md.tmp.57964.aec14952e628",
-    "wiki/hot.md.tmp.63612.7a40972d5b75",
-    "wiki/log.md.tmp.63612.a986b9e09cdd",
-    "wiki/index.md.tmp.63612.cb87a62ebbdd",
-    "wiki/meta/GameArchitecture.md.tmp.63612.dd35f875e2d0",
-    "wiki/hot.md.tmp.61236.931db325db6d",
-    "wiki/log.md.tmp.61236.0c21a93dd4b2",
-    "wiki/index.md.tmp.61236.6465f70c8328",
-    "wiki/comparisons/D3-Build-Design-Lessons.md",
-    "wiki/comparisons/D3-Build-Design-Lessons.md.tmp.61236.39b77e76ae8e",
-    "wiki/entities/Vyr-Amazing-Arcana.md",
-    "wiki/entities/Typhon-Veil-Set.md",
-    "wiki/entities/Tal-Rasha-Set.md",
-    "wiki/entities/Monsters.md",
-    "wiki/entities/Firebird-Set.md",
-    "wiki/entities/Delsere-Magnum-Opus.md",
+    "wiki/meta/lint-report-2026-06-07.md.tmp.25560.a59225a7af5f",
+    "wiki/meta/lint-report-2026-06-07.md.tmp.25560.28c078153f64",
+    "wiki/meta/lint-report-2026-06-07.md.tmp.25560.03ce1aca89f6",
+    "wiki/log.md.tmp.61236.e814c5df01dd",
+    "wiki/index.md.tmp.61236.2c14e3ee5071",
+    "wiki/questions/Research-D4-Sorcerer-Uniques.md",
+    "wiki/questions/Research-D4-Sorcerer-Uniques.md.tmp.61236.823e91741bec",
+    "wiki/concepts/D4-Uniques-Build-Relationship.md",
+    "wiki/concepts/D4-Uniques-Build-Relationship.md.tmp.61236.a04cc32b48e2",
+    "wiki/index.md.tmp.25560.48b08f1bec43",
+    "wiki/concepts/Equipment.md.tmp.25560.3484e3bdd06d",
+    "wiki/entities/Chantodo-Set.md",
+    "wiki/entities/Chantodo-Set.md.tmp.25560.5f6de2ecd894",
+    "wiki/entities/The-Magistrate.md",
+    "wiki/entities/The-Magistrate.md.tmp.25560.ea8614ea05af",
+    "wiki/entities/Serpent-Sparker.md",
+    "wiki/entities/Nilfurs-Boast.md",
+    "wiki/entities/Frost-Nova.md",
+    "wiki/entities/Critical-Mass-Passive.md",
+    "wiki/entities/Energy-Twister.md",
+    "wiki/entities/Legacy-of-Dreams-Gem.md",
+    "wiki/entities/Chronomancer-Set.md",
+    "wiki/entities/Elementalist-Set.md",
+    "wiki/entities/EquipmentSlots.md",
+    "wiki/entities/Player.md",
+    "wiki/questions/Research-D4-Sorcerer-Builds.md",
+    "wiki/concepts/D4-Enchantment-System.md",
+    "wiki/concepts/D4-Sorcerer-Build-Evolution.md",
+    "wiki/meta/lint-report-2026-06-07.md",
+    "wiki/index.md",
+    "wiki/log.md",
+    "怪物系统.md",
+    "Build 系统.md",
+    "装备系统.md",
     "wiki/questions/Research-D3-Wizard-Builds.md",
-    "CLAUDE.md",
-    "wiki/concepts/LegendaryPowers.md",
-    "wiki/concepts/Wizard-Build-History.md",
-    "wiki/concepts/Arcane-Dynamo-Snapshotting.md",
-    "wiki/concepts/Attack-Speed-Breakpoints.md",
-    "wiki/concepts/Critical-Mass-Permafreeze.md",
-    "wiki/sources/Blizzard-Forum-Typhon-TK.md",
-    "wiki/sources/Maxroll-LoD-Hydra-Guide.md",
-    "wiki/sources/Maxroll-LoD-Twister-Guide.md",
-    "wiki/sources/Maxroll-Typhon-Hydra-Guide.md",
-    "wiki/concepts/LootDetailView.md",
-    "wiki/concepts/ProjectilePierce.md"
+    "wiki/concepts/Build-Constraint-System.md"
   ]
 }
