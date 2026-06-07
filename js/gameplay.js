@@ -2,7 +2,7 @@
 // SECTION 17: GAME LOOP
 // ============================================================
 import { game } from './game-state.js';
-import { DIFFICULTY, TEST_DIFF, TEST_STAGE, STAGES, MAP_W, MAP_H } from './config.js';
+import { DIFFICULTY, TEST_DIFF, TEST_STAGE, STAGES, MAP_W, MAP_H, SLOT_DEF, QUALITY_NAMES, QUALITY_COLORS, QUALITY_MULT } from './config.js';
 import { clamp, rand, randChoice } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { createMonster } from './monsters.js';
@@ -10,7 +10,7 @@ import { spawnParticles } from './particles.js';
 import { generateEquipment, generateArtifact } from './equipment.js';
 import { saveGame } from './persistence.js';
 import { canvas, ctx } from './canvas.js';
-import { render, renderBackpackOverlay, renderPauseMenu, menuButtons, prepButtons, equipSlots, victoryButtons, deathButtons, pauseButtons, charButtons } from './renderer.js';
+import { render, renderBackpackOverlay, renderPauseMenu, menuButtons, prepButtons, equipSlots, victoryButtons, deathButtons, pauseButtons, charButtons, addFloatingNumber, testfieldButtons } from './renderer.js';
 import { updatePlayer } from './player.js';
 import { castSkill, updateSkillEffects } from './skills.js';
 import { updateMonsters } from './monsters.js';
@@ -20,6 +20,7 @@ import { updateParticles } from './particles.js';
 import { updateTowers } from './towers.js';
 import { updatePickup } from './equipment.js';
 import { updateCamera } from './camera.js';
+import { enterTestfield, exitTestfield, resetStats, applyLoadout } from './testfield.js';
 import { updateSetEffects } from './sets.js';
 
 export function startTestStage(){
@@ -130,10 +131,86 @@ export function startGame(stageIndex){
   }
 }
 
+export function startTestfield() {
+  game.screen = 'testfield';
+  game.testfieldTime = 0;
+  game.player.x = 1500;
+  game.player.y = 1500 + 120;
+  const stats = calcPlayerStats(false);
+  game.player.maxHp = stats.maxHP;
+  game.player.hp = stats.maxHP;
+  game.player.atk = stats.atk;
+  game.player.cdr = stats.cdr;
+  game.player.bulletSpeed = stats.bulletSpeed;
+  game.player.pickupRange = stats.pickupRange;
+  game.player.fireRate = stats.fireRate;
+  game.player.fireTimer = 0;
+  game.player.skillCooldowns = [0, 0, 0];
+  game.player.buffs = [];
+  game.player.hitInvuln = 0;
+  game.player.elementalistStacks = 0;
+  game.player.elementalistLastElement = null;
+  game.player.elementalistAura = null;
+  game.player.singularityFields = [];
+  game.player.temporalResonanceTimer = 0;
+  game.monsters = [];
+  game.projectiles = [];
+  game.skillEffects = [];
+  game.particles = [];
+  game.towers = [];
+  game.drops = [];
+  game.showLoadoutPanel = true;
+  game.loadoutTab = 'presets';
+  enterTestfield();
+  const stats2 = calcPlayerStats(true);
+  game.player.maxHp = stats2.maxHP;
+  game.player.hp = stats2.maxHP;
+  game.player.atk = stats2.atk;
+  game.player.cdr = stats2.cdr;
+  game.player.bulletSpeed = stats2.bulletSpeed;
+  game.player.pickupRange = stats2.pickupRange;
+  game.player.fireRate = stats2.fireRate;
+  game.camera.x = game.player.x - canvas.width / 2;
+  game.camera.y = game.player.y - canvas.height / 2;
+}
+
+export function exitTestfieldToPrepare() {
+  exitTestfield();
+  game.screen = 'prepare';
+  const stats = calcPlayerStats(false);
+  game.player.maxHp = stats.maxHP;
+  game.player.hp = stats.maxHP;
+  game.player.atk = stats.atk;
+  game.player.cdr = stats.cdr;
+  game.player.bulletSpeed = stats.bulletSpeed;
+  game.player.pickupRange = stats.pickupRange;
+  game.player.fireRate = stats.fireRate;
+}
+
 export function processClick(){
   if(!game.mouseDown||game.clickProcessed)return;
   if(game.showBackpack)return;
   game.clickProcessed=true;
+  if (game.screen === 'testfield') {
+    for (const b of testfieldButtons) {
+      const hit = game.mouseX >= b.x && game.mouseX <= b.x + b.w && game.mouseY >= b.y && game.mouseY <= b.y + b.h;
+      if (!hit) continue;
+      if (b.action === 'resetStats') { resetStats(); return; }
+      if (b.action === 'togglePanel') { game.showLoadoutPanel = !game.showLoadoutPanel; return; }
+      if (b.action === 'switchTab') { game.loadoutTab = b.tabId; return; }
+      if (b.action === 'applyPreset') { applyLoadout(b.presetName); return; }
+      if (b.action === 'cycleSlot') { cycleSlotQuality(b.slot); return; }
+      if (b.action === 'applyCustom') { applyCustomLoadout(); return; }
+    }
+    // Cast skill on game area click (below HUD)
+    if (game.mouseY > 36) {
+      const wx = game.mouseX + game.camera.x;
+      const wy = game.mouseY + game.camera.y;
+      castSkill(clamp(wx, 0, MAP_W), clamp(wy, 0, MAP_H));
+      game.damageStats.skillCounts[game.activeSkill]++;
+    }
+    return;
+  }
   if(game.screen==='playing'){
     if(game.showPauseMenu){checkButtonClicks(pauseButtons);return;}
     if(game.showBackpack)return;
@@ -198,6 +275,24 @@ export function gameLoop(timestamp){
   const dt=Math.min((timestamp-lastTime)/1000,0.05);
   lastTime=timestamp;
   processClick();
+  if (game.screen === 'testfield' && !game.showBackpack) {
+    game.testfieldTime += dt;
+    updatePlayer(dt);
+    updateSetEffects(dt);
+    updateSkillEffects(dt);
+    updateProjectiles(dt);
+    updateParticles(dt);
+    updateCamera(dt);
+    // Process dummy projectile hits — convert _dummyHits to floating numbers
+    for (const p of game.projectiles) {
+      if (p._dummyHits) {
+        for (const hit of p._dummyHits) {
+          addFloatingNumber(hit.x, hit.y, hit.damage);
+        }
+        p._dummyHits = [];
+      }
+    }
+  }
   if(game.screen==='playing'&&!game.showBackpack&&!game.showPauseMenu){
     game.time+=dt;
     updatePlayer(dt);
@@ -252,4 +347,45 @@ export function gameLoop(timestamp){
   if(game.showBackpack)renderBackpackOverlay();
   if(game.screen==='playing'&&game.showPauseMenu)renderPauseMenu();
   requestAnimationFrame(gameLoop);
+}
+
+function cycleSlotQuality(slot) {
+  const def = SLOT_DEF[slot];
+  const eq = game.sandboxEquipment[slot];
+  const currentQ = eq ? eq.quality : -1;
+  const nextQ = currentQ >= 3 ? -1 : currentQ + 1;
+  if (nextQ < 0) {
+    game.sandboxEquipment[slot] = null;
+  } else {
+    const ilvl = 70;
+    const ilvF = 0.35 + ilvl * 0.0236;
+    const base = def.base * ilvF * QUALITY_MULT[nextQ];
+    const sv = Math.round(base * 0.875);
+    game.sandboxEquipment[slot] = {
+      slot, quality: nextQ, ilvl, statValue: sv,
+      name: QUALITY_NAMES[nextQ] + SLOT_DEF[slot].name + ' [70]',
+      color: QUALITY_COLORS[nextQ],
+      stat: SLOT_DEF[slot].stat,
+      power: null,
+    };
+  }
+  const stats = calcPlayerStats(true);
+  game.player.maxHp = stats.maxHP;
+  game.player.hp = stats.maxHP;
+  game.player.atk = stats.atk;
+  game.player.cdr = stats.cdr;
+  game.player.bulletSpeed = stats.bulletSpeed;
+  game.player.pickupRange = stats.pickupRange;
+  game.player.fireRate = stats.fireRate;
+}
+
+function applyCustomLoadout() {
+  const stats = calcPlayerStats(true);
+  game.player.maxHp = stats.maxHP;
+  game.player.hp = stats.maxHP;
+  game.player.atk = stats.atk;
+  game.player.cdr = stats.cdr;
+  game.player.bulletSpeed = stats.bulletSpeed;
+  game.player.pickupRange = stats.pickupRange;
+  game.player.fireRate = stats.fireRate;
 }
