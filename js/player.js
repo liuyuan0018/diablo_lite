@@ -139,6 +139,12 @@ export function updatePlayer(dt){
     const d=dist(p.x,p.y,m.x,m.y);
     if(d<nearDist){nearDist=d;nearest=m;}
   }
+  if(game.trainingDummies){
+    for(const d of game.trainingDummies){
+      const dd=dist(p.x,p.y,d.x,d.y);
+      if(dd<nearDist){nearDist=dd;nearest=d;}
+    }
+  }
   if(nearest&&p.fireTimer<=0){
     const speed=p.bulletSpeed;
     const a=angle(p.x,p.y,nearest.x,nearest.y);

@@ -211,9 +211,9 @@ function renderPrepare(){
     renderCompareTooltip(game.hoveredItem);
   }
   // Testfield button
-  const tfBtnW = 200, tfBtnH = 44;
-  const tfBtnX = W / 2 - tfBtnW / 2;
-  const tfBtnY = H - 265;
+  const tfBtnW = 160, tfBtnH = 44;
+  const tfBtnX = 10;
+  const tfBtnY = H - tfBtnH - 10;
   const tfHover = game.mouseX >= tfBtnX && game.mouseX <= tfBtnX + tfBtnW && game.mouseY >= tfBtnY && game.mouseY <= tfBtnY + tfBtnH;
   ctx.fillStyle = tfHover ? '#2a2a1a' : '#1a1a0a';
   ctx.strokeStyle = tfHover ? '#ffd700' : '#886600';
@@ -1513,6 +1513,7 @@ function renderTestField() {
   renderParticles();
   renderFloatingNumbers();
   renderDamageHUD();
+  renderHUD();
   if (game.showLoadoutPanel) renderLoadoutPanel();
   renderLoadoutToggle();
 }
