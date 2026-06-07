@@ -74,6 +74,7 @@ export const game = {
   testfieldTime: 0,              // elapsed time in testfield
   showLoadoutPanel: true,        // loadout panel visible toggle
   loadoutTab: 'presets',         // 'presets' | 'custom'
+  slotPicker: null,               // which slot's picker popup is open
 };
 
 // Character management helpers

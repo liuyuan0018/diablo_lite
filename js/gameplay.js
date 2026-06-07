@@ -10,7 +10,7 @@ import { spawnParticles } from './particles.js';
 import { generateEquipment, generateArtifact } from './equipment.js';
 import { saveGame } from './persistence.js';
 import { canvas, ctx } from './canvas.js';
-import { render, renderBackpackOverlay, renderPauseMenu, menuButtons, prepButtons, equipSlots, victoryButtons, deathButtons, pauseButtons, charButtons, addFloatingNumber, testfieldButtons } from './renderer.js';
+import { render, renderBackpackOverlay, renderPauseMenu, menuButtons, prepButtons, equipSlots, victoryButtons, deathButtons, pauseButtons, charButtons, addFloatingNumber, testfieldButtons, applySlotItem } from './renderer.js';
 import { updatePlayer } from './player.js';
 import { castSkill, updateSkillEffects } from './skills.js';
 import { updateMonsters } from './monsters.js';
@@ -207,7 +207,12 @@ export function processClick(){
       if (b.action === 'applyPreset') { applyLoadout(b.presetName); return; }
       if (b.action === 'cycleSlot') { cycleSlotQuality(b.slot); return; }
       if (b.action === 'applyCustom') { applyCustomLoadout(); return; }
+      if (b.action === 'openSlotPicker') { game.slotPicker = b.slot; game.slotPickerScroll = 0; return; }
+      if (b.action === 'closeSlotPicker') { game.slotPicker = null; return; }
+      if (b.action === 'pickSlotItem') { applySlotItem(b.slot, b.option); game.slotPicker = null; return; }
     }
+    // If slot picker is open and no button matched, close it
+    if (game.slotPicker) { game.slotPicker = null; return; }
     // Cast skill on game area click
     const wx = game.mouseX + game.camera.x;
     const wy = game.mouseY + game.camera.y;

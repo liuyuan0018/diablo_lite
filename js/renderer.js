@@ -1688,6 +1688,7 @@ function renderTestField() {
   if (game.showLoadoutPanel) renderLoadoutPanel();
   renderLoadoutToggle();
   if (game.hoveredItem) renderCompareTooltip(game.hoveredItem);
+  renderSlotPickerPopup();
 }
 
 function renderDummies() {
@@ -1904,7 +1905,7 @@ function renderCustomTab(px, py, pw) {
       ctx.fillText('空', px + 60, iy + 24);
     }
 
-    testfieldButtons.push({ x: px + 8, y: iy, w: pw - 16, h: itemH, action: 'cycleSlot', slot: slot });
+    testfieldButtons.push({ x: px + 8, y: iy, w: pw - 16, h: itemH, action: 'openSlotPicker', slot: slot });
   }
 
   const applyY = py + slots.length * (itemH + gap) + 10;
@@ -1922,6 +1923,137 @@ function renderCustomTab(px, py, pw) {
   ctx.fillText('应用配置', applyX + applyW / 2, applyY + applyH / 2 + 5);
 
   testfieldButtons.push({ x: applyX, y: applyY, w: applyW, h: applyH, action: 'applyCustom' });
+}
+
+function renderSlotPickerPopup() {
+  const slot = game.slotPicker;
+  if (!slot) return;
+  const W = canvas.width, H = canvas.height;
+  const pw = 300, maxH = H - 40;
+  const px = (W - pw) / 2, py = 20;
+
+  // Build option list
+  const options = [];
+  const slotName = {weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'}[slot];
+  const slotStat = SLOT_DEF[slot].stat;
+
+  options.push({ label: '空', quality: -1, key: 'empty' });
+  for (let q = 0; q <= 2; q++) {
+    options.push({ label: QUALITY_NAMES[q] + slotName, quality: q, key: 'q' + q });
+  }
+
+  if (slot === 'artifact') {
+    // Artifact options
+    for (const ad of ARTIFACT_DEFS) {
+      options.push({ label: ad.name, quality: 3, key: 'artifact_' + ad.id, artifactId: ad.id, setName: ad.setName });
+    }
+  } else {
+    // Legendary powers relevant to this slot
+    const slotStats = new Set();
+    for (const lp of LEGENDARY_POWERS) {
+      if (!slotStats.has(lp.stat)) {
+        slotStats.add(lp.stat);
+        options.push({ label: lp.name + ' (' + lp.desc.replace('{v}', lp.max) + ')', quality: 3, key: 'power_' + lp.stat, power: lp });
+      }
+    }
+    // Set items if slot is in a set's parts
+    for (const [sk, sd] of Object.entries(SET_DEFS)) {
+      if (sd.parts.includes(slot)) {
+        options.push({ label: sd.name + ' 套装', quality: 4, key: 'set_' + sk, setName: sk });
+      }
+    }
+  }
+
+  const optH = 32, gap = 2;
+  const totalH = options.length * (optH + gap) + 50;
+  const ph = Math.min(totalH, maxH);
+  const maxScroll = Math.max(0, totalH - ph);
+  if (game.slotPickerScroll === undefined) game.slotPickerScroll = 0;
+  game.slotPickerScroll = Math.max(0, Math.min(game.slotPickerScroll, maxScroll));
+
+  // Backdrop
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, 0, W, H);
+
+  // Popup
+  ctx.fillStyle = '#151525'; ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2;
+  roundRect(ctx, px, py, pw, ph, 8);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ffd700'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('选择 ' + slotName, px + pw / 2, py + 28);
+
+  // Close button
+  const cbx = px + pw - 26, cby = py + 6, cbw = 20, cbh = 20;
+  ctx.fillStyle = game.mouseX >= cbx && game.mouseX <= cbx + cbw && game.mouseY >= cby && game.mouseY <= cby + cbh ? '#f44' : '#444';
+  ctx.fillRect(cbx, cby, cbw, cbh);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 12px sans-serif';
+  ctx.fillText('×', cbx + cbw / 2, cby + cbh / 2 + 4);
+  testfieldButtons.push({ x: cbx, y: cby, w: cbw, h: cbh, action: 'closeSlotPicker' });
+
+  // Options
+  ctx.save();
+  ctx.beginPath(); ctx.rect(px + 4, py + 38, pw - 8, ph - 44); ctx.clip();
+  const listY = py + 38 - game.slotPickerScroll;
+  for (let i = 0; i < options.length; i++) {
+    const o = options[i];
+    const oy = listY + i * (optH + gap);
+    if (oy + optH < py + 38 || oy > py + ph - 6) continue;
+    const hover = game.mouseX >= px + 8 && game.mouseX <= px + pw - 8 && game.mouseY >= oy && game.mouseY <= oy + optH;
+    ctx.fillStyle = hover ? '#2a2a4a' : '#1a1a2e';
+    ctx.strokeStyle = hover ? '#ffd700' : '#334'; ctx.lineWidth = 1;
+    roundRect(ctx, px + 8, oy, pw - 16, optH, 3);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = 'left';
+    if (o.quality === -1) { ctx.fillStyle = '#555'; ctx.font = '12px sans-serif'; }
+    else if (o.quality === 4) { ctx.fillStyle = '#44ff44'; ctx.font = 'bold 11px sans-serif'; }
+    else if (o.quality === 3) { ctx.fillStyle = '#ff6600'; ctx.font = 'bold 11px sans-serif'; }
+    else { ctx.fillStyle = QUALITY_COLORS[o.quality]; ctx.font = '11px sans-serif'; }
+    ctx.fillText(o.label, px + 18, oy + optH / 2 + 4);
+
+    if (hover) {
+      testfieldButtons.push({ x: px + 8, y: oy, w: pw - 16, h: optH, action: 'pickSlotItem', slot, option: o });
+    }
+  }
+  ctx.restore();
+}
+
+export function applySlotItem(slot, option) {
+  const ilvl = 70;
+  if (option.key === 'empty') {
+    game.sandboxEquipment[slot] = null;
+  } else if (option.key.startsWith('q')) {
+    const q = option.quality;
+    const def = SLOT_DEF[slot];
+    const ilvF = 0.35 + ilvl * 0.0236;
+    const sv = Math.round(def.base * ilvF * QUALITY_MULT[q] * 0.875);
+    game.sandboxEquipment[slot] = { slot, quality: q, ilvl, statValue: sv, name: QUALITY_NAMES[q] + SLOT_DEF[slot].name + ' [70]', color: QUALITY_COLORS[q], stat: SLOT_DEF[slot].stat, power: null };
+  } else if (option.key.startsWith('power_')) {
+    const lp = option.power;
+    const q = 3;
+    const def = SLOT_DEF[slot];
+    const ilvF = 0.35 + ilvl * 0.0236;
+    const sv = Math.round(def.base * ilvF * QUALITY_MULT[q] * 0.875);
+    game.sandboxEquipment[slot] = { slot, quality: q, ilvl, statValue: sv, name: QUALITY_NAMES[3] + SLOT_DEF[slot].name + ' [70]', color: QUALITY_COLORS[3], stat: SLOT_DEF[slot].stat, power: { name: lp.name, desc: lp.desc, stat: lp.stat, value: lp.max } };
+  } else if (option.key.startsWith('set_')) {
+    const def = SET_DEFS[option.setName];
+    const q = 4;
+    const ilvF = 0.35 + ilvl * 0.0236;
+    const sv = Math.round(SLOT_DEF[slot].base * ilvF * QUALITY_MULT[4] * 0.875);
+    game.sandboxEquipment[slot] = { slot, quality: q, ilvl, statValue: sv, name: QUALITY_NAMES[4] + ' ' + def.name + ' ' + SLOT_DEF[slot].name + ' [70]', color: QUALITY_COLORS[4], stat: SLOT_DEF[slot].stat, power: null, setName: option.setName };
+  } else if (option.key.startsWith('artifact_')) {
+    const ad = ARTIFACT_DEFS.find(a => a.id === option.artifactId);
+    game.sandboxEquipment[slot] = { slot: 'artifact', quality: 3, ilvl, statValue: 0, name: QUALITY_NAMES[3] + ad.name + ' [70]', color: QUALITY_COLORS[3], stat: 'artifact', power: null, artifactId: ad.id, setName: ad.setName };
+    if (ad.id === 'elementalRing') {
+      const frac = (ilvl - 1) / 69;
+      game.sandboxEquipment[slot].ringMax = Math.round(50 + frac * 100);
+      game.sandboxEquipment[slot].name += ' +' + game.sandboxEquipment[slot].ringMax + '%';
+    }
+  }
+  const stats = calcPlayerStats(true);
+  game.player.maxHp = stats.maxHP; game.player.hp = stats.maxHP;
+  game.player.atk = stats.atk; game.player.cdr = stats.cdr;
+  game.player.bulletSpeed = stats.bulletSpeed; game.player.pickupRange = stats.pickupRange; game.player.fireRate = stats.fireRate;
 }
 
 function renderLoadoutToggle() {
