@@ -144,14 +144,14 @@ function renderPrepare(){
   ctx.font='bold 16px sans-serif';
   ctx.fillStyle='#aaa';
   ctx.fillText('装备',ex+ew/2,ey+25);
-  const slots=['weapon','helmet','armor','ring','amulet','boots'];
-  const slotNames=['武器','头盔','护甲','戒指','项链','靴子'];
-  const cols=3,rows=2;
-  const cellW=80,cellH=70;
+  const slots=['weapon','helmet','armor','ring','amulet','boots','bracers','belt','artifact'];
+  const slotNames=['武器','头盔','护甲','戒指','项链','靴子','护腕','腰带','法器'];
+  const cols=3,rows=3;
+  const cellW=80,cellH=60;
   const gridX=ex+(ew-cols*cellW)/2;
   const gridY=ey+40;
   equipSlots=[];
-  for(let i=0;i<6;i++){
+  for(let i=0;i<9;i++){
     const col=i%cols,row=Math.floor(i/cols);
     const cx=gridX+col*cellW,cy=gridY+row*cellH;
     ctx.fillStyle='#1a1a2a';ctx.strokeStyle='#334';ctx.lineWidth=1;
@@ -163,12 +163,17 @@ function renderPrepare(){
     ctx.fillText(slotNames[i],cx+cellW/2,cy+18);
     const eq=game.equipment[slots[i]];
     if(eq){
-      ctx.fillStyle=QUALITY_COLORS[eq.quality]||'#aaa';
       ctx.font='bold 11px sans-serif';
-      ctx.fillText(eq.name,cx+cellW/2,cy+35);
+      if(eq.quality===4){
+        ctx.fillStyle='#44ff44';
+        ctx.fillText('【套装】'+eq.name,cx+cellW/2,cy+35);
+      }else{
+        ctx.fillStyle=QUALITY_COLORS[eq.quality]||'#aaa';
+        ctx.fillText(eq.name,cx+cellW/2,cy+35);
+      }
       ctx.fillStyle='#888';
       ctx.font='10px sans-serif';
-      const slotCfg={weapon:['攻',5],helmet:['CD',2],armor:['命',15],ring:['速',20],amulet:['拾',8],boots:['闪',0]};
+      const slotCfg={weapon:['攻',5],helmet:['CD',2],armor:['命',15],ring:['速',20],amulet:['拾',8],boots:['闪',0],bracers:['攻',5],belt:['命',15],artifact:['器',0]};
       const[sn,base]=slotCfg[slots[i]]||['?',0];
       const val=base+base*eq.quality;
       ctx.fillText(sn+(val>0?'+'+val:''),cx+cellW/2,cy+52);
@@ -249,7 +254,7 @@ function renderEquipDetail(){
   ctx.fill();ctx.stroke();
   const slot=game.selectedEquipSlot;
   const eq=game.equipment[slot];
-  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子'};
+  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'};
   ctx.textAlign='center';
   ctx.font='bold 18px sans-serif';
   ctx.fillStyle='#ffd700';
@@ -471,6 +476,23 @@ export function renderPlaying(){
   renderMonsters();
   renderProjectiles();
   renderSkillEffects();
+  // Render elementalist aura
+  if(game.player.elementalistAura){
+    const a=game.player.elementalistAura;
+    const sx=a.x-game.camera.x;
+    const sy=a.y-game.camera.y;
+    ctx.fillStyle='rgba(255,200,50,0.15)';
+    ctx.beginPath();
+    ctx.arc(sx,sy,200,0,Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle='rgba(255,200,50,0.4)';
+    ctx.lineWidth=2;
+    ctx.setLineDash([5,5]);
+    ctx.beginPath();
+    ctx.arc(sx,sy,200,0,Math.PI*2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
   renderTowers();
   renderPlayer();
   renderParticles();
@@ -688,7 +710,43 @@ function renderSkillEffects(){
       ctx.beginPath();
       ctx.arc(sx,sy,e.radius*0.5,0,Math.PI*2);
       ctx.fill();
+    }else if(e.type==='harmonyMeteor'){
+      const progress=1-e.timer/e.duration;
+      const currentRadius=e.radius*progress;
+      ctx.strokeStyle=`rgba(255,200,50,${1-progress})`;
+      ctx.lineWidth=3;
+      ctx.beginPath();
+      ctx.arc(sx,sy,currentRadius,0,Math.PI*2);
+      ctx.stroke();
+    }else if(e.type==='singularityImplosion'){
+      const progress=1-e.timer/e.duration;
+      ctx.strokeStyle=`rgba(136,68,255,${1-progress*0.5})`;
+      ctx.lineWidth=4;
+      ctx.beginPath();
+      ctx.arc(sx,sy,e.radius*(1-progress*0.3),0,Math.PI*2);
+      ctx.stroke();
     }
+  }
+
+  // Render singularity fields (Chronomancer set)
+  for(const f of game.player.singularityFields){
+    const sx=f.x-game.camera.x;
+    const sy=f.y-game.camera.y;
+    if(sx<-200||sx>canvas.width+200||sy<-200||sy>canvas.height+200)continue;
+
+    const pulse=0.9+Math.sin(game.time*2)*0.1;
+    ctx.strokeStyle=`rgba(100,180,255,${0.4+Math.sin(game.time*3)*0.2})`;
+    ctx.lineWidth=3;
+    ctx.setLineDash([10,6]);
+    ctx.beginPath();
+    ctx.arc(sx,sy,f.radius*pulse,0,Math.PI*2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle='rgba(50,100,200,0.15)';
+    ctx.beginPath();
+    ctx.arc(sx,sy,f.radius,0,Math.PI*2);
+    ctx.fill();
   }
 }
 
@@ -883,6 +941,18 @@ function renderHUD(){
     ctx.fillStyle='#ff4444';
     ctx.fillText('BOSS已出现!',W-10,72);
   }
+
+  // Synergy indicator
+  try{
+    const synStats=calcPlayerStats();
+    if(synStats.synergies&&synStats.synergies.all&&synStats.synergies.all.length>0){
+      ctx.font='10px sans-serif';
+      ctx.fillStyle='#ffaa00';
+      ctx.textAlign='right';
+      ctx.fillText('协同: '+synStats.synergies.all.map(s=>s.name).join(' '),W-10,86);
+    }
+  }catch(e){/* ignore if calcPlayerStats fails here */}
+
   const barCenterX=W/2;
   const barY=H-90;
   const iconSize=56;
@@ -1072,7 +1142,7 @@ export function renderCompareTooltip(hoveredItem){
   const slot=hoveredItem.slot;
   const equipped=game.equipment[slot];
   const statDesc={atk:'攻击力',cdr:'冷却缩减',maxHp:'最大生命',bulletSpeed:'弹道速度',pickupRange:'拾取范围',movespeed:'移动速度'};
-  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子'};
+  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'};
 
   if(hoveredItem===equipped){
     const tw=280,th=equipped.power?180:150;
@@ -1217,7 +1287,7 @@ function renderVictory(){
   victoryButtons=[];
   game.hoveredItem=null;
   const statLabels={atk:'攻',cdr:'CD',maxHp:'命',bulletSpeed:'速',pickupRange:'拾',movespeed:'移'};
-  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子'};
+  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'};
   const cellW=88,cellH=80,gapRender=6,rowH=cellH+gapRender;
   const cols=Math.min(8,Math.floor((W-40)/(cellW+gapRender)));
 
