@@ -202,13 +202,11 @@ export function processClick(){
       if (b.action === 'cycleSlot') { cycleSlotQuality(b.slot); return; }
       if (b.action === 'applyCustom') { applyCustomLoadout(); return; }
     }
-    // Cast skill on game area click (below HUD)
-    if (game.mouseY > 36) {
-      const wx = game.mouseX + game.camera.x;
-      const wy = game.mouseY + game.camera.y;
-      castSkill(clamp(wx, 0, MAP_W), clamp(wy, 0, MAP_H));
-      game.damageStats.skillCounts[game.activeSkill]++;
-    }
+    // Cast skill on game area click
+    const wx = game.mouseX + game.camera.x;
+    const wy = game.mouseY + game.camera.y;
+    castSkill(clamp(wx, 0, MAP_W), clamp(wy, 0, MAP_H));
+    game.damageStats.skillCounts[game.activeSkill]++;
     return;
   }
   if(game.screen==='playing'){

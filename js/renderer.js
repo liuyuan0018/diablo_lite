@@ -1528,10 +1528,9 @@ function renderFloatingNumbers() {
 }
 
 function renderDamageHUD() {
-  const W = canvas.width;
+  const H = canvas.height;
   const ds = game.damageStats;
 
-  // Import getDPS dynamically or compute inline
   let dps = 0;
   if (ds.dpsHistory.length > 0) {
     const oldest = ds.dpsHistory[0].time;
@@ -1543,37 +1542,42 @@ function renderDamageHUD() {
     }
   }
 
-  ctx.fillStyle = 'rgba(0,0,0,0.8)';
-  ctx.fillRect(0, 0, W, 36);
-  ctx.textAlign = 'left';
-  ctx.font = 'bold 13px sans-serif';
-
-  ctx.fillStyle = '#ff8800';
-  ctx.fillText('DPS: ' + dps.toLocaleString() + '/s', 15, 24);
-
-  ctx.fillStyle = '#ccc';
-  ctx.font = '12px sans-serif';
-  ctx.fillText('总伤害: ' + ds.totalDamage.toLocaleString(), 190, 24);
-  ctx.fillText('峰值: ' + ds.peakDamage.toLocaleString(), 350, 24);
-
+  // Compact widget at bottom-left
   const elapsed = game.testfieldTime || 0;
   const mins = Math.floor(elapsed / 60);
   const secs = Math.floor(elapsed % 60);
-  ctx.fillText('时长: ' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0'), 470, 24);
+  const bw = 180, bh = 106;
+  const bx = 10, by = H - bh - 10;
 
-  const btnX = W - 80, btnY = 6, btnW = 65, btnH = 24;
-  const hover = game.mouseX >= btnX && game.mouseX <= btnX + btnW && game.mouseY >= btnY && game.mouseY <= btnY + btnH;
-  ctx.fillStyle = hover ? '#4a2020' : '#2a1010';
-  ctx.strokeStyle = hover ? '#f88' : '#844';
+  ctx.fillStyle = 'rgba(10, 10, 20, 0.9)';
+  ctx.strokeStyle = '#334';
   ctx.lineWidth = 1;
-  roundRect(ctx, btnX, btnY, btnW, btnH, 4);
+  roundRect(ctx, bx, by, bw, bh, 6);
   ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#f88';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('重置', btnX + btnW / 2, btnY + btnH / 2 + 4);
 
-  testfieldButtons.push({ x: btnX, y: btnY, w: btnW, h: btnH, action: 'resetStats' });
+  ctx.textAlign = 'left';
+
+  ctx.fillStyle = '#ff8800';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText(dps.toLocaleString() + '/s', bx + 12, by + 22);
+
+  ctx.fillStyle = '#ccc';
+  ctx.font = '11px sans-serif';
+  ctx.fillText('总伤: ' + ds.totalDamage.toLocaleString(), bx + 12, by + 42);
+  ctx.fillText('峰值: ' + ds.peakDamage.toLocaleString(), bx + 12, by + 58);
+  ctx.fillText('时长: ' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0'), bx + 12, by + 74);
+
+  // Reset button
+  const rbx = bx + 100, rby = by + 72, rbw = 68, rbh = 22;
+  const hover = game.mouseX >= rbx && game.mouseX <= rbx + rbw && game.mouseY >= rby && game.mouseY <= rby + rbh;
+  ctx.fillStyle = hover ? '#3a1a1a' : '#2a1010';
+  ctx.fillRect(rbx, rby, rbw, rbh);
+  ctx.fillStyle = '#f88';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('重置', rbx + rbw / 2, rby + rbh / 2 + 4);
+
+  testfieldButtons.push({ x: rbx, y: rby, w: rbw, h: rbh, action: 'resetStats' });
 }
 
 function renderLoadoutPanel() {
