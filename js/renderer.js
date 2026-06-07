@@ -17,6 +17,13 @@ export let victoryButtons=[];
 export let deathButtons=[];
 export let pauseButtons=[];
 export let charButtons=[];
+export let testfieldButtons=[];
+
+let floatingNumbers = [];
+
+export function addFloatingNumber(x, y, damage) {
+  floatingNumbers.push({ x, y, damage, timer: 0.8 });
+}
 
 export function render(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -26,6 +33,7 @@ export function render(){
     case 'playing':renderPlaying();break;
     case 'victory':renderVictory();break;
     case 'death':renderDeath();break;
+    case 'testfield':renderTestField();break;
   }
 }
 
@@ -1452,6 +1460,286 @@ function renderDeath(){
   const bx=W/2-bw/2,by=H*0.55;
   deathButtons=[{x:bx,y:by,w:bw,h:bh,text:'返回主菜单',action:()=>{game.screen='menu';}}];
   drawButton(bx,by,bw,bh,'返回主菜单','#3a1a1a','#aaa','#ff4444');
+}
+
+// ---- Testfield ----
+
+function renderTestField() {
+  const W = canvas.width, H = canvas.height;
+  testfieldButtons = [];
+
+  game.camera.x = game.player.x - W / 2;
+  game.camera.y = game.player.y - H / 2;
+
+  // Background
+  ctx.fillStyle = '#0a0a14';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 1;
+  for (let x = -game.camera.x % TILE_SIZE; x < W; x += TILE_SIZE) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = -game.camera.y % TILE_SIZE; y < H; y += TILE_SIZE) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  renderDummies();
+  renderProjectiles();
+  renderSkillEffects();
+  renderPlayer();
+  renderParticles();
+  renderFloatingNumbers();
+  renderDamageHUD();
+  if (game.showLoadoutPanel) renderLoadoutPanel();
+  renderLoadoutToggle();
+}
+
+function renderDummies() {
+  for (const d of game.trainingDummies) {
+    const sx = d.x - game.camera.x;
+    const sy = d.y - game.camera.y;
+    if (sx < -50 || sx > canvas.width + 50 || sy < -50 || sy > canvas.height + 50) continue;
+
+    ctx.fillStyle = d.color;
+    ctx.beginPath();
+    ctx.arc(sx, sy, d.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Crosshair
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(sx - d.size - 6, sy);
+    ctx.lineTo(sx + d.size + 6, sy);
+    ctx.moveTo(sx, sy - d.size - 6);
+    ctx.lineTo(sx, sy + d.size + 6);
+    ctx.stroke();
+
+    // Glow ring
+    ctx.strokeStyle = 'rgba(150,150,150,0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(sx, sy, d.size + 8, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = '#aaa';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(d.label, sx, sy - d.size - 12);
+  }
+}
+
+function renderFloatingNumbers() {
+  for (let i = floatingNumbers.length - 1; i >= 0; i--) {
+    const fn = floatingNumbers[i];
+    fn.timer -= 0.016;
+    fn.y -= 0.8;
+    if (fn.timer <= 0) {
+      floatingNumbers.splice(i, 1);
+      continue;
+    }
+    const alpha = Math.min(1, fn.timer / 0.4);
+    const sx = fn.x - game.camera.x;
+    const sy = fn.y - game.camera.y;
+    ctx.fillStyle = `rgba(255, 200, 100, ${alpha})`;
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(Math.round(fn.damage), sx, sy);
+  }
+}
+
+function renderDamageHUD() {
+  const W = canvas.width;
+  const ds = game.damageStats;
+
+  // Import getDPS dynamically or compute inline
+  let dps = 0;
+  if (ds.dpsHistory.length > 0) {
+    const oldest = ds.dpsHistory[0].time;
+    const newest = ds.dpsHistory[ds.dpsHistory.length - 1].time;
+    const span = newest - oldest;
+    if (span > 0) {
+      const dmg = ds.dpsHistory.reduce((s, e) => s + e.damage, 0);
+      dps = Math.round(dmg / span);
+    }
+  }
+
+  ctx.fillStyle = 'rgba(0,0,0,0.8)';
+  ctx.fillRect(0, 0, W, 36);
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 13px sans-serif';
+
+  ctx.fillStyle = '#ff8800';
+  ctx.fillText('DPS: ' + dps.toLocaleString() + '/s', 15, 24);
+
+  ctx.fillStyle = '#ccc';
+  ctx.font = '12px sans-serif';
+  ctx.fillText('总伤害: ' + ds.totalDamage.toLocaleString(), 190, 24);
+  ctx.fillText('峰值: ' + ds.peakDamage.toLocaleString(), 350, 24);
+
+  const elapsed = game.testfieldTime || 0;
+  const mins = Math.floor(elapsed / 60);
+  const secs = Math.floor(elapsed % 60);
+  ctx.fillText('时长: ' + String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0'), 470, 24);
+
+  const btnX = W - 80, btnY = 6, btnW = 65, btnH = 24;
+  const hover = game.mouseX >= btnX && game.mouseX <= btnX + btnW && game.mouseY >= btnY && game.mouseY <= btnY + btnH;
+  ctx.fillStyle = hover ? '#4a2020' : '#2a1010';
+  ctx.strokeStyle = hover ? '#f88' : '#844';
+  ctx.lineWidth = 1;
+  roundRect(ctx, btnX, btnY, btnW, btnH, 4);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#f88';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('重置', btnX + btnW / 2, btnY + btnH / 2 + 4);
+
+  testfieldButtons.push({ x: btnX, y: btnY, w: btnW, h: btnH, action: 'resetStats' });
+}
+
+function renderLoadoutPanel() {
+  const W = canvas.width, H = canvas.height;
+  const pw = 320, ph = H - 80, px = W - pw - 10, py = 50;
+
+  ctx.fillStyle = 'rgba(10, 10, 25, 0.95)';
+  ctx.strokeStyle = '#445';
+  ctx.lineWidth = 1;
+  roundRect(ctx, px, py, pw, ph, 8);
+  ctx.fill(); ctx.stroke();
+
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('配装面板', px + pw / 2, py + 22);
+
+  const tabW = (pw - 20) / 2, tabH = 28, tabY = py + 32;
+  const presetsTab = { x: px + 5, y: tabY, w: tabW, h: tabH, id: 'presets' };
+  const customTab = { x: px + pw / 2 + 5, y: tabY, w: tabW - 10, h: tabH, id: 'custom' };
+
+  for (const tab of [presetsTab, customTab]) {
+    const active = game.loadoutTab === tab.id;
+    ctx.fillStyle = active ? '#2a2a4a' : '#1a1a2a';
+    ctx.strokeStyle = active ? '#ffd700' : '#334';
+    ctx.lineWidth = active ? 2 : 1;
+    roundRect(ctx, tab.x, tab.y, tab.w, tab.h, 4);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = active ? '#ffd700' : '#888';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(tab.id === 'presets' ? '预设模板' : '自由搭配', tab.x + tab.w / 2, tab.y + tab.h / 2 + 4);
+    testfieldButtons.push({ x: tab.x, y: tab.y, w: tab.w, h: tab.h, action: 'switchTab', tabId: tab.id });
+  }
+
+  if (game.loadoutTab === 'presets') {
+    renderPresetsTab(px, py + 65, pw);
+  } else {
+    renderCustomTab(px, py + 65, pw);
+  }
+}
+
+function renderPresetsTab(px, py, pw) {
+  // Dynamic import would be circular — inline the presets
+  const presets = [
+    { name: '火球弹幕', description: '穿透火球 + 火焰风暴 (熔火之心)' },
+    { name: '冰法控制', description: '暴风眼 + 急冻光环 (深寒领域)' },
+    { name: '元素使', description: '元素使4件 + 穿透火球/火焰风暴 + 谐律之眼' },
+    { name: '时空术士', description: '时空术士4件 + 冷却共鸣/虚空行者 + 力场发生器' },
+    { name: '混合火冰', description: '穿透火球 + 暴风眼 (火冰相激)' },
+  ];
+
+  const itemH = 48, gap = 6;
+  for (let i = 0; i < presets.length; i++) {
+    const pres = presets[i];
+    const iy = py + i * (itemH + gap);
+    if (iy + itemH > canvas.height - 100) break;
+
+    const hover = game.mouseX >= px + 8 && game.mouseX <= px + pw - 8 && game.mouseY >= iy && game.mouseY <= iy + itemH;
+    ctx.fillStyle = hover ? '#1a1a3a' : '#151525';
+    ctx.strokeStyle = hover ? '#ffd700' : '#334';
+    ctx.lineWidth = hover ? 2 : 1;
+    roundRect(ctx, px + 8, iy, pw - 16, itemH, 4);
+    ctx.fill(); ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText(pres.name, px + 18, iy + 20);
+    ctx.fillStyle = '#888';
+    ctx.font = '10px sans-serif';
+    ctx.fillText(pres.description, px + 18, iy + 36);
+
+    testfieldButtons.push({ x: px + 8, y: iy, w: pw - 16, h: itemH, action: 'applyPreset', presetName: pres.name });
+  }
+}
+
+function renderCustomTab(px, py, pw) {
+  const slots = ['weapon', 'helmet', 'armor', 'ring', 'amulet', 'boots', 'bracers', 'belt', 'artifact'];
+  const slotNames = ['武器', '头盔', '护甲', '戒指', '项链', '靴子', '护腕', '腰带', '法器'];
+  const itemH = 38, gap = 3;
+
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    const iy = py + i * (itemH + gap);
+    if (iy + itemH > canvas.height - 60) break;
+
+    ctx.fillStyle = '#151525';
+    roundRect(ctx, px + 8, iy, pw - 16, itemH, 3);
+    ctx.fill();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#aaa';
+    ctx.font = '11px sans-serif';
+    ctx.fillText(slotNames[i], px + 16, iy + 24);
+
+    const eq = game.sandboxEquipment[slot];
+    if (eq) {
+      ctx.fillStyle = QUALITY_COLORS[eq.quality] || '#aaa';
+      ctx.font = '10px sans-serif';
+      const shortName = eq.name ? eq.name.replace(' [70]', '') : (QUALITY_NAMES[eq.quality] + '装备');
+      ctx.fillText(shortName, px + 60, iy + 24);
+    } else {
+      ctx.fillStyle = '#444';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('空', px + 60, iy + 24);
+    }
+
+    testfieldButtons.push({ x: px + 8, y: iy, w: pw - 16, h: itemH, action: 'cycleSlot', slot: slot });
+  }
+
+  const applyY = py + slots.length * (itemH + gap) + 10;
+  const applyW = 120, applyH = 32;
+  const applyX = px + (pw - applyW) / 2;
+  const applyHover = game.mouseX >= applyX && game.mouseX <= applyX + applyW && game.mouseY >= applyY && game.mouseY <= applyY + applyH;
+  ctx.fillStyle = applyHover ? '#2a3a2a' : '#1a2a1a';
+  ctx.strokeStyle = applyHover ? '#fff' : '#4a4';
+  ctx.lineWidth = 2;
+  roundRect(ctx, applyX, applyY, applyW, applyH, 6);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#8f8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('应用配置', applyX + applyW / 2, applyY + applyH / 2 + 5);
+
+  testfieldButtons.push({ x: applyX, y: applyY, w: applyW, h: applyH, action: 'applyCustom' });
+}
+
+function renderLoadoutToggle() {
+  const W = canvas.width;
+  const btnSize = 24, btnX = W - btnSize - 10, btnY = 50;
+  const hover = game.mouseX >= btnX && game.mouseX <= btnX + btnSize && game.mouseY >= btnY && game.mouseY <= btnY + btnSize;
+  ctx.fillStyle = hover ? '#334' : '#223';
+  ctx.strokeStyle = hover ? '#fff' : '#556';
+  ctx.lineWidth = 1;
+  roundRect(ctx, btnX, btnY, btnSize, btnSize, 4);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#aaa';
+  ctx.font = '14px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(game.showLoadoutPanel ? '◀' : '▶', btnX + btnSize / 2, btnY + btnSize / 2 + 5);
+  testfieldButtons.push({ x: btnX, y: btnY, w: btnSize, h: btnSize, action: 'togglePanel' });
 }
 
 // --- Button / Shape Helpers ---
