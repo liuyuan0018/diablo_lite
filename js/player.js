@@ -6,6 +6,7 @@ import { PLAYER_RADIUS, MAP_W, MAP_H, BASE_FIRE_RATE, BASE_BULLET_SPEED, BASE_PI
 import { normalize, clamp, dist, angle } from './helpers.js';
 import { spawnParticles } from './particles.js';
 import { getSetEffects } from './sets.js';
+import { getSynergyEffects } from './synergies.js';
 
 export function damagePlayer(amount){
   const p=game.player;
@@ -60,7 +61,7 @@ export function calcPlayerStats(){
   const fireRate = BASE_FIRE_RATE + (bSpeedVal - BASE_BULLET_SPEED) * 0.01;
   const finalAtk = Math.round(baseATK + bATK * (1 + fx.fireballDmg / 100));
   const scaledAtk = Math.round(finalAtk * setDmgMult);
-  return {maxHP: baseHP + bHP, atk: scaledAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc};
+  return {maxHP: baseHP + bHP, atk: scaledAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects()};
 }
 
 export function updatePlayer(dt){
