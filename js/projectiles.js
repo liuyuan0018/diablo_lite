@@ -95,6 +95,7 @@ export function updateProjectiles(dt){
           if (syn.fireIce && p._fireIce && m.frozen) {
             dmg *= 2;
           }
+          if (m.vulnerable) dmg = Math.round(dmg * 1.5);
           if(m.shield>0){
             const absorb=Math.min(m.shield,dmg);
             m.shield-=absorb;

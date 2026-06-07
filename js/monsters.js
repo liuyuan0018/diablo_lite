@@ -18,6 +18,12 @@ export function createMonster(type,x,y,boss,elite,affix,stageIdx){
   let hp=base.hp*pow;
   let atk=base.atk*(1+pow*0.5);
   let spd=base.speed;
+  // Player level scaling for early chapters
+  if (diff.levelScale && !game.isTestStage) {
+    const lvMult = 1 + (game.player.level - 1) * 0.04;
+    hp = Math.round(hp * lvMult);
+    atk = Math.round(atk * (1 + (game.player.level - 1) * 0.02));
+  }
   if(boss){
     size=base.size*4;
     hp=base.hp*pow*diff.bossMult;
@@ -83,6 +89,13 @@ export function updateMonsters(dt){
       m.frozenTimer -= dt;
       if (m.frozenTimer <= 0) {
         m.frozen = false;
+      }
+    }
+    // Vulnerable debuff (from Black Hole)
+    if (m.vulnerableTimer > 0) {
+      m.vulnerableTimer -= dt;
+      if (m.vulnerableTimer <= 0) {
+        m.vulnerable = false;
       }
     }
     const spd=m.frozen?0:m.speed*(m.slowMult||1);

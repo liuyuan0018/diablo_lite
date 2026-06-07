@@ -207,6 +207,8 @@ export function updateSkillEffects(dt){
             m.x+=n.x*f;
             m.y+=n.y*f;
             m.hp-=e.damage*dt;
+            m.vulnerable=true;
+            m.vulnerableTimer=3;
           }
         }
         damageDummies(e.x,e.y,e.radius,e.damage*dt);
@@ -230,9 +232,10 @@ export function updateSkillEffects(dt){
                 m.slowMult=e.slowPct;
                 m.slowTimer=0.5;
               }
-              m.hp-=e.damage;
+              const dmg=m.vulnerable?Math.round(e.damage*1.5):e.damage;
+              m.hp-=dmg;
               spawnParticles(m.x,m.y,3,'#88aaff',60,3);
-              if(e.damage>=1)addFloatingNumber(m.x,m.y,Math.round(e.damage));
+              if(dmg>=1)addFloatingNumber(m.x,m.y,dmg);
             }
           }
           damageDummies(e.x,e.y,e.radius,e.damage);
@@ -270,9 +273,10 @@ export function updateSkillEffects(dt){
           e._damaged = true;
           for (const m of game.monsters) {
             if (dist(m.x, m.y, e.x, e.y) < e.radius) {
-              m.hp -= e.damage;
+              const dmg=m.vulnerable?Math.round(e.damage*1.5):e.damage;
+              m.hp -= dmg;
               spawnParticles(m.x, m.y, 5, '#ffaa00', 60, 3);
-              addFloatingNumber(m.x,m.y,Math.round(e.damage));
+              addFloatingNumber(m.x,m.y,dmg);
             }
           }
           damageDummies(e.x,e.y,e.radius,e.damage);
@@ -310,8 +314,9 @@ export function updateSkillEffects(dt){
           // Final burst
           for (const m of game.monsters) {
             if (dist(m.x, m.y, e.x, e.y) < e.radius * 1.5) {
-              m.hp -= e.damage;
-              addFloatingNumber(m.x,m.y,Math.round(e.damage));
+              const dmg=m.vulnerable?Math.round(e.damage*1.5):e.damage;
+              m.hp -= dmg;
+              addFloatingNumber(m.x,m.y,dmg);
             }
           }
           damageDummies(e.x,e.y,e.radius*1.5,e.damage);

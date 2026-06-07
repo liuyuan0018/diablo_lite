@@ -17,16 +17,16 @@ export function getNextMonsterId() { return _nextMonsterId++; }
 export function resetMonsterId() { _nextMonsterId = 1; }
 
 export const DIFFICULTY = [
-  { power:1,    bossMult:3,   spawnRate:2.0, eliteEvery:40, killsBoss:40,  expMult:1,   desc:'1-70级 · 练级阶段' },
-  { power:2.5,  bossMult:5,   spawnRate:1.5, eliteEvery:30, killsBoss:65,  expMult:1.8, desc:'1-70级 · 熟悉技能' },
-  { power:5.5,  bossMult:8,   spawnRate:1.1, eliteEvery:22, killsBoss:90,  expMult:3,   desc:'1-70级 · 考验技巧' },
-  { power:10,   bossMult:15,  spawnRate:1.0, eliteEvery:18, killsBoss:130, expMult:6,   desc:'秘境 80 层 · 需要Build' },
-  { power:22,   bossMult:28,  spawnRate:0.85,eliteEvery:15, killsBoss:170, expMult:12,  desc:'秘境 90 层 · 装备成型' },
-  { power:45,   bossMult:50,  spawnRate:0.7, eliteEvery:13, killsBoss:210, expMult:25,  desc:'秘境 100 层 · 普通毕业' },
-  { power:85,   bossMult:90,  spawnRate:0.55,eliteEvery:11, killsBoss:260, expMult:50,  desc:'秘境 115 层 · 高手' },
-  { power:160,  bossMult:160, spawnRate:0.45,eliteEvery:9,  killsBoss:320, expMult:100, desc:'秘境 125 层 · 职业玩家' },
-  { power:300,  bossMult:300, spawnRate:0.35,eliteEvery:7,  killsBoss:380, expMult:200, desc:'秘境 135 层 · 顶尖职业' },
-  { power:600,  bossMult:600, spawnRate:0.25,eliteEvery:5,  killsBoss:500, expMult:400, desc:'秘境 150 层 · 几乎不可能' },
+  { power:1,    bossMult:3,   spawnRate:2.0, eliteEvery:40, killsBoss:40,  expMult:1,   desc:'1-70级 · 练级阶段', levelScale:true },
+  { power:2,    bossMult:4,   spawnRate:1.5, eliteEvery:30, killsBoss:65,  expMult:1.8, desc:'1-70级 · 熟悉技能', levelScale:true },
+  { power:4,    bossMult:6,   spawnRate:1.1, eliteEvery:22, killsBoss:90,  expMult:3,   desc:'1-70级 · 考验技巧', levelScale:true },
+  { power:18,   bossMult:25,  spawnRate:1.0, eliteEvery:18, killsBoss:130, expMult:6,   desc:'秘境 80 层 · 需要Build', levelScale:false },
+  { power:40,   bossMult:50,  spawnRate:0.85,eliteEvery:15, killsBoss:170, expMult:12,  desc:'秘境 90 层 · 装备成型', levelScale:false },
+  { power:80,   bossMult:90,  spawnRate:0.7, eliteEvery:13, killsBoss:210, expMult:25,  desc:'秘境 100 层 · 普通毕业', levelScale:false },
+  { power:150,  bossMult:160, spawnRate:0.55,eliteEvery:11, killsBoss:260, expMult:50,  desc:'秘境 115 层 · 高手', levelScale:false },
+  { power:280,  bossMult:280, spawnRate:0.45,eliteEvery:9,  killsBoss:320, expMult:100, desc:'秘境 125 层 · 职业玩家', levelScale:false },
+  { power:500,  bossMult:500, spawnRate:0.35,eliteEvery:7,  killsBoss:380, expMult:200, desc:'秘境 135 层 · 顶尖职业', levelScale:false },
+  { power:900,  bossMult:900, spawnRate:0.25,eliteEvery:5,  killsBoss:500, expMult:400, desc:'秘境 150 层 · 几乎不可能', levelScale:false },
 ];
 
 export const STAGES = [
