@@ -6,6 +6,7 @@ import { PLAYER_RADIUS, MAP_W, MAP_H } from './config.js';
 import { dist, clamp } from './helpers.js';
 import { damagePlayer } from './player.js';
 import { spawnParticles } from './particles.js';
+import { getSynergyEffects } from './synergies.js';
 
 export function updateProjectiles(dt){
   for(let i=game.projectiles.length-1;i>=0;i--){
@@ -15,6 +16,17 @@ export function updateProjectiles(dt){
     p.life=(p.life||2)-dt;
     if(p.x<0||p.x>MAP_W||p.y<0||p.y>MAP_H||p.life<=0){
       game.projectiles.splice(i,1);continue;
+    }
+    const syn = getSynergyEffects();
+    // Fire-Ice: mark projectile if inside blizzard
+    if (syn.fireIce && !p.isEnemy && !p._fireIce) {
+      for (const e of game.skillEffects) {
+        if (e.type === 'blizzard' && dist(p.x, p.y, e.x, e.y) < e.radius) {
+          p._fireIce = true;
+          p.color = '#ff88ff';
+          break;
+        }
+      }
     }
     let hit=false;
     if(p.isEnemy){
@@ -32,6 +44,28 @@ export function updateProjectiles(dt){
         if(dist(p.x,p.y,m.x,m.y)<p.size+m.size){
           if(p._hitMonsters&&p._hitMonsters.has(m.id))continue;
           let dmg=p.damage;
+          // Track pierce count for synergies
+          if (!p._pierceCount) p._pierceCount = 0;
+
+          // Molten Core: pierce ramp
+          let pierceDmgMult = 1;
+          if (syn.moltenCore) {
+            pierceDmgMult = 1 + p._pierceCount * 0.10;
+          }
+
+          // Apply synergies to damage
+          dmg *= pierceDmgMult;
+
+          // Molten Core: ignite at 3+ pierces
+          if (syn.moltenCore && p._pierceCount >= 3) {
+            m.igniteTimer = 3;
+            m.igniteDmg = p.damage * 0.5;
+          }
+
+          // Fire-Ice: double damage vs frozen
+          if (syn.fireIce && p._fireIce && m.frozen) {
+            dmg *= 2;
+          }
           if(m.shield>0){
             const absorb=Math.min(m.shield,dmg);
             m.shield-=absorb;
@@ -51,6 +85,7 @@ export function updateProjectiles(dt){
             p.pierce--;
             if(!p._hitMonsters)p._hitMonsters=new Set();
             p._hitMonsters.add(m.id);
+            p._pierceCount++;
           }else{
             hit=true;
             break;

@@ -7,6 +7,7 @@ import { clamp, rand, normalize, dist } from './helpers.js';
 import { spawnParticles } from './particles.js';
 import { calcPlayerStats, damagePlayer } from './player.js';
 import { getSetEffects } from './sets.js';
+import { getSynergyEffects } from './synergies.js';
 
 export function castSkill(wx,wy){
   const p=game.player;
@@ -33,6 +34,11 @@ export function castSkill(wx,wy){
       }
       p.buffs=p.buffs.filter(b=>b.type!=='ghost');
       if(game.equipment.boots&&game.equipment.boots.quality===3)p.buffs.push({type:'ghost',timer:2});
+      // Temporal Resonance synergy
+      const synTp = getSynergyEffects();
+      if (synTp.temporalResonance) {
+        game.player.temporalResonanceTimer = 2;
+      }
       break;
     }
     case 1:{
@@ -60,7 +66,13 @@ export function castSkill(wx,wy){
         }
         p.elementalistLastElement = castElement;
       }
-      p.skillCooldowns[idx]=SKILL_CONFIG[1].baseCD*(1-cdr/100);
+      let cd = SKILL_CONFIG[1].baseCD * (1 - cdr / 100);
+      const syn = getSynergyEffects();
+      if (syn.temporalResonance && game.player.temporalResonanceTimer > 0) {
+        cd *= 0.5;
+        game.player.temporalResonanceTimer = 0;
+      }
+      p.skillCooldowns[idx] = cd;
       break;
     }
     case 2:{
@@ -106,7 +118,13 @@ export function castSkill(wx,wy){
         }
         p.elementalistLastElement = castElement;
       }
-      p.skillCooldowns[idx]=SKILL_CONFIG[2].baseCD*(1-cdr/100);
+      let cd = SKILL_CONFIG[2].baseCD * (1 - cdr / 100);
+      const syn = getSynergyEffects();
+      if (syn.temporalResonance && game.player.temporalResonanceTimer > 0) {
+        cd *= 0.5;
+        game.player.temporalResonanceTimer = 0;
+      }
+      p.skillCooldowns[idx] = cd;
       break;
     }
   }
@@ -176,6 +194,23 @@ export function updateSkillEffects(dt){
               }
               m.hp-=e.damage;
               spawnParticles(m.x,m.y,3,'#88aaff',60,3);
+            }
+          }
+        }
+        // Deep Frost synergy
+        const synDf = getSynergyEffects();
+        if (synDf.deepFrost) {
+          const slowPercent = e.slowPct * 100;
+          if (slowPercent > 70) {
+            for (const m of game.monsters) {
+              if (dist(m.x, m.y, e.x, e.y) < e.radius) {
+                if (!m._lastFreezeTime || game.time - m._lastFreezeTime > 4) {
+                  m.frozen = true;
+                  m.frozenTimer = 1.5;
+                  m._lastFreezeTime = game.time;
+                  spawnParticles(m.x, m.y, 8, '#88ccff', 40, 3);
+                }
+              }
             }
           }
         }

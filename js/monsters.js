@@ -70,7 +70,22 @@ export function updateMonsters(dt){
   for(let i=game.monsters.length-1;i>=0;i--){
     const m=game.monsters[i];
     m.hitTimer=Math.max(0,m.hitTimer-dt);
-    const spd=m.speed*(m.slowMult||1);
+    // Ignite DoT
+    if (m.igniteTimer > 0) {
+      m.igniteTimer -= dt;
+      m.hp -= (m.igniteDmg || 5) * dt;
+      if (Math.random() < 0.3) {
+        spawnParticles(m.x + rand(-m.size, m.size), m.y + rand(-m.size, m.size), 1, '#ff4400', 20, 2);
+      }
+    }
+    // Frozen debuff
+    if (m.frozenTimer > 0) {
+      m.frozenTimer -= dt;
+      if (m.frozenTimer <= 0) {
+        m.frozen = false;
+      }
+    }
+    const spd=m.frozen?0:m.speed*(m.slowMult||1);
     monsterContactDamage(m,dt);
     const dx=game.player.x-m.x;
     const dy=game.player.y-m.y;
