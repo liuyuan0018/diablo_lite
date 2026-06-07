@@ -6,6 +6,7 @@ import { PLAYER_RADIUS, MAP_W, MAP_H, SKILL_CONFIG } from './config.js';
 import { clamp, rand, normalize, dist } from './helpers.js';
 import { spawnParticles } from './particles.js';
 import { calcPlayerStats, damagePlayer } from './player.js';
+import { getSetEffects } from './sets.js';
 
 export function castSkill(wx,wy){
   const p=game.player;
@@ -14,6 +15,8 @@ export function castSkill(wx,wy){
   const fx=stats.legendary;
   const cdr=stats.cdr;
   if(p.skillCooldowns[idx]>0)return;
+  const sets = getSetEffects();
+  const hasElementalist = sets.elementalist && sets.elementalist.active.two;
   switch(idx){
     case 0:{
       const oldX=p.x,oldY=p.y;
@@ -35,6 +38,16 @@ export function castSkill(wx,wy){
       const dur=2.5+fx.blackholeDur;
       game.skillEffects.push({type:'blackhole',x:wx,y:wy,radius:220,duration:dur,timer:dur,pullForce:180,damage:8*(1+fx.fireballDmg/100)});
       spawnParticles(wx,wy,20,'#6622aa',100,5);
+      // Arcane element tracking for Elementalist set
+      if (hasElementalist) {
+        const castElement = 'arcane';
+        if (castElement !== p.elementalistLastElement) {
+          p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
+        } else {
+          p.elementalistStacks = 0;
+        }
+        p.elementalistLastElement = castElement;
+      }
       p.skillCooldowns[idx]=SKILL_CONFIG[1].baseCD*(1-cdr/100);
       break;
     }
@@ -43,8 +56,43 @@ export function castSkill(wx,wy){
       const slow=0.5*(1+fx.blizzardSlow/100);
       game.skillEffects.push({type:'blizzard',x:wx,y:wy,radius:r,duration:3,timer:3,tickTimer:0.5,damage:22*(1+fx.fireballDmg/100),slowPct:Math.min(slow,0.9)});
       spawnParticles(wx,wy,25,'#4488ff',80,4);
+      // Ice element tracking for Elementalist set
+      if (hasElementalist) {
+        const castElement = 'ice';
+        if (castElement !== p.elementalistLastElement) {
+          p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
+        } else {
+          p.elementalistStacks = 0;
+        }
+        p.elementalistLastElement = castElement;
+      }
       p.skillCooldowns[idx]=SKILL_CONFIG[2].baseCD*(1-cdr/100);
       break;
+    }
+  }
+
+  // Harmony Burst trigger — at 3 stacks, spawn meteors
+  if (hasElementalist && p.elementalistStacks === 3 && idx !== 0) { // not teleport
+    const stats = calcPlayerStats();
+    for (let i = 0; i < 3; i++) {
+      const spreadAngle = (i - 1) * 0.5;
+      const mx = wx + Math.cos(spreadAngle) * 60;
+      const my = wy + Math.sin(spreadAngle) * 60;
+      game.skillEffects.push({
+        type: 'harmonyMeteor',
+        x: mx, y: my,
+        radius: 80,
+        timer: 0.5, duration: 0.5,
+        damage: stats.atk * 3,
+      });
+      spawnParticles(mx, my, 20, ['#ff4400','#4488ff','#aa44ff'][i], 100, 5);
+    }
+    p.elementalistStacks = 0;
+    p.elementalistLastElement = null;
+
+    // 4-piece: create elemental aura
+    if (sets.elementalist && sets.elementalist.active.four) {
+      p.elementalistAura = { x: wx, y: wy, timer: 5 };
     }
   }
 }
@@ -99,6 +147,20 @@ export function updateSkillEffects(dt){
         if(pd<e.radius){
           damagePlayer(e.damage*dt);
         }
+        break;
+      }
+      case 'harmonyMeteor': {
+        if (e.timer <= 0) continue;
+        if (!e._damaged) {
+          e._damaged = true;
+          for (const m of game.monsters) {
+            if (dist(m.x, m.y, e.x, e.y) < e.radius) {
+              m.hp -= e.damage;
+              spawnParticles(m.x, m.y, 5, '#ffaa00', 60, 3);
+            }
+          }
+        }
+        spawnParticles(e.x + rand(-e.radius, e.radius), e.y + rand(-e.radius, e.radius), 1, '#ffd700', 40, 2);
         break;
       }
     }
