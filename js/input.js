@@ -3,7 +3,7 @@
 // ============================================================
 import { game } from './game-state.js';
 import { canvas } from './canvas.js';
-import { startTestStage } from './gameplay.js';
+import { startTestStage, exitTestfieldToPrepare } from './gameplay.js';
 import { clamp } from './helpers.js';
 
 export function registerInputHandlers(){
@@ -16,6 +16,10 @@ export function registerInputHandlers(){
     if(e.key==='s'||e.key==='S'){e.preventDefault();game.keys.s=true;}
     if(e.key==='d'||e.key==='D'){e.preventDefault();game.keys.d=true;}
     if(e.key==='Escape'){
+      if(game.screen==='testfield'){
+        exitTestfieldToPrepare();
+        return;
+      }
       e.preventDefault();
       if(game.screen==='playing'){
         if(game.showBackpack){game.showBackpack=false;}
