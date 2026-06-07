@@ -1437,6 +1437,7 @@ function renderDeath(){
 function renderTestField() {
   const W = canvas.width, H = canvas.height;
   testfieldButtons = [];
+  game.hoveredItem = null;
 
   game.camera.x = game.player.x - W / 2;
   game.camera.y = game.player.y - H / 2;
@@ -1470,6 +1471,7 @@ function renderTestField() {
   renderEquipGrid(eqX, eqY, eqW, eqH, game.sandboxEquipment, testfieldEquipSlots, testfieldButtons);
   if (game.showLoadoutPanel) renderLoadoutPanel();
   renderLoadoutToggle();
+  if (game.hoveredItem) renderCompareTooltip(game.hoveredItem);
 }
 
 function renderDummies() {
