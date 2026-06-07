@@ -940,8 +940,8 @@ function renderBuffBar(W, H){
       const elColors = ['#ff4400', '#4488ff', '#aa44ff'];
       const el = p.ringElement;
       const maxPct = art.ringMax || 150;
-      const pct = Math.round((p.ringCycleTimer / 4) * maxPct);
-      buffs.push({ label: '戒·'+elNames[el], color: elColors[el], detail: '+' + pct + '%' });
+      const remain = Math.ceil(4 - p.ringCycleTimer);
+      buffs.push({ label: '戒·'+elNames[el], color: elColors[el], detail: '+' + maxPct + '% ' + remain + 's' });
     }
   }
 

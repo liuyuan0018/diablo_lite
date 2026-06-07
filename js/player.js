@@ -96,10 +96,7 @@ export function getRingMultiplier(element) {
   if (!art || art.artifactId !== 'elementalRing' || !element) return 1;
   const elMap = { fire: 0, ice: 1, arcane: 2 };
   const maxPct = art.ringMax || 150;
-  if (elMap[element] === p.ringElement) {
-    const progress = p.ringCycleTimer / 4;
-    return 1 + progress * (maxPct / 100);
-  }
+  if (elMap[element] === p.ringElement) return 1 + maxPct / 100;
   return 1;
 }
 
