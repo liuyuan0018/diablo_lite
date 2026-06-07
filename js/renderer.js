@@ -3,7 +3,7 @@
 // ============================================================
 import { game, getActiveCharacter, syncPlayerToChar, syncCharToPlayer, createCharacter } from './game-state.js';
 import { canvas, ctx } from './canvas.js';
-import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS } from './config.js';
+import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS } from './config.js';
 import { formatTime, lerp, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { saveGame } from './persistence.js';
@@ -1118,12 +1118,15 @@ export function renderCompareTooltip(hoveredItem){
   if(!hoveredItem)return;
   const W=canvas.width,H=canvas.height;
   const slot=hoveredItem.slot;
-  const equipped=game.equipment[slot];
+  const eqSource=game.sandboxEquipment||game.equipment;
+  const equipped=eqSource[slot];
   const statDesc={atk:'攻击力',cdr:'冷却缩减',maxHp:'最大生命',bulletSpeed:'弹道速度',pickupRange:'拾取范围',movespeed:'移动速度'};
   const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'};
 
   if(hoveredItem===equipped){
-    const tw=280,th=equipped.power?180:150;
+    const setInfo=equipped.setName&&SET_DEFS[equipped.setName];
+    const setExtra=setInfo?90:0;
+    const tw=280,th=(equipped.power?180:150)+setExtra;
     const tx=W-tw-16,ty=H/2-th/2;
     ctx.fillStyle='rgba(10,10,20,0.94)';
     ctx.strokeStyle='#ffd700';ctx.lineWidth=2;
@@ -1145,10 +1148,22 @@ export function renderCompareTooltip(hoveredItem){
       ctx.fillStyle='#ff6600';ctx.font='bold 8px sans-serif';
       ctx.fillText('传奇词缀',tx+tw/2,ty+120);
     }
+    if(setInfo){
+      const sy=equipped.power?ty+132:ty+100;
+      ctx.fillStyle='#44ff44';ctx.font='bold 11px sans-serif';
+      ctx.fillText('【'+setInfo.name+'】套装',tx+tw/2,sy+14);
+      ctx.fillStyle='#aaffaa';ctx.font='9px sans-serif';
+      ctx.fillText('2件: '+setInfo.two.desc,tx+tw/2,sy+32);
+      ctx.fillText('3件: '+setInfo.three.desc,tx+tw/2,sy+48);
+      ctx.fillText('4件: '+setInfo.four.desc,tx+tw/2,sy+64);
+    }
     return;
   }
 
-  const tw=520,th=240;
+  const eqSetInfo=equipped&&equipped.setName&&SET_DEFS[equipped.setName];
+  const hovSetInfo=hoveredItem.setName&&SET_DEFS[hoveredItem.setName];
+  const setExtra=(eqSetInfo||hovSetInfo)?90:0;
+  const tw=520,th=240+setExtra;
   const tx=W-tw-16,ty=H/2-th/2;
 
   ctx.fillStyle='rgba(10,10,20,0.94)';
@@ -1185,6 +1200,10 @@ export function renderCompareTooltip(hoveredItem){
     }else{
       ctx.fillStyle='#444';ctx.font='10px sans-serif';
       ctx.fillText('(无传奇词缀)',lx+lw/2,ly+72);
+    }
+    if(eqSetInfo){
+      ctx.fillStyle='#44ff44';ctx.font='bold 9px sans-serif';
+      ctx.fillText('【'+eqSetInfo.name+'】',lx+lw/2,ly+90);
     }
   }else{
     ctx.fillStyle='#555';ctx.font='13px sans-serif';
@@ -1244,6 +1263,24 @@ export function renderCompareTooltip(hoveredItem){
   }else if(equipped&&equipped.power){
     ctx.fillStyle='#884444';ctx.font='10px sans-serif';
     ctx.fillText('(失去传奇词缀)',rx+rw/2,ry+72);
+  }
+  // Set item info for hovered item
+  if(hovSetInfo){
+    const sy=ry+90;
+    if(!eqSetInfo){
+      ctx.fillStyle='#44ff44';ctx.font='bold 11px sans-serif';
+      ctx.fillText('【'+hovSetInfo.name+'】套装 ✦新',rx+rw/2,sy);
+    }else if(hoveredItem.setName===equipped.setName){
+      ctx.fillStyle='#44ff44';ctx.font='bold 10px sans-serif';
+      ctx.fillText('【'+hovSetInfo.name+'】 (=)',rx+rw/2,sy);
+    }else{
+      ctx.fillStyle='#ffaa00';ctx.font='bold 10px sans-serif';
+      ctx.fillText('【'+hovSetInfo.name+'】 (不同套装)',rx+rw/2,sy);
+    }
+    ctx.fillStyle='#aaffaa';ctx.font='9px sans-serif';
+    ctx.fillText('2件: '+hovSetInfo.two.desc,rx+rw/2,sy+18);
+    ctx.fillText('3件: '+hovSetInfo.three.desc,rx+rw/2,sy+34);
+    ctx.fillText('4件: '+hovSetInfo.four.desc,rx+rw/2,sy+50);
   }
 }
 
