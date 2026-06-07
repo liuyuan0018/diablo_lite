@@ -8,6 +8,7 @@ import { formatTime, lerp, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { saveGame } from './persistence.js';
 import { getSlotName } from './equipment.js';
+import { getSetEffects } from './sets.js';
 import { startTestfield } from './gameplay.js';
 
 // Button arrays — populated each render frame, read by gameplay processClick
@@ -451,6 +452,7 @@ export function renderPlaying(){
   renderGround();
   renderMapBorder();
   renderDrops();
+  renderHealthGlobes();
   renderMonsters();
   renderProjectiles();
   renderSkillEffects();
@@ -474,6 +476,7 @@ export function renderPlaying(){
   renderTowers();
   renderPlayer();
   renderParticles();
+  renderFloatingNumbers();
   renderSkillPreview();
   renderVignette();
   renderHUD();
@@ -505,6 +508,27 @@ function renderMapBorder(){
   ctx.strokeStyle='rgba(255,165,0,0.4)';
   ctx.lineWidth=3;
   ctx.strokeRect(-game.camera.x,-game.camera.y,MAP_W,MAP_H);
+}
+
+function renderHealthGlobes(){
+  for(const g of game.healthGlobes){
+    const sx=g.x-game.camera.x;
+    const sy=g.y-game.camera.y;
+    if(sx<-30||sx>canvas.width+30||sy<-30||sy>canvas.height+30)continue;
+    const bob=Math.sin(g.bobPhase)*3;
+    // Glow
+    const grad=ctx.createRadialGradient(sx,sy+bob,2,sx,sy+bob,18);
+    grad.addColorStop(0,'rgba(255,40,40,0.9)');
+    grad.addColorStop(0.5,'rgba(180,20,20,0.6)');
+    grad.addColorStop(1,'rgba(100,0,0,0)');
+    ctx.fillStyle=grad;
+    ctx.beginPath();ctx.arc(sx,sy+bob,18,0,Math.PI*2);ctx.fill();
+    // Orb
+    ctx.fillStyle='#cc2222';
+    ctx.beginPath();ctx.arc(sx,sy+bob,10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff4444';
+    ctx.beginPath();ctx.arc(sx-2,sy+bob-3,4,0,Math.PI*2);ctx.fill();
+  }
 }
 
 function renderDrops(){
@@ -868,6 +892,78 @@ function renderVignette(){
 }
 
 // --- HUD ---
+function renderBuffBar(W, H){
+  const p = game.player;
+  const buffs = [];
+
+  // Elementalist stacks
+  if (p.elementalistStacks > 0) {
+    buffs.push({
+      label: '谐律×' + p.elementalistStacks,
+      color: p.elementalistStacks >= 3 ? '#ffd700' : '#ff8800',
+      detail: p.elementalistLastElement || '',
+    });
+  }
+
+  // Temporal Resonance
+  if (p.temporalResonanceTimer > 0) {
+    buffs.push({
+      label: '时空共鸣',
+      color: '#8844ff',
+      detail: Math.ceil(p.temporalResonanceTimer) + 's',
+    });
+  }
+
+  // Active set detection
+  try {
+    const sets = getSetEffects(!!game.sandboxEquipment);
+    if (sets.elementalist && sets.elementalist.active.two) {
+      buffs.push({ label: '元素使', color: '#44ff44', detail: '套装' });
+    }
+    if (sets.chronomancer && sets.chronomancer.active.two) {
+      buffs.push({ label: '时空术士', color: '#4488ff', detail: '套装' });
+    }
+  } catch(e) {}
+
+  // Artifact effects
+  const art = (game.sandboxEquipment || game.equipment).artifact;
+  if (art) {
+    if (art.artifactId === 'feather' && p.hp / p.maxHp > 0.8) {
+      buffs.push({ label: '缓落', color: '#ffcc44', detail: '增伤' });
+    }
+    if (art.artifactId === 'criticalFragment') {
+      const anyLow = p.skillCooldowns.some(cd => cd > 0 && cd < 3);
+      if (anyLow) buffs.push({ label: '临界', color: '#ff6644', detail: '增伤' });
+    }
+  }
+
+  if (buffs.length === 0) return;
+
+  const chipW = 90, chipH = 20, gap = 6;
+  const totalW = buffs.length * chipW + (buffs.length - 1) * gap;
+  const startX = W / 2 - totalW / 2;
+  const barY = H - 135;
+
+  for (let i = 0; i < buffs.length; i++) {
+    const b = buffs[i];
+    const cx = startX + i * (chipW + gap);
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.strokeStyle = b.color;
+    ctx.lineWidth = 1;
+    roundRect(ctx, cx, barY, chipW, chipH, 4);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = b.color;
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(b.label, cx + chipW / 2, barY + 12);
+    if (b.detail) {
+      ctx.fillStyle = '#888';
+      ctx.font = '8px sans-serif';
+      ctx.fillText(b.detail, cx + chipW / 2, barY + chipH - 2);
+    }
+  }
+}
+
 function renderHUD(){
   const W=canvas.width,H=canvas.height;
   const p=game.player;
@@ -931,6 +1027,23 @@ function renderHUD(){
     }
   }catch(e){/* ignore if calcPlayerStats fails here */}
 
+  renderBuffBar(W, H);
+
+  // Boss defeated indicator
+  if (game.bossDefeated) {
+    const bw = 240, bh = 28;
+    const bx = W / 2 - bw / 2, by = H - 145;
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 1;
+    roundRect(ctx, bx, by, bw, bh, 4);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Boss 已击败 · 按 Esc 返回', bx + bw / 2, by + bh / 2 + 4);
+  }
+
   const barCenterX=W/2;
   const barY=H-90;
   const iconSize=56;
@@ -989,14 +1102,23 @@ export function renderPauseMenu(){
   ctx.fillText('暂停',px+pw/2,py+40);
   ctx.font='13px sans-serif';
   ctx.fillStyle='#aaa';
-  ctx.fillText('确定要返回准备界面吗？',px+pw/2,py+75);
-  ctx.fillText('进度将会保存',px+pw/2,py+95);
+  if (game.bossDefeated) {
+    ctx.fillText('确定要返回准备界面吗？',px+pw/2,py+75);
+    ctx.fillStyle='#8f8';
+    ctx.fillText('Boss 已击败，战利品保留',px+pw/2,py+95);
+  } else {
+    ctx.fillStyle='#f88';
+    ctx.fillText('未击败 Boss，战利品将丢失！',px+pw/2,py+75);
+    ctx.fillStyle='#aaa';
+    ctx.fillText('确定要逃跑吗？',px+pw/2,py+95);
+  }
   const bw=100,bh=36;
   const bx1=px+pw/2-bw-12,by=py+120;
   const bx2=px+pw/2+12;
   pauseButtons=[
     {x:bx1,y:by,w:bw,h:bh,action:()=>{
       game.showPauseMenu=false;
+      if (!game.bossDefeated) game.backpack.length = 0;
       saveGame();
       game.screen='prepare';
     }},
@@ -1544,6 +1666,7 @@ function renderTestField() {
   renderDummies();
   renderProjectiles();
   renderSkillEffects();
+  renderSkillPreview();
   renderPlayer();
   renderParticles();
   renderFloatingNumbers();

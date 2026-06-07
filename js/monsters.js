@@ -266,6 +266,16 @@ function processMonsterDeaths(){
     gainExp(m.exp);
     game.kills++;
     game.soulCoins+=m.isBoss?10:1;
+    // Health globe drop
+    const globeChance = m.isBoss ? 1 : (m.isElite ? 0.6 : 0.2);
+    if (Math.random() < globeChance) {
+      game.healthGlobes.push({
+        x: m.x + (Math.random() - 0.5) * 30,
+        y: m.y + (Math.random() - 0.5) * 30,
+        healPct: m.isBoss ? 0.5 : (m.isElite ? 0.25 : 0.15),
+        bobPhase: Math.random() * Math.PI * 2,
+      });
+    }
     const burstColor=m.isBoss?'#ff0000':(m.isElite?'#ffaa00':'#ff6600');
     spawnParticles(m.x,m.y,m.isBoss?40:(m.isElite?25:12),burstColor,m.isBoss?200:120,m.isBoss?6:4);
     game.monsters.splice(i,1);

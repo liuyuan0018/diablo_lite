@@ -2,7 +2,7 @@
 // SECTION 11: EQUIPMENT
 // ============================================================
 import { game } from './game-state.js';
-import { SLOT_DEF, QUALITY_NAMES, QUALITY_COLORS, rollIlvl, rollStatValue, rollLegendaryPower, MAX_LEVEL, SET_DEFS, ARTIFACT_DEFS } from './config.js';
+import { SLOT_DEF, QUALITY_NAMES, QUALITY_COLORS, rollIlvl, rollStatValue, rollLegendaryPower, MAX_LEVEL, SET_DEFS, ARTIFACT_DEFS, BASE_PICKUP_RANGE } from './config.js';
 import { rand, randChoice, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { spawnParticles } from './particles.js';
@@ -95,7 +95,7 @@ export function tryDropEquipment(x,y,boss,stageIdx){
 
 export function updatePickup(dt){
   const p=game.player;
-  const range=calcPlayerStats().pickupRange;
+  const range=BASE_PICKUP_RANGE; // equipment pickup uses fixed base range
   for(let i=game.drops.length-1;i>=0;i--){
     const d=game.drops[i];
     if(d.expireTime&&game.time>d.expireTime){

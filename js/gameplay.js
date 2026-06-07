@@ -3,7 +3,7 @@
 // ============================================================
 import { game } from './game-state.js';
 import { DIFFICULTY, TEST_DIFF, TEST_STAGE, STAGES, MAP_W, MAP_H, SLOT_DEF, QUALITY_NAMES, QUALITY_COLORS, QUALITY_MULT } from './config.js';
-import { clamp, rand, randChoice } from './helpers.js';
+import { clamp, rand, randChoice, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { createMonster } from './monsters.js';
 import { spawnParticles } from './particles.js';
@@ -58,6 +58,7 @@ export function startTestStage(){
   game.particles=[];
   game.towers=[];
   game.drops=[];
+  game.healthGlobes=[];
   game.backpack.length=0;
   game.spawnTimer=0.3;
   game.eliteWaveTimer=TEST_DIFF.eliteEvery*0.3;
@@ -111,6 +112,7 @@ export function startGame(stageIndex){
   game.particles=[];
   game.towers=[];
   game.drops=[];
+  game.healthGlobes=[];
   game.backpack.length=0;
   game.spawnTimer=0.3;
   game.eliteWaveTimer=DIFFICULTY[stageIndex].eliteEvery*0.5;
@@ -159,6 +161,7 @@ export function startTestfield() {
   game.particles = [];
   game.towers = [];
   game.drops = [];
+  game.healthGlobes = [];
   game.showLoadoutPanel = true;
   game.loadoutTab = 'presets';
   enterTestfield();
@@ -280,6 +283,7 @@ export function gameLoop(timestamp){
     updateSkillEffects(dt);
     updateProjectiles(dt);
     updateParticles(dt);
+    updateHealthGlobes(dt);
     updateCamera(dt);
     // Process dummy projectile hits — convert _dummyHits to floating numbers
     for (const p of game.projectiles) {
@@ -302,6 +306,7 @@ export function gameLoop(timestamp){
     updateParticles(dt);
     updateTowers(dt);
     updatePickup(dt);
+    updateHealthGlobes(dt);
     updateCamera(dt);
     if(game.bossSpawned&&!game.bossDefeated){
       const bossAlive=game.monsters.some(m=>m.isBoss);
@@ -319,8 +324,6 @@ export function gameLoop(timestamp){
             if(eq)game.drops.push({x:game.player.x+rand(-100,100),y:game.player.y+rand(-100,100),...eq,bobPhase:Math.random()*Math.PI*2});
           }
         }
-        game.screen='victory';
-        game.bpScroll=0;game.groundScroll=0;
         saveGame();
       }
     }
@@ -386,4 +389,29 @@ function applyCustomLoadout() {
   game.player.bulletSpeed = stats.bulletSpeed;
   game.player.pickupRange = stats.pickupRange;
   game.player.fireRate = stats.fireRate;
+}
+
+function updateHealthGlobes(dt) {
+  const p = game.player;
+  const stats = calcPlayerStats(!!game.sandboxEquipment);
+  const range = stats.pickupRange;
+  for (let i = game.healthGlobes.length - 1; i >= 0; i--) {
+    const g = game.healthGlobes[i];
+    g.bobPhase += dt * 3;
+    const d = dist(p.x, p.y, g.x, g.y);
+    if (d < range) {
+      const speed = 400;
+      const dx = p.x - g.x;
+      const dy = p.y - g.y;
+      const dn = Math.sqrt(dx * dx + dy * dy) || 1;
+      g.x += (dx / dn) * speed * dt;
+      g.y += (dy / dn) * speed * dt;
+      if (dn < 20) {
+        const heal = Math.round(p.maxHp * g.healPct);
+        p.hp = Math.min(p.maxHp, p.hp + heal);
+        spawnParticles(p.x, p.y, 8, '#ff4444', 60, 2);
+        game.healthGlobes.splice(i, 1);
+      }
+    }
+  }
 }
