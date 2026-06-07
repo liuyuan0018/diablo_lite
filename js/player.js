@@ -18,21 +18,22 @@ export function damagePlayer(amount){
   p.hp-=dmg;
 }
 
-export function getLegendaryEffects(){
+export function getLegendaryEffects(sandbox){
   const fx={globalCDR:0,fireballDmg:0,pierce:0,blackholeSize:0,blackholeDur:0,blizzardSize:0,blizzardSlow:0,teleportCD:0};
-  for(const slot of Object.keys(game.equipment)){
-    const e=game.equipment[slot];
+  const eq=sandbox?(game.sandboxEquipment||game.equipment):game.equipment;
+  for(const slot of Object.keys(eq)){
+    const e=eq[slot];
     if(e&&e.power&&e.power.stat)fx[e.power.stat]=(fx[e.power.stat]||0)+e.power.value;
   }
   return fx;
 }
 
-export function calcPlayerStats(){
+export function calcPlayerStats(sandbox){
   const lv=game.player.level;
   const baseHP=100+(lv-1)*5;
   const baseATK=10+(lv-1)*2;
   let bHP=0,bATK=0,bCDR=0,bSpeed=0,bRange=0,bMove=0;
-  const eq=game.equipment;
+  const eq=sandbox?(game.sandboxEquipment||game.equipment):game.equipment;
   for(const slot of Object.keys(eq)){
     const e=eq[slot];
     if(!e||e.statValue===undefined)continue;
@@ -46,7 +47,7 @@ export function calcPlayerStats(){
     }
   }
   const bSpeedVal=BASE_BULLET_SPEED+bSpeed;
-  const fx=getLegendaryEffects();
+  const fx=getLegendaryEffects(sandbox);
 
   const sets = getSetEffects();
   let setDmgMult = 1;
