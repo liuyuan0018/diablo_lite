@@ -7,7 +7,7 @@ import { dist, clamp, rand, randChoice, angle } from './helpers.js';
 import { damagePlayer } from './player.js';
 import { spawnParticles } from './particles.js';
 import { getNextMonsterId } from './config.js';
-import { generateEquipment, tryDropEquipment, gainExp } from './equipment.js';
+import { generateEquipment, tryDropEquipment, gainExp, generateArtifact } from './equipment.js';
 
 export function createMonster(type,x,y,boss,elite,affix,stageIdx){
   const base=MONSTER_BASE[type];
@@ -181,9 +181,15 @@ export function updateMonsters(dt){
       for(const t of thresholds){
         if(m._lastDropThreshold>t&&hpRatio<=t){
           m._lastDropThreshold=t;
-          const slots=['weapon','helmet','armor','ring','amulet','boots'];
-          const eq=generateEquipment(randChoice(slots),true,game.stageIndex);
-          if(eq)game.drops.push({x:m.x+rand(-40,40),y:m.y+rand(-40,40),...eq,bobPhase:Math.random()*Math.PI*2,expireTime:game.time+3});
+          const slots=['weapon','helmet','armor','ring','amulet','boots','bracers','belt','artifact'];
+          const slot=randChoice(slots);
+          if(slot==='artifact'){
+            const art=generateArtifact(true,game.stageIndex);
+            if(art)game.drops.push({x:m.x+rand(-40,40),y:m.y+rand(-40,40),...art,bobPhase:Math.random()*Math.PI*2,expireTime:game.time+3});
+          }else{
+            const eq=generateEquipment(slot,true,game.stageIndex);
+            if(eq)game.drops.push({x:m.x+rand(-40,40),y:m.y+rand(-40,40),...eq,bobPhase:Math.random()*Math.PI*2,expireTime:game.time+3});
+          }
           spawnParticles(m.x,m.y,15,'#ffd700',120,4);
         }
       }

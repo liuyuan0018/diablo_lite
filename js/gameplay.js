@@ -7,7 +7,7 @@ import { clamp, rand, randChoice } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { createMonster } from './monsters.js';
 import { spawnParticles } from './particles.js';
-import { generateEquipment } from './equipment.js';
+import { generateEquipment, generateArtifact } from './equipment.js';
 import { saveGame } from './persistence.js';
 import { canvas, ctx } from './canvas.js';
 import { render, renderBackpackOverlay, renderPauseMenu, menuButtons, prepButtons, equipSlots, victoryButtons, deathButtons, pauseButtons, charButtons } from './renderer.js';
@@ -202,9 +202,15 @@ export function gameLoop(timestamp){
         game.bossDefeated=true;
         if(game.stageIndex<9)game.unlockedStages[game.stageIndex+1]=true;
         for(let i=0;i<4;i++){
-          const slots=['weapon','helmet','armor','ring','amulet','boots'];
-          const eq=generateEquipment(randChoice(slots),true,game.stageIndex);
-          if(eq)game.drops.push({x:game.player.x+rand(-100,100),y:game.player.y+rand(-100,100),...eq,bobPhase:Math.random()*Math.PI*2});
+          const slots=['weapon','helmet','armor','ring','amulet','boots','bracers','belt','artifact'];
+          const slot=randChoice(slots);
+          if(slot==='artifact'){
+            const art=generateArtifact(true,game.stageIndex);
+            if(art)game.drops.push({x:game.player.x+rand(-100,100),y:game.player.y+rand(-100,100),...art,bobPhase:Math.random()*Math.PI*2});
+          }else{
+            const eq=generateEquipment(slot,true,game.stageIndex);
+            if(eq)game.drops.push({x:game.player.x+rand(-100,100),y:game.player.y+rand(-100,100),...eq,bobPhase:Math.random()*Math.PI*2});
+          }
         }
         game.screen='victory';
         game.bpScroll=0;game.groundScroll=0;

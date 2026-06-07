@@ -2,7 +2,7 @@
 // SECTION 11: EQUIPMENT
 // ============================================================
 import { game } from './game-state.js';
-import { SLOT_DEF, QUALITY_NAMES, QUALITY_COLORS, rollIlvl, rollStatValue, rollLegendaryPower, MAX_LEVEL } from './config.js';
+import { SLOT_DEF, QUALITY_NAMES, QUALITY_COLORS, rollIlvl, rollStatValue, rollLegendaryPower, MAX_LEVEL, SET_DEFS, ARTIFACT_DEFS } from './config.js';
 import { rand, randChoice, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { spawnParticles } from './particles.js';
@@ -19,6 +19,20 @@ export function generateEquipment(slot,boss,stageIdx){
     color:QUALITY_COLORS[quality],
     stat:SLOT_DEF[slot].stat,
   };
+  if(quality===4){
+    const setKeys=Object.keys(SET_DEFS);
+    const setName=randChoice(setKeys);
+    const def=SET_DEFS[setName];
+    const validSlot=randChoice(def.parts);
+    const newStatValue=rollStatValue(validSlot,quality,ilvl);
+    eq.slot=validSlot;
+    eq.statValue=newStatValue;
+    eq.stat=SLOT_DEF[validSlot].stat;
+    eq.setName=setName;
+    eq.color=QUALITY_COLORS[4];
+    eq.name=QUALITY_NAMES[4]+' '+def.name+' '+SLOT_DEF[validSlot].name+' ['+ilvl+']';
+    eq.power=null;
+  }
   if(quality===3){
     eq.power=rollLegendaryPower(ilvl);
     eq.name+=' ['+ilvl+']';
@@ -28,25 +42,50 @@ export function generateEquipment(slot,boss,stageIdx){
   return eq;
 }
 
+export function generateArtifact(boss,stageIdx){
+  const ilvl=rollIlvl(stageIdx);
+  const quality=boss?rollBossQuality():rollQuality();
+  const artDef=randChoice(ARTIFACT_DEFS);
+  return {
+    slot:'artifact',
+    quality:Math.min(quality,3),
+    ilvl,
+    statValue:0,
+    name:QUALITY_NAMES[Math.min(quality,3)]+artDef.name+' ['+ilvl+']',
+    color:QUALITY_COLORS[Math.min(quality,3)],
+    stat:'artifact',
+    power:null,
+    artifactId:artDef.id,
+    setName:artDef.setName,
+  };
+}
+
 export function rollQuality(){
   const r=Math.random();
-  if(r<0.45)return 0;
-  if(r<0.75)return 1;
-  if(r<0.93)return 2;
-  return 3;
+  if(r<0.40)return 0;
+  if(r<0.68)return 1;
+  if(r<0.85)return 2;
+  if(r<0.96)return 3;
+  return 4;
 }
 
 export function rollBossQuality(){
   const r=Math.random();
-  if(r<0.5)return 2;
-  return 3;
+  if(r<0.40)return 2;
+  if(r<0.82)return 3;
+  return 4;
 }
 
 export function getSlotName(slot){ return SLOT_DEF[slot]?SLOT_DEF[slot].name:slot; }
 
 export function tryDropEquipment(x,y,boss,stageIdx){
-  const slots=['weapon','helmet','armor','ring','amulet','boots'];
+  const slots=['weapon','helmet','armor','ring','amulet','boots','bracers','belt','artifact'];
   const slot=randChoice(slots);
+  if(slot==='artifact'){
+    const art=generateArtifact(boss,stageIdx);
+    if(art)game.drops.push({x,y,...art,bobPhase:Math.random()*Math.PI*2});
+    return;
+  }
   const eq=generateEquipment(slot,boss,stageIdx);
   if(eq){
     game.drops.push({x,y,...eq, bobPhase:Math.random()*Math.PI*2});
