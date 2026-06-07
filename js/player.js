@@ -67,12 +67,14 @@ export function calcPlayerStats(){
 
   // Artifact effects
   let artifactAtk = scaledAtk;
+  let moveMult = 1;
   const art = game.equipment.artifact;
   if (art && art.artifactId === 'feather') {
     const hpRatio = game.player.hp / Math.max(1, game.player.maxHp);
     if (hpRatio > 0.8) {
       const ratio = Math.min(1, (hpRatio - 0.8) / 0.2);
       artifactAtk = Math.round(scaledAtk * (1 + ratio * 0.25));
+      moveMult = 1 + ratio * 0.20;
     }
   }
   if (art && art.artifactId === 'criticalFragment') {
@@ -82,7 +84,7 @@ export function calcPlayerStats(){
     }
   }
 
-  return {maxHP: baseHP + bHP, atk: artifactAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects()};
+  return {maxHP: baseHP + bHP, atk: artifactAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, moveMult, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects()};
 }
 
 export function updatePlayer(dt){
@@ -105,8 +107,10 @@ export function updatePlayer(dt){
   if(game.keys.d)mx+=1;
   if(mx!==0||my!==0){
     const n=normalize(mx,my);
-    p.x=clamp(p.x+n.x*game.moveSpeed*dt,PLAYER_RADIUS,MAP_W-PLAYER_RADIUS);
-    p.y=clamp(p.y+n.y*game.moveSpeed*dt,PLAYER_RADIUS,MAP_H-PLAYER_RADIUS);
+    const statsForMove = calcPlayerStats();
+    const effectiveSpeed = game.moveSpeed * (statsForMove.moveMult || 1);
+    p.x=clamp(p.x+n.x*effectiveSpeed*dt,PLAYER_RADIUS,MAP_W-PLAYER_RADIUS);
+    p.y=clamp(p.y+n.y*effectiveSpeed*dt,PLAYER_RADIUS,MAP_H-PLAYER_RADIUS);
   }
 
   // Chronomancer 4-piece: standing in singularity field resets teleport CD
