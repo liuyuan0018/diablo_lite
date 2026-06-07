@@ -3,7 +3,7 @@
 // ============================================================
 import { game, getActiveCharacter, syncPlayerToChar, syncCharToPlayer, createCharacter } from './game-state.js';
 import { canvas, ctx } from './canvas.js';
-import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS, ARTIFACT_DEFS } from './config.js';
+import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS, ARTIFACT_DEFS, LEGENDARY_POWERS, QUALITY_MULT } from './config.js';
 import { formatTime, lerp, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { saveGame } from './persistence.js';
