@@ -57,8 +57,10 @@ export function calcPlayerStats(){
     setDmgReduc += game.player.elementalistStacks * 0.10;
   }
 
-  const fireRate=BASE_FIRE_RATE+(bSpeedVal-BASE_BULLET_SPEED)*0.01;
-  return{maxHP:baseHP+bHP,atk:Math.round(baseATK+bATK*(1+fx.fireballDmg/100)),cdr:Math.min(bCDR+fx.globalCDR,60),bulletSpeed:bSpeedVal,pickupRange:BASE_PICKUP_RANGE+bRange,movespeed:bMove,fireRate,legendary:fx,sets,setDmgMult,setDmgReduc};
+  const fireRate = BASE_FIRE_RATE + (bSpeedVal - BASE_BULLET_SPEED) * 0.01;
+  const finalAtk = Math.round(baseATK + bATK * (1 + fx.fireballDmg / 100));
+  const scaledAtk = Math.round(finalAtk * setDmgMult);
+  return {maxHP: baseHP + bHP, atk: scaledAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc};
 }
 
 export function updatePlayer(dt){
