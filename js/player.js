@@ -64,7 +64,25 @@ export function calcPlayerStats(){
   const fireRate = BASE_FIRE_RATE + (bSpeedVal - BASE_BULLET_SPEED) * 0.01;
   const finalAtk = Math.round(baseATK + bATK * (1 + fx.fireballDmg / 100));
   const scaledAtk = Math.round(finalAtk * setDmgMult);
-  return {maxHP: baseHP + bHP, atk: scaledAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects()};
+
+  // Artifact effects
+  let artifactAtk = scaledAtk;
+  const art = game.equipment.artifact;
+  if (art && art.artifactId === 'feather') {
+    const hpRatio = game.player.hp / Math.max(1, game.player.maxHp);
+    if (hpRatio > 0.8) {
+      const ratio = Math.min(1, (hpRatio - 0.8) / 0.2);
+      artifactAtk = Math.round(scaledAtk * (1 + ratio * 0.25));
+    }
+  }
+  if (art && art.artifactId === 'criticalFragment') {
+    const anyLowCD = game.player.skillCooldowns.some(cd => cd > 0 && cd < 3);
+    if (anyLowCD) {
+      artifactAtk = Math.round(scaledAtk * 1.30);
+    }
+  }
+
+  return {maxHP: baseHP + bHP, atk: artifactAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects()};
 }
 
 export function updatePlayer(dt){

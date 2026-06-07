@@ -13,6 +13,20 @@ export function updateProjectiles(dt){
     const p=game.projectiles[i];
     p.x+=p.vx*dt;
     p.y+=p.vy*dt;
+    // Tracking projectile (harmonyEye artifact)
+    if (p.tracking) {
+      const target = p.tracking;
+      if (target.hp > 0) {
+        const dx = target.x - p.x;
+        const dy = target.y - p.y;
+        const d = Math.sqrt(dx*dx + dy*dy) || 1;
+        const speed = p.trackingSpeed || 200;
+        p.vx = (dx / d) * speed;
+        p.vy = (dy / d) * speed;
+      } else {
+        p.tracking = null; // target dead, fly straight
+      }
+    }
     p.life=(p.life||2)-dt;
     if(p.x<0||p.x>MAP_W||p.y<0||p.y>MAP_H||p.life<=0){
       game.projectiles.splice(i,1);continue;

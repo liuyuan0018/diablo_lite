@@ -132,19 +132,41 @@ export function castSkill(wx,wy){
   // Harmony Burst trigger — at 3 stacks, spawn meteors
   if (hasElementalist && castElement && p.elementalistStacks === 3) {
     const stats = calcPlayerStats();
-    for (let i = 0; i < 3; i++) {
-      const spreadAngle = (i - 1) * 0.5;
-      const mx = wx + Math.cos(spreadAngle) * 60;
-      const my = wy + Math.sin(spreadAngle) * 60;
-      game.skillEffects.push({
-        type: 'harmonyMeteor',
-        x: mx, y: my,
-        radius: 80,
-        timer: 0.5, duration: 0.5,
-        damage: stats.atk * 3,
-      });
-      spawnParticles(mx, my, 20, ['#ff4400','#4488ff','#aa44ff'][i], 100, 5);
+    const hasHarmonyEye = game.equipment.artifact && game.equipment.artifact.artifactId === 'harmonyEye';
+
+    if (hasHarmonyEye) {
+      // Single-target tracking meteor instead of 3 AoE meteors
+      let nearest = null, nearDist = 500;
+      for (const m of game.monsters) {
+        const d = dist(wx, wy, m.x, m.y);
+        if (d < nearDist) { nearDist = d; nearest = m; }
+      }
+      if (nearest) {
+        game.projectiles.push({
+          x: p.x, y: p.y,
+          vx: 0, vy: 0,
+          damage: stats.atk * 3 * 1.5, // +50% damage
+          size: 10, isEnemy: false, color: '#ffd700',
+          life: 3, tracking: nearest, trackingSpeed: 300,
+        });
+        spawnParticles(p.x, p.y, 20, '#ffd700', 150, 5);
+      }
+    } else {
+      for (let i = 0; i < 3; i++) {
+        const spreadAngle = (i - 1) * 0.5;
+        const mx = wx + Math.cos(spreadAngle) * 60;
+        const my = wy + Math.sin(spreadAngle) * 60;
+        game.skillEffects.push({
+          type: 'harmonyMeteor',
+          x: mx, y: my,
+          radius: 80,
+          timer: 0.5, duration: 0.5,
+          damage: stats.atk * 3,
+        });
+        spawnParticles(mx, my, 20, ['#ff4400','#4488ff','#aa44ff'][i], 100, 5);
+      }
     }
+
     p.elementalistStacks = 0;
     p.elementalistLastElement = null;
 
