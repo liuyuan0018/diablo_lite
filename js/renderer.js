@@ -8,6 +8,7 @@ import { formatTime, lerp, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { saveGame } from './persistence.js';
 import { getSlotName } from './equipment.js';
+import { startTestfield } from './gameplay.js';
 
 // Button arrays — populated each render frame, read by gameplay processClick
 export let menuButtons=[];
@@ -209,6 +210,26 @@ function renderPrepare(){
   if(game.hoveredItem && !game.selectedEquipSlot){
     renderCompareTooltip(game.hoveredItem);
   }
+  // Testfield button
+  const tfBtnW = 200, tfBtnH = 44;
+  const tfBtnX = W / 2 - tfBtnW / 2;
+  const tfBtnY = H - 265;
+  const tfHover = game.mouseX >= tfBtnX && game.mouseX <= tfBtnX + tfBtnW && game.mouseY >= tfBtnY && game.mouseY <= tfBtnY + tfBtnH;
+  ctx.fillStyle = tfHover ? '#2a2a1a' : '#1a1a0a';
+  ctx.strokeStyle = tfHover ? '#ffd700' : '#886600';
+  ctx.lineWidth = tfHover ? 2 : 1;
+  roundRect(ctx, tfBtnX, tfBtnY, tfBtnW, tfBtnH, 6);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ffd700';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('⚔ 测试场', tfBtnX + tfBtnW / 2, tfBtnY + tfBtnH / 2 + 6);
+
+  prepButtons.push({
+    x: tfBtnX, y: tfBtnY, w: tfBtnW, h: tfBtnH,
+    text: '测试场',
+    action: () => { startTestfield(); },
+  });
   const stageY=H-210;
   ctx.font='bold 18px sans-serif';
   ctx.fillStyle='#ffd700';
