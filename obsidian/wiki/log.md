@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-07] save | 测试场 UI 完善 + 装备弹窗套装/法器显示
+- 类型: concept (update)
+- 文件: wiki/concepts/Build-Testfield.md (update)
+- 来源: 测试场 UI 修复 — 自动攻击目标扩展至木桩、复用准备界面装备网格、配装面板/DPS 弹窗移至左侧、悬停对比弹窗显示套装效果详情（desc + detail）和法器描述
+
 ## [2026-06-07] save | Build 测试场
 - 类型: concept (new) + update × 3
 - 文件: wiki/concepts/Build-Testfield.md (new)

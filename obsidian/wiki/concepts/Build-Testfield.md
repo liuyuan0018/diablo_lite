@@ -4,7 +4,7 @@ title: "Build 测试场"
 created: 2026-06-07
 updated: 2026-06-07
 tags: [testfield, build, testing, training-dummy, dps]
-status: developing
+status: mature
 related: ["[[concepts/Build-Constraint-System]]", "[[concepts/Build]]", "[[concepts/Equipment]]", "[[meta/GameArchitecture]]"]
 ---
 

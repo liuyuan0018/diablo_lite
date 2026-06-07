@@ -185,6 +185,9 @@
   },
   "active": "b559cb0012b6c20f",
   "lastOpenFiles": [
+    "wiki/hot.md.tmp.53556.fc30f04d80ec",
+    "wiki/log.md.tmp.53556.6cea10ca5f54",
+    "wiki/concepts/Build-Testfield.md.tmp.53556.65474127ff43",
     "wiki/concepts/Build-Constraint-System.md",
     "wiki/hot.md.tmp.53556.011201bddd97",
     "wiki/log.md.tmp.53556.6c23b873f920",
@@ -195,9 +198,7 @@
     "wiki/meta/lint-report-2026-06-07.md.tmp.25560.28c078153f64",
     "wiki/meta/lint-report-2026-06-07.md.tmp.25560.03ce1aca89f6",
     "wiki/log.md.tmp.61236.e814c5df01dd",
-    "wiki/index.md.tmp.61236.2c14e3ee5071",
     "wiki/questions/Research-D4-Sorcerer-Uniques.md",
-    "wiki/questions/Research-D4-Sorcerer-Uniques.md.tmp.61236.823e91741bec",
     "wiki/concepts/D4-Uniques-Build-Relationship.md",
     "wiki/entities/Chantodo-Set.md",
     "wiki/entities/The-Magistrate.md",
@@ -219,7 +220,6 @@
     "wiki/log.md",
     "怪物系统.md",
     "Build 系统.md",
-    "装备系统.md",
-    "wiki/questions/Research-D3-Wizard-Builds.md"
+    "装备系统.md"
   ]
 }
