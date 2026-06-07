@@ -1660,6 +1660,8 @@ function renderLoadoutPanel() {
   } else {
     renderCustomTab(px, py + 65, pw);
   }
+  // Equipment summary at panel bottom
+  renderEquipSummary(px, py + ph - 125, pw);
 }
 
 function renderPresetsTab(px, py, pw) {
@@ -1746,6 +1748,53 @@ function renderCustomTab(px, py, pw) {
   ctx.fillText('应用配置', applyX + applyW / 2, applyY + applyH / 2 + 5);
 
   testfieldButtons.push({ x: applyX, y: applyY, w: applyW, h: applyH, action: 'applyCustom' });
+}
+
+function renderEquipSummary(px, py, pw) {
+  const slots = ['weapon', 'helmet', 'armor', 'ring', 'amulet', 'boots', 'bracers', 'belt', 'artifact'];
+  const slotNames = ['武器', '头盔', '护甲', '戒指', '项链', '靴子', '护腕', '腰带', '法器'];
+
+  // Divider
+  ctx.strokeStyle = '#335';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(px + 8, py);
+  ctx.lineTo(px + pw - 8, py);
+  ctx.stroke();
+
+  // Title
+  ctx.fillStyle = '#888';
+  ctx.font = 'bold 10px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('当前装备', px + pw / 2, py + 14);
+
+  // Compact 9-slot grid
+  const cols = 3, rows = 3;
+  const cellW = (pw - 20) / cols, cellH = 30;
+  const gridX = px + 6, gridY = py + 18;
+
+  for (let i = 0; i < slots.length; i++) {
+    const col = i % cols, row = Math.floor(i / cols);
+    const cx = gridX + col * cellW, cy = gridY + row * cellH;
+    const eq = game.sandboxEquipment ? game.sandboxEquipment[slots[i]] : game.equipment[slots[i]];
+
+    ctx.fillStyle = eq ? (QUALITY_COLORS[eq.quality] || '#aaa') : '#333';
+    ctx.font = 'bold 8px sans-serif';
+    ctx.textAlign = 'left';
+    const label = slotNames[i] + (eq ? '' : ' 空');
+    ctx.fillText(label, cx + 2, cy + 12);
+
+    if (eq) {
+      // Show item color indicator
+      ctx.fillStyle = QUALITY_COLORS[eq.quality] || '#aaa';
+      ctx.fillRect(cx + 2, cy + 16, 8, 8);
+      // Truncated name
+      ctx.fillStyle = '#ccc';
+      ctx.font = '7px sans-serif';
+      const shortName = eq.name ? eq.name.replace(/\[70\]/, '').substring(0, 10) : '';
+      ctx.fillText(shortName, cx + 13, cy + 24);
+    }
+  }
 }
 
 function renderLoadoutToggle() {
