@@ -204,7 +204,6 @@ export function updateSkillEffects(dt){
         break;
       }
       case 'singularitySpawn': {
-        e.timer -= dt;
         if (e.timer <= 0) {
           const hasFieldGen = game.equipment.artifact && game.equipment.artifact.artifactId === 'fieldGenerator';
           const fieldDuration = hasFieldGen ? 7 : 4;
@@ -219,7 +218,6 @@ export function updateSkillEffects(dt){
         break;
       }
       case 'singularityImplosion': {
-        e.timer -= dt;
         const progress = 1 - e.timer / e.duration;
         // Pull enemies inward during the charge-up
         for (const m of game.monsters) {
