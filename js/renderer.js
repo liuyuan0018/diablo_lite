@@ -125,9 +125,9 @@ function renderPrepare(){
   ];
 
   const stats=calcPlayerStats();
-  const px=40,py=100,pw=280,ph=240;
+  const px2=40,py2=100,pw2=280,ph2=240;
   ctx.fillStyle='#111122';ctx.strokeStyle='#334';ctx.lineWidth=1;
-  roundRect(ctx,px,py,pw,ph,8);
+  roundRect(ctx,px2,py2,pw2,ph2,8);
   ctx.fill();ctx.stroke();
   ctx.textAlign='left';
   ctx.font='14px sans-serif';
@@ -143,61 +143,10 @@ function renderPrepare(){
   ];
   lines.forEach((txt,i)=>{
     ctx.fillStyle=i===0?'#ffd700':'#ccc';
-    ctx.fillText(txt,px+15,py+25+i*28);
+    ctx.fillText(txt,px2+15,py2+25+i*28);
   });
   const ex=W-320,ey=100,ew=280,eh=260;
-  ctx.fillStyle='#111122';ctx.strokeStyle='#334';ctx.lineWidth=1;
-  roundRect(ctx,ex,ey,ew,eh,8);
-  ctx.fill();ctx.stroke();
-  ctx.textAlign='center';
-  ctx.font='bold 16px sans-serif';
-  ctx.fillStyle='#aaa';
-  ctx.fillText('装备',ex+ew/2,ey+25);
-  const slots=['weapon','helmet','armor','ring','amulet','boots','bracers','belt','artifact'];
-  const slotNames=['武器','头盔','护甲','戒指','项链','靴子','护腕','腰带','法器'];
-  const cols=3,rows=3;
-  const cellW=80,cellH=60;
-  const gridX=ex+(ew-cols*cellW)/2;
-  const gridY=ey+40;
-  equipSlots=[];
-  for(let i=0;i<9;i++){
-    const col=i%cols,row=Math.floor(i/cols);
-    const cx=gridX+col*cellW,cy=gridY+row*cellH;
-    ctx.fillStyle='#1a1a2a';ctx.strokeStyle='#334';ctx.lineWidth=1;
-    roundRect(ctx,cx+2,cy+2,cellW-4,cellH-4,4);
-    ctx.fill();ctx.stroke();
-    ctx.textAlign='center';
-    ctx.font='11px sans-serif';
-    ctx.fillStyle='#666';
-    ctx.fillText(slotNames[i],cx+cellW/2,cy+18);
-    const eq=game.equipment[slots[i]];
-    if(eq){
-      ctx.font='bold 11px sans-serif';
-      if(eq.quality===4){
-        ctx.fillStyle='#44ff44';
-        ctx.fillText('【套装】'+eq.name,cx+cellW/2,cy+35);
-      }else{
-        ctx.fillStyle=QUALITY_COLORS[eq.quality]||'#aaa';
-        ctx.fillText(eq.name,cx+cellW/2,cy+35);
-      }
-      ctx.fillStyle='#888';
-      ctx.font='10px sans-serif';
-      const slotCfg={weapon:['攻',5],helmet:['CD',2],armor:['命',15],ring:['速',20],amulet:['拾',8],boots:['闪',0],bracers:['攻',5],belt:['命',15],artifact:['器',0]};
-      const[sn,base]=slotCfg[slots[i]]||['?',0];
-      const val=base+base*eq.quality;
-      ctx.fillText(sn+(val>0?'+'+val:''),cx+cellW/2,cy+52);
-    }else{
-      ctx.fillStyle='#444';
-      ctx.font='11px sans-serif';
-      ctx.fillText('空',cx+cellW/2,cy+40);
-    }
-    if(game.mouseX>=cx+2&&game.mouseX<=cx+cellW-2&&game.mouseY>=cy+2&&game.mouseY<=cy+cellH-2){
-      ctx.strokeStyle='#ffd700';ctx.lineWidth=2;
-      roundRect(ctx,cx+2,cy+2,cellW-4,cellH-4,4);ctx.stroke();
-      if(eq)game.hoveredItem=eq;
-    }
-    equipSlots.push({x:cx+2,y:cy+2,w:cellW-4,h:cellH-4,slot:slots[i]});
-  }
+  renderEquipGrid(ex, ey, ew, eh, game.equipment, equipSlots, prepButtons);
   prepButtons=[];
   for(const b of charBarBtns)prepButtons.push(b);
   if(game.showCharSelect){
@@ -1514,6 +1463,11 @@ function renderTestField() {
   renderFloatingNumbers();
   renderDamageHUD();
   renderHUD();
+  // Equipment grid on right side (reused from prepare screen)
+  const eqW = 290, eqH = 300;
+  const eqX = W - eqW - 10, eqY = 50;
+  let testfieldEquipSlots = [];
+  renderEquipGrid(eqX, eqY, eqW, eqH, game.sandboxEquipment, testfieldEquipSlots, testfieldButtons);
   if (game.showLoadoutPanel) renderLoadoutPanel();
   renderLoadoutToggle();
 }
@@ -1624,7 +1578,7 @@ function renderDamageHUD() {
 
 function renderLoadoutPanel() {
   const W = canvas.width, H = canvas.height;
-  const pw = 320, ph = H - 80, px = W - pw - 10, py = 50;
+  const pw = 320, ph = H - 80, px = 10, py = 50;
 
   ctx.fillStyle = 'rgba(10, 10, 25, 0.95)';
   ctx.strokeStyle = '#445';
@@ -1660,8 +1614,6 @@ function renderLoadoutPanel() {
   } else {
     renderCustomTab(px, py + 65, pw);
   }
-  // Equipment summary at panel bottom
-  renderEquipSummary(px, py + ph - 125, pw);
 }
 
 function renderPresetsTab(px, py, pw) {
@@ -1750,56 +1702,9 @@ function renderCustomTab(px, py, pw) {
   testfieldButtons.push({ x: applyX, y: applyY, w: applyW, h: applyH, action: 'applyCustom' });
 }
 
-function renderEquipSummary(px, py, pw) {
-  const slots = ['weapon', 'helmet', 'armor', 'ring', 'amulet', 'boots', 'bracers', 'belt', 'artifact'];
-  const slotNames = ['武器', '头盔', '护甲', '戒指', '项链', '靴子', '护腕', '腰带', '法器'];
-
-  // Divider
-  ctx.strokeStyle = '#335';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(px + 8, py);
-  ctx.lineTo(px + pw - 8, py);
-  ctx.stroke();
-
-  // Title
-  ctx.fillStyle = '#888';
-  ctx.font = 'bold 10px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('当前装备', px + pw / 2, py + 14);
-
-  // Compact 9-slot grid
-  const cols = 3, rows = 3;
-  const cellW = (pw - 20) / cols, cellH = 30;
-  const gridX = px + 6, gridY = py + 18;
-
-  for (let i = 0; i < slots.length; i++) {
-    const col = i % cols, row = Math.floor(i / cols);
-    const cx = gridX + col * cellW, cy = gridY + row * cellH;
-    const eq = game.sandboxEquipment ? game.sandboxEquipment[slots[i]] : game.equipment[slots[i]];
-
-    ctx.fillStyle = eq ? (QUALITY_COLORS[eq.quality] || '#aaa') : '#333';
-    ctx.font = 'bold 8px sans-serif';
-    ctx.textAlign = 'left';
-    const label = slotNames[i] + (eq ? '' : ' 空');
-    ctx.fillText(label, cx + 2, cy + 12);
-
-    if (eq) {
-      // Show item color indicator
-      ctx.fillStyle = QUALITY_COLORS[eq.quality] || '#aaa';
-      ctx.fillRect(cx + 2, cy + 16, 8, 8);
-      // Truncated name
-      ctx.fillStyle = '#ccc';
-      ctx.font = '7px sans-serif';
-      const shortName = eq.name ? eq.name.replace(/\[70\]/, '').substring(0, 10) : '';
-      ctx.fillText(shortName, cx + 13, cy + 24);
-    }
-  }
-}
-
 function renderLoadoutToggle() {
   const W = canvas.width;
-  const btnSize = 24, btnX = W - btnSize - 10, btnY = 50;
+  const btnSize = 24, btnX = 10 + 320 + 2, btnY = 10;
   const hover = game.mouseX >= btnX && game.mouseX <= btnX + btnSize && game.mouseY >= btnY && game.mouseY <= btnY + btnSize;
   ctx.fillStyle = hover ? '#334' : '#223';
   ctx.strokeStyle = hover ? '#fff' : '#556';
@@ -1813,7 +1718,61 @@ function renderLoadoutToggle() {
   testfieldButtons.push({ x: btnX, y: btnY, w: btnSize, h: btnSize, action: 'togglePanel' });
 }
 
-// --- Button / Shape Helpers ---
+// --- Helpers ---
+
+function renderEquipGrid(ex, ey, ew, eh, equipSource, slotsArray, buttonsArray) {
+  const slots=['weapon','helmet','armor','ring','amulet','boots','bracers','belt','artifact'];
+  const slotNames=['武器','头盔','护甲','戒指','项链','靴子','护腕','腰带','法器'];
+  const slotCfg={weapon:['攻',5],helmet:['CD',2],armor:['命',15],ring:['速',20],amulet:['拾',8],boots:['闪',0],bracers:['攻',5],belt:['命',15],artifact:['器',0]};
+  ctx.fillStyle='#111122';ctx.strokeStyle='#334';ctx.lineWidth=1;
+  roundRect(ctx,ex,ey,ew,eh,8);
+  ctx.fill();ctx.stroke();
+  ctx.textAlign='center';
+  ctx.font='bold 14px sans-serif';
+  ctx.fillStyle='#aaa';
+  ctx.fillText('装备',ex+ew/2,ey+22);
+  const cols=3,rows=3;
+  const cellW=Math.floor((ew-12)/cols),cellH=Math.floor((eh-36)/rows);
+  const gridX=ex+(ew-cols*cellW)/2;
+  const gridY=ey+28;
+  for(let i=0;i<9;i++){
+    const col=i%cols,row=Math.floor(i/cols);
+    const cx=gridX+col*cellW,cy=gridY+row*cellH;
+    ctx.fillStyle='#1a1a2a';ctx.strokeStyle='#334';ctx.lineWidth=1;
+    roundRect(ctx,cx+2,cy+2,cellW-4,cellH-4,4);
+    ctx.fill();ctx.stroke();
+    ctx.textAlign='center';
+    ctx.font='10px sans-serif';
+    ctx.fillStyle='#666';
+    ctx.fillText(slotNames[i],cx+cellW/2,cy+15);
+    const eq=equipSource[slots[i]];
+    if(eq){
+      ctx.font='bold 10px sans-serif';
+      if(eq.quality===4){
+        ctx.fillStyle='#44ff44';
+        ctx.fillText('【套装】',cx+cellW/2,cy+28);
+      }else{
+        ctx.fillStyle=QUALITY_COLORS[eq.quality]||'#aaa';
+        ctx.fillText(eq.name.replace(/\[70\]/,''),cx+cellW/2,cy+28);
+      }
+      ctx.fillStyle='#888';
+      ctx.font='9px sans-serif';
+      const[sn,base]=slotCfg[slots[i]]||['?',0];
+      const val=base+base*eq.quality;
+      ctx.fillText(sn+(val>0?'+'+val:''),cx+cellW/2,cy+42);
+    }else{
+      ctx.fillStyle='#444';
+      ctx.font='10px sans-serif';
+      ctx.fillText('空',cx+cellW/2,cy+30);
+    }
+    if(game.mouseX>=cx+2&&game.mouseX<=cx+cellW-2&&game.mouseY>=cy+2&&game.mouseY<=cy+cellH-2){
+      ctx.strokeStyle='#ffd700';ctx.lineWidth=2;
+      roundRect(ctx,cx+2,cy+2,cellW-4,cellH-4,4);ctx.stroke();
+      if(eq)game.hoveredItem=eq;
+    }
+    slotsArray.push({x:cx+2,y:cy+2,w:cellW-4,h:cellH-4,slot:slots[i]});
+  }
+}
 export function drawButton(x,y,w,h,text,bgColor,textColor,borderColor){
   const hover=game.mouseX>=x&&game.mouseX<=x+w&&game.mouseY>=y&&game.mouseY<=y+h;
   ctx.fillStyle=hover?'#3a3a4a':bgColor;
