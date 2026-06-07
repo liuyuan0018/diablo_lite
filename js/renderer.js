@@ -1170,7 +1170,6 @@ export function renderCompareTooltip(hoveredItem){
       ctx.fillText(setInfo.four.detail, sx, sy+32+seh*2.45);
       ctx.textAlign='center';
     }
-    const artInfo=equipped.artifactId&&ARTIFACT_DEFS.find(a=>a.id===equipped.artifactId);
     if(artInfo){
       const ay=setInfo?ty+220:(equipped.power?ty+132:ty+100);
       ctx.fillStyle='#ffd700';ctx.font='bold 10px sans-serif';
