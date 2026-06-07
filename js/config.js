@@ -61,9 +61,9 @@ export const SKILL_CONFIG = [
   { name:'暴雪', icon:'❄', baseCD:15, desc:'Blizzard' },
 ];
 
-export const QUALITY_NAMES = ['普通','魔法','稀有','传说'];
-export const QUALITY_COLORS = ['#aaaaaa','#4488ff','#ffd700','#ff6600'];
-export const QUALITY_MULT = [1, 1.4, 1.9, 2.5];
+export const QUALITY_NAMES = ['普通','魔法','稀有','传说','套装'];
+export const QUALITY_COLORS = ['#aaaaaa','#4488ff','#ffd700','#ff6600','#44ff44'];
+export const QUALITY_MULT = [1, 1.4, 1.9, 2.5, 2.5]; // set = legendary mult
 export const AFFIX_COLORS = { fast:'#ffd700', split:'#44ff44', explode:'#ff4444', vampiric:'#aa44ff', shielded:'#4488ff' };
 export const MAX_LEVEL = 70;
 
@@ -77,6 +77,9 @@ export const SLOT_DEF = {
   ring:{ stat:'bulletSpeed', name:'戒指', base:30, desc:'弹道速度' },
   amulet:{ stat:'pickupRange', name:'项链', base:12, desc:'拾取范围' },
   boots:{ stat:'movespeed', name:'靴子', base:0, desc:'移动速度', legendary:true },
+  bracers:{ stat:'atk', name:'护腕', base:8, desc:'攻击力' },
+  belt:{ stat:'maxHp', name:'腰带', base:20, desc:'最大生命' },
+  artifact:{ stat:'artifact', name:'法器', base:0, desc:'特殊效果', legendary:true },
 };
 
 export const LEGENDARY_POWERS = [
@@ -88,6 +91,51 @@ export const LEGENDARY_POWERS = [
   { name:'火焰风暴', desc:'火球伤害+{v}%', min:15, max:50, stat:'fireballDmg' },
   { name:'急冻光环', desc:'暴风雪减速效果+{v}%', min:10, max:30, stat:'blizzardSlow' },
   { name:'虚空行者', desc:'传送冷却-{v}秒', min:1, max:4, stat:'teleportCD' },
+];
+
+export const SET_DEFS = {
+  elementalist: {
+    name: '元素使', parts: ['bracers','belt','helmet','boots'],
+    two: { desc: '元素印记', detail: '交替使用不同元素技能获得谐律层数，每层+15%技能伤害，重复归零' },
+    three: { desc: '谐律爆发', detail: '3层时触发三色陨石AOE' },
+    four: { desc: '谐律护体', detail: '每层+10%减伤，爆发后留元素光环(200px,+25%元素易伤)' },
+  },
+  chronomancer: {
+    name: '时空术士', parts: ['bracers','belt','armor','ring'],
+    two: { desc: '力场掌控', detail: '黑洞半径+30%，结束后留奇点力场(220px,4s,减速60%,+20%易伤)' },
+    three: { desc: '坍缩奇点', detail: '力场上放暴风雪触发内爆AOE' },
+    four: { desc: '时空大师', detail: '站力场内2s重置传送CD，坍缩后全技能-3s CD' },
+  },
+};
+
+export const SYNERGY_DEFS = [
+  {
+    id: 'moltenCore', name: '熔火之心',
+    requires: ['pierce','fireballDmg'],
+    desc: '火球每穿透一个敌人伤害+10%。穿透≥3点燃目标(3s,ATK×0.5/s)',
+  },
+  {
+    id: 'deepFrost', name: '深寒领域',
+    requires: ['blizzardSize','blizzardSlow'],
+    desc: '暴风雪内减速>70%的敌人冻结1.5s(每4s一次)',
+  },
+  {
+    id: 'fireIce', name: '火冰相激',
+    requires: ['pierce','blizzardSize'],
+    desc: '火球穿过暴风雪区域获得冰火双属性，对冻结目标伤害×2',
+  },
+  {
+    id: 'temporalResonance', name: '时空共鸣',
+    requires: ['globalCDR','teleportCD'],
+    desc: '传送后2s内下一个非传送技能CD减半',
+  },
+];
+
+export const ARTIFACT_DEFS = [
+  { id:'harmonyEye', name:'谐律之眼', setName:'elementalist', desc:'谐律爆发追踪单体，伤害+50%范围缩小' },
+  { id:'fieldGenerator', name:'力场发生器', setName:'chronomancer', desc:'力场持续+3s，不被坍缩消耗' },
+  { id:'feather', name:'缓落之羽', setName:null, desc:'HP>80%时技能伤害+25%移速+20%' },
+  { id:'criticalFragment', name:'临界碎片', setName:null, desc:'任一技能CD<3s时所有技能伤害+30%' },
 ];
 
 export function ilvlFactor(ilv){ return 0.35 + ilv*0.0236; }
