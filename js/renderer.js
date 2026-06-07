@@ -3,7 +3,7 @@
 // ============================================================
 import { game, getActiveCharacter, syncPlayerToChar, syncCharToPlayer, createCharacter } from './game-state.js';
 import { canvas, ctx } from './canvas.js';
-import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS } from './config.js';
+import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS, ARTIFACT_DEFS } from './config.js';
 import { formatTime, lerp, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { saveGame } from './persistence.js';
@@ -1125,8 +1125,10 @@ export function renderCompareTooltip(hoveredItem){
 
   if(hoveredItem===equipped){
     const setInfo=equipped.setName&&SET_DEFS[equipped.setName];
-    const setExtra=setInfo?90:0;
-    const tw=280,th=(equipped.power?180:150)+setExtra;
+    const artInfo=equipped.artifactId&&ARTIFACT_DEFS.find(a=>a.id===equipped.artifactId);
+    const setExtra=setInfo?120:0;
+    const artExtra=artInfo?45:0;
+    const tw=280,th=(equipped.power?180:150)+setExtra+artExtra;
     const tx=W-tw-16,ty=H/2-th/2;
     ctx.fillStyle='rgba(10,10,20,0.94)';
     ctx.strokeStyle='#ffd700';ctx.lineWidth=2;
@@ -1152,17 +1154,36 @@ export function renderCompareTooltip(hoveredItem){
       const sy=equipped.power?ty+132:ty+100;
       ctx.fillStyle='#44ff44';ctx.font='bold 11px sans-serif';
       ctx.fillText('【'+setInfo.name+'】套装',tx+tw/2,sy+14);
-      ctx.fillStyle='#aaffaa';ctx.font='9px sans-serif';
-      ctx.fillText('2件: '+setInfo.two.desc,tx+tw/2,sy+32);
-      ctx.fillText('3件: '+setInfo.three.desc,tx+tw/2,sy+48);
-      ctx.fillText('4件: '+setInfo.four.desc,tx+tw/2,sy+64);
+      ctx.textAlign='left';
+      const sx=tx+16,seh=18;
+      ctx.fillStyle='#aaffaa';ctx.font='bold 9px sans-serif';
+      ctx.fillText('2件 '+setInfo.two.desc, sx, sy+32);
+      ctx.fillStyle='#88cc88';ctx.font='8px sans-serif';
+      ctx.fillText(setInfo.two.detail, sx, sy+32+seh*0.45);
+      ctx.fillStyle='#aaffaa';ctx.font='bold 9px sans-serif';
+      ctx.fillText('3件 '+setInfo.three.desc, sx, sy+32+seh);
+      ctx.fillStyle='#88cc88';ctx.font='8px sans-serif';
+      ctx.fillText(setInfo.three.detail, sx, sy+32+seh*1.45);
+      ctx.fillStyle='#aaffaa';ctx.font='bold 9px sans-serif';
+      ctx.fillText('4件 '+setInfo.four.desc, sx, sy+32+seh*2);
+      ctx.fillStyle='#88cc88';ctx.font='8px sans-serif';
+      ctx.fillText(setInfo.four.detail, sx, sy+32+seh*2.45);
+      ctx.textAlign='center';
+    }
+    const artInfo=equipped.artifactId&&ARTIFACT_DEFS.find(a=>a.id===equipped.artifactId);
+    if(artInfo){
+      const ay=setInfo?ty+220:(equipped.power?ty+132:ty+100);
+      ctx.fillStyle='#ffd700';ctx.font='bold 10px sans-serif';
+      ctx.fillText('✦ '+artInfo.name,tx+tw/2,ay+14);
+      ctx.fillStyle='#ccaa44';ctx.font='9px sans-serif';
+      ctx.fillText(artInfo.desc,tx+tw/2,ay+32);
     }
     return;
   }
 
   const eqSetInfo=equipped&&equipped.setName&&SET_DEFS[equipped.setName];
   const hovSetInfo=hoveredItem.setName&&SET_DEFS[hoveredItem.setName];
-  const setExtra=(eqSetInfo||hovSetInfo)?90:0;
+  const setExtra=(eqSetInfo||hovSetInfo)?120:0;
   const tw=520,th=240+setExtra;
   const tx=W-tw-16,ty=H/2-th/2;
 
@@ -1277,10 +1298,38 @@ export function renderCompareTooltip(hoveredItem){
       ctx.fillStyle='#ffaa00';ctx.font='bold 10px sans-serif';
       ctx.fillText('【'+hovSetInfo.name+'】 (不同套装)',rx+rw/2,sy);
     }
-    ctx.fillStyle='#aaffaa';ctx.font='9px sans-serif';
-    ctx.fillText('2件: '+hovSetInfo.two.desc,rx+rw/2,sy+18);
-    ctx.fillText('3件: '+hovSetInfo.three.desc,rx+rw/2,sy+34);
-    ctx.fillText('4件: '+hovSetInfo.four.desc,rx+rw/2,sy+50);
+    ctx.textAlign='left';
+    const hx=rx+4, heh=16;
+    ctx.fillStyle='#aaffaa';ctx.font='bold 8px sans-serif';
+    ctx.fillText('2件 '+hovSetInfo.two.desc, hx, sy+16);
+    ctx.fillStyle='#88cc88';ctx.font='7px sans-serif';
+    ctx.fillText(hovSetInfo.two.detail, hx, sy+16+heh*0.4);
+    ctx.fillStyle='#aaffaa';ctx.font='bold 8px sans-serif';
+    ctx.fillText('3件 '+hovSetInfo.three.desc, hx, sy+16+heh);
+    ctx.fillStyle='#88cc88';ctx.font='7px sans-serif';
+    ctx.fillText(hovSetInfo.three.detail, hx, sy+16+heh*1.4);
+    ctx.fillStyle='#aaffaa';ctx.font='bold 8px sans-serif';
+    ctx.fillText('4件 '+hovSetInfo.four.desc, hx, sy+16+heh*2);
+    ctx.fillStyle='#88cc88';ctx.font='7px sans-serif';
+    ctx.fillText(hovSetInfo.four.detail, hx, sy+16+heh*2.4);
+    ctx.textAlign='center';
+  }
+  // Artifact info for hovered item
+  const hovArtInfo=hoveredItem.artifactId&&ARTIFACT_DEFS.find(a=>a.id===hoveredItem.artifactId);
+  if(hovArtInfo){
+    const ay=hovSetInfo?ry+148:ry+96;
+    if(!equipped||!equipped.artifactId){
+      ctx.fillStyle='#ffd700';ctx.font='bold 10px sans-serif';
+      ctx.fillText('✦ '+hovArtInfo.name+' ✦新',rx+rw/2,ay);
+    }else if(hoveredItem.artifactId===equipped.artifactId){
+      ctx.fillStyle='#ffd700';ctx.font='bold 10px sans-serif';
+      ctx.fillText('✦ '+hovArtInfo.name+' (=)',rx+rw/2,ay);
+    }else{
+      ctx.fillStyle='#ffaa00';ctx.font='bold 10px sans-serif';
+      ctx.fillText('✦ '+hovArtInfo.name+' (不同)',rx+rw/2,ay);
+    }
+    ctx.fillStyle='#ccaa44';ctx.font='8px sans-serif';
+    ctx.fillText(hovArtInfo.desc,rx+rw/2,ay+16);
   }
 }
 
