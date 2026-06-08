@@ -6,6 +6,7 @@
 
 ## 核心概念
 
+- [[concepts/Equipment-Data-Flow-Pitfalls|装备数据流转陷阱]] — 手工重建对象反模式、字段丢失、流转链路排查清单
 - [[concepts/Game-Persistence|游戏存档与持久化]] — localStorage + sessionStorage 双保险、导出/导入、自动存档触发点
 - [[concepts/Elementalist-Harmony-Stacking|元素使谐律叠层]] — 自动攻击癞子牌、autoUsed 单次限制、同元素重置到 1 而非 0
 - [[concepts/Combat-Balance|战斗平衡]] — 难度重调、黑洞易伤(+50%)、元素戒指(50-150%)

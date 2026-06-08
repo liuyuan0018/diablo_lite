@@ -1252,12 +1252,21 @@ export function renderBackpackOverlay(){
       ctx.font='bold 10px sans-serif';
       ctx.fillText(item.name,cx+cellW/2,cy+cellW/2-2);
       ctx.font='9px sans-serif';
-      const sn=statLabels[item.stat]||'?';
-      ctx.fillText(sn+'+'+item.statValue,cx+cellW/2,cy+cellW/2+10);
-      if(item.power){
-        ctx.fillStyle='#ff6600';
+      if(item.stat==='artifact'&&item.desc){
+        ctx.fillStyle='#ffaa44';
+        ctx.font='7px sans-serif';
+        ctx.fillText(item.desc,cx+cellW/2,cy+cellW/2+8);
+        ctx.fillStyle='#ffd700';
         ctx.font='bold 7px sans-serif';
-        ctx.fillText('★传奇',cx+cellW/2,cy+cellW/2+22);
+        ctx.fillText('✦法器',cx+cellW/2,cy+cellW/2+20);
+      }else{
+        const sn=statLabels[item.stat]||'?';
+        ctx.fillText(sn+'+'+item.statValue,cx+cellW/2,cy+cellW/2+10);
+        if(item.power){
+          ctx.fillStyle='#ff6600';
+          ctx.font='bold 7px sans-serif';
+          ctx.fillText('★传奇',cx+cellW/2,cy+cellW/2+22);
+        }
       }
       const dx=cx+cellW-14,dy=cy-6,dw=16,dh=16;
       const dhover=game.mouseX>=dx&&game.mouseX<=dx+dw&&game.mouseY>=dy&&game.mouseY<=dy+dh;
@@ -1267,6 +1276,7 @@ export function renderBackpackOverlay(){
       ctx.fillText('✕',dx+dw/2,dy+dh/2+4);
       if(dhover&&game.mouseDown&&!game.clickProcessed){
         game.clickProcessed=true;
+        game.drops.push({x:game.player.x+(Math.random()-0.5)*160,y:game.player.y+(Math.random()-0.5)*160,slot:item.slot,quality:item.quality,ilvl:item.ilvl,statValue:item.statValue,stat:item.stat,name:item.name,color:item.color,power:item.power||null,artifactId:item.artifactId||null,setName:item.setName||null,desc:item.desc||null,bobPhase:Math.random()*Math.PI*2});
         game.backpack.splice(i,1);
         saveGame();
         ctx.restore();return;
@@ -1567,11 +1577,18 @@ function renderVictory(){
       ctx.fillText('Lv.'+d.ilvl,cx+cellW/2,cy+12);
       ctx.font='bold 10px sans-serif';
       ctx.fillText(d.name,cx+cellW/2,cy+28);
-      ctx.fillStyle='#ccc';ctx.font='9px sans-serif';
-      ctx.fillText((statLabels[d.stat]||'?')+'+'+d.statValue,cx+cellW/2,cy+42);
-      ctx.fillStyle='#666';ctx.font='8px sans-serif';
-      ctx.fillText(slotNames[d.slot]||'',cx+cellW/2,cy+55);
-      if(d.power){ctx.fillStyle='#ff6600';ctx.font='bold 8px sans-serif';ctx.fillText('★传奇',cx+cellW/2,cy+68);}
+      if(d.stat==='artifact'&&d.desc){
+        ctx.fillStyle='#ffaa44';ctx.font='8px sans-serif';
+        ctx.fillText(d.desc,cx+cellW/2,cy+40);
+        ctx.fillStyle='#ffd700';ctx.font='bold 7px sans-serif';
+        ctx.fillText('✦法器',cx+cellW/2,cy+53);
+      }else{
+        ctx.fillStyle='#ccc';ctx.font='9px sans-serif';
+        ctx.fillText((statLabels[d.stat]||'?')+'+'+d.statValue,cx+cellW/2,cy+42);
+        ctx.fillStyle='#666';ctx.font='8px sans-serif';
+        ctx.fillText(slotNames[d.slot]||'',cx+cellW/2,cy+55);
+        if(d.power){ctx.fillStyle='#ff6600';ctx.font='bold 8px sans-serif';ctx.fillText('★传奇',cx+cellW/2,cy+68);}
+      }
       if(hover){
         game.hoveredItem=ground[i];
         victoryButtons.push({x:cx,y:cy,w:cellW,h:cellH,text:'pickupGround',idx:i,action:()=>{pickupGroundItem(i);}});
@@ -1623,11 +1640,18 @@ function renderVictory(){
       ctx.fillText('Lv.'+item.ilvl,cx+cellW/2,cy+20);
       ctx.font='bold 10px sans-serif';
       ctx.fillText(item.name,cx+cellW/2,cy+36);
-      ctx.fillStyle='#ccc';ctx.font='9px sans-serif';
-      ctx.fillText((statLabels[item.stat]||'?')+'+'+item.statValue,cx+cellW/2,cy+50);
-      ctx.fillStyle='#666';ctx.font='8px sans-serif';
-      ctx.fillText(slotNames[item.slot]||'',cx+cellW/2,cy+63);
-      if(item.power){ctx.fillStyle='#ff6600';ctx.font='bold 7px sans-serif';ctx.fillText('★',cx+cellW/2,cy+74);}
+      if(item.stat==='artifact'&&item.desc){
+        ctx.fillStyle='#ffaa44';ctx.font='8px sans-serif';
+        ctx.fillText(item.desc,cx+cellW/2,cy+48);
+        ctx.fillStyle='#ffd700';ctx.font='bold 7px sans-serif';
+        ctx.fillText('✦法器',cx+cellW/2,cy+62);
+      }else{
+        ctx.fillStyle='#ccc';ctx.font='9px sans-serif';
+        ctx.fillText((statLabels[item.stat]||'?')+'+'+item.statValue,cx+cellW/2,cy+50);
+        ctx.fillStyle='#666';ctx.font='8px sans-serif';
+        ctx.fillText(slotNames[item.slot]||'',cx+cellW/2,cy+63);
+        if(item.power){ctx.fillStyle='#ff6600';ctx.font='bold 7px sans-serif';ctx.fillText('★',cx+cellW/2,cy+74);}
+      }
       if(hover){
         game.hoveredItem=item;
         victoryButtons.push({x:cx,y:cy,w:cellW,h:cellH,text:'putBack',idx:i,action:()=>{
@@ -1659,7 +1683,7 @@ function pickupGroundItem(idx){
   const ground=game.drops.filter(d=>d.slot);
   const item=ground[idx];
   if(!item)return;
-  game.backpack.push({slot:item.slot,quality:item.quality,ilvl:item.ilvl,statValue:item.statValue,stat:item.stat,name:item.name,color:item.color,power:item.power||null});
+  game.backpack.push({slot:item.slot,quality:item.quality,ilvl:item.ilvl,statValue:item.statValue,stat:item.stat,name:item.name,color:item.color,power:item.power||null,artifactId:item.artifactId||null,setName:item.setName||null,desc:item.desc||null});
   const realIdx=game.drops.indexOf(item);
   if(realIdx>=0)game.drops.splice(realIdx,1);
   saveGame();
@@ -1669,7 +1693,7 @@ function equipFromBackpack(idx){
   const item=game.backpack[idx];
   if(!item)return;
   const old=game.equipment[item.slot];
-  game.equipment[item.slot]={slot:item.slot,quality:item.quality,ilvl:item.ilvl,statValue:item.statValue,stat:item.stat,name:item.name,color:item.color,power:item.power||null};
+  game.equipment[item.slot]={slot:item.slot,quality:item.quality,ilvl:item.ilvl,statValue:item.statValue,stat:item.stat,name:item.name,color:item.color,power:item.power||null,artifactId:item.artifactId||null,setName:item.setName||null,desc:item.desc||null};
   if(old)game.backpack[idx]=old;
   else game.backpack.splice(idx,1);
   const p=game.player;

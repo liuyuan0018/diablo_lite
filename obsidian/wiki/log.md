@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-09] save | 装备数据流转陷阱
+- 类型: concept
+- 文件: wiki/concepts/Equipment-Data-Flow-Pitfalls.md
+- 来源: 修复三处装备流转 Bug — 法器词条不显示(字段丢失)、背包满时物品消失、丢弃装备不回地面(自动回收)
+
 ## [2026-06-09] save | 游戏存档与持久化
 - 类型: concept
 - 文件: wiki/concepts/Game-Persistence.md

@@ -58,6 +58,7 @@ export function generateArtifact(boss,stageIdx){
     power:null,
     artifactId:artDef.id,
     setName:artDef.setName,
+    desc:artDef.desc,
   };
   return eq;
 }
@@ -108,11 +109,11 @@ export function updatePickup(dt){
     d.bobPhase+=dt*3;
     if(dist(d.x,d.y,p.x,p.y)<range){
       if(game.backpack.length<8){
-        game.backpack.push({slot:d.slot,quality:d.quality,ilvl:d.ilvl,statValue:d.statValue,stat:d.stat,name:d.name,color:d.color,power:d.power||null});
+        game.backpack.push({slot:d.slot,quality:d.quality,ilvl:d.ilvl,statValue:d.statValue,stat:d.stat,name:d.name,color:d.color,power:d.power||null,artifactId:d.artifactId||null,setName:d.setName||null,desc:d.desc||null});
         playSFX('pickup');
         spawnParticles(d.x,d.y,10,QUALITY_COLORS[d.quality],80,3);
+        game.drops.splice(i,1);
       }
-      game.drops.splice(i,1);
     }
   }
 }
