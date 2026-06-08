@@ -7,6 +7,7 @@ import { rand, randChoice, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { spawnParticles } from './particles.js';
 import { saveGame } from './persistence.js';
+import { playSFX } from './audio.js';
 
 export function generateEquipment(slot,boss,stageIdx){
   if(!boss&&Math.random()>0.15)return null;
@@ -108,6 +109,7 @@ export function updatePickup(dt){
     if(dist(d.x,d.y,p.x,p.y)<range){
       if(game.backpack.length<8){
         game.backpack.push({slot:d.slot,quality:d.quality,ilvl:d.ilvl,statValue:d.statValue,stat:d.stat,name:d.name,color:d.color,power:d.power||null});
+        playSFX('pickup');
         spawnParticles(d.x,d.y,10,QUALITY_COLORS[d.quality],80,3);
       }
       game.drops.splice(i,1);
@@ -133,6 +135,7 @@ export function gainExp(amount){
     p.bulletSpeed=stats.bulletSpeed;
     p.pickupRange=stats.pickupRange;
     p.fireRate=stats.fireRate;
+    playSFX('levelUp');
     spawnParticles(p.x,p.y,30,'#ffd700',150,5);
     saveGame();
   }

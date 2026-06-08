@@ -9,6 +9,7 @@ import { spawnParticles } from './particles.js';
 import { hitDummy } from './testfield.js';
 import { getSynergyEffects } from './synergies.js';
 import { addFloatingNumber } from './renderer.js';
+import { playSFX } from './audio.js';
 
 export function updateProjectiles(dt){
   for(let i=game.projectiles.length-1;i>=0;i--){
@@ -49,6 +50,7 @@ export function updateProjectiles(dt){
       if(dist(p.x,p.y,game.player.x,game.player.y)<p.size+PLAYER_RADIUS){
         if(game.player.hitInvuln<=0){
           damagePlayer(p.damage);
+          playSFX('playerHit');
           game.player.hitInvuln=0.2;
           spawnParticles(game.player.x,game.player.y,4,'#ff4444',60,3);
         }

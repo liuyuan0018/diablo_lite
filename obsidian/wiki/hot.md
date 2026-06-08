@@ -1,42 +1,40 @@
 # 当前热点
 
-> 2026-06-09 | 音效系统完整重设计
+> 2026-06-09 | 存档系统健壮性修复
 
 ## 刚发生
 
-完成了 Diablo Lite 全部 20 种游戏音效的从零重新设计及实现。设计驱动来自 Hybrid Casual 休闲赛道定位（对标 Archero/Survivor.io），确立"Juicy Casual + Power Skills"双轨设计理念。
+修复了"每次更新代码后存档丢失"的问题。根因是 localStorage 单一存储无备份、无导出导入机制、保存/加载错误被静默吞掉。
 
-### 核心成果
+### 改动内容
 
-**四层优先级混音架构**:
-- L1 关键: 受击/Boss出现/Boss击杀/GameOver/胜利
-- L2 重要: 四大技能/精英击杀/升级
-- L3 频繁: 普攻/击杀/拾取/生命球/爆炸
-- L4 微妙: 按钮/装备卸装
+**`js/persistence.js`**:
+- 新增 `exportSave()` — 下载存档为 JSON 文件
+- 新增 `importSave(file)` — 从文件导入存档，含格式校验
+- `saveGame()` 同时写入 sessionStorage 作为后备
+- `loadGame()` 在 localStorage 为空时回退到 sessionStorage
+- 所有 catch 块改为 `console.error` 输出具体错误
 
-**频谱分区**: 从 14Hz (黑洞) 到 6000Hz (陨石尖啸)，六八度频跨，每类声音占据独立频段防止战斗时糊成一片。
+**`js/renderer.js`**:
+- 主菜单新增「导出存档」「导入存档」按钮
+- `equipFromBackpack()` 新增 auto-save
+- `pickupGroundItem()` 新增 auto-save
+- 背包 ✕删除装备 新增 auto-save
 
-**技能音效 (dur=2.0s)**:
-- teleport: sine 200→3000Hz 上行呼啸 (唯一上行)
-- blackHole: sine 55→10Hz 极低频引力 (游戏最低音)
-- blizzard: both 双纹理 (sine 120→60 呼啸 + bandpass 3000→300 寒风)
-- meteor: saw 1200→20 + lp 6000→40 尖啸撞击 (最大频跨)
+### 自动存档触发点（完整列表）
 
-**引擎修复**:
-- 修复 AudioNode 内存泄漏 (onended cleanup)
-- 解除增益包络 decay 的 20ms 硬上限
-- 添加 vary 频率随机化支持 (fire 20% jitter)
+升级、Boss击败、死亡、卸下装备、从背包装备、拾取地面装备、背包删除、角色管理操作、测试场返回
 
 ## 活跃领域
 
+- 存档系统 ([[concepts/Game-Persistence|游戏存档与持久化]])
 - 音效系统调优 ([[concepts/Audio-SFX-Design|音效系统设计]])
 - 元素使 / 时空术士套装平衡 ([[concepts/Build-Constraint-System|Build 约束体系]])
 - Build 测试场 ([[concepts/Build-Testfield|测试场]])
 - 三项假设验证 ([[concepts/Competitive-Assumptions|竖屏约束·实时操作是未验证假设]])
-- 移动端适配挑战 ([[concepts/Mobile-Adaptation|操作转型分析]])
 
 ## 最近归档
 
+- [[concepts/Game-Persistence|游戏存档与持久化]] — localStorage+sessionStorage 双保险、导出/导入、装备操作 auto-save
 - [[concepts/Audio-SFX-Design|音效系统设计]] — 四层混音 + 频谱分区 + 双轨全程序化合成
 - [[concepts/Competitive-Assumptions|三项假设验证]] — v3: 竖屏约束·实时操作是未验证假设
-- [[comparisons/Diablo-Lite-vs-Habby|Diablo Lite vs Habby 对比矩阵]] — 13维度对比

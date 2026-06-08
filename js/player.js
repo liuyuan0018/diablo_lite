@@ -5,6 +5,7 @@ import { game } from './game-state.js';
 import { PLAYER_RADIUS, MAP_W, MAP_H, BASE_FIRE_RATE, BASE_BULLET_SPEED, BASE_PICKUP_RANGE, DETECTION_RANGE, SKILL_CONFIG } from './config.js';
 import { normalize, clamp, dist, angle } from './helpers.js';
 import { spawnParticles } from './particles.js';
+import { playSFX } from './audio.js';
 import { getSetEffects } from './sets.js';
 import { getSynergyEffects } from './synergies.js';
 
@@ -186,6 +187,7 @@ export function updatePlayer(dt){
       damage:p.atk,size:5,isEnemy:false,color:'#ff8800',
       life:2, pierce:fx.pierce||0,
     });
+    playSFX('fire');
     p.fireTimer=1/p.fireRate;
     spawnParticles(p.x+Math.cos(a)*25,p.y+Math.sin(a)*25,2,'#ffaa00',30,2);
     const sets = getSetEffects(!!game.sandboxEquipment);

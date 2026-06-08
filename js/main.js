@@ -6,12 +6,14 @@ import { canvas } from './canvas.js';
 import { loadGame } from './persistence.js';
 import { registerInputHandlers } from './input.js';
 import { gameLoop } from './gameplay.js';
+import { startAmbient } from './audio.js';
 
 function init(){
   canvas.width=window.innerWidth;
   canvas.height=window.innerHeight;
   loadGame();
   game.screen='menu';
+  startAmbient('menu');
   registerInputHandlers();
   requestAnimationFrame(gameLoop);
 }

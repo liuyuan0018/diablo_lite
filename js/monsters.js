@@ -8,6 +8,7 @@ import { damagePlayer } from './player.js';
 import { spawnParticles } from './particles.js';
 import { getNextMonsterId } from './config.js';
 import { generateEquipment, tryDropEquipment, gainExp, generateArtifact } from './equipment.js';
+import { playSFX } from './audio.js';
 
 export function createMonster(type,x,y,boss,elite,affix,stageIdx){
   const base=MONSTER_BASE[type];
@@ -65,6 +66,7 @@ function monsterContactDamage(m,dt){
     m.hitTimer=0.5;
     const dmg=m.atk;
     damagePlayer(dmg);
+    playSFX('playerHit');
     if(m.affix==='vampiric'){
       m.hp=Math.min(m.maxHp,m.hp+dmg*0.2);
     }
@@ -119,6 +121,7 @@ export function updateMonsters(dt){
         if(!m.exploded&&d<m.size*4+PLAYER_RADIUS){
           m.exploded=true;
           damagePlayer(25);
+          playSFX('playerHit');
           spawnParticles(m.x,m.y,25,'#ff4400',200,5);
           m.hp=0;
         }
@@ -212,6 +215,7 @@ export function updateMonsters(dt){
       m.phase=2;
       m.speed*=1.3;
       m.color='#ff2222';
+      playSFX('bossSpawn');
       spawnParticles(m.x,m.y,30,'#ff0000',200,6);
       if(m.type==='deathKnight'){
         m.behaviorState='charging';
@@ -272,7 +276,8 @@ function processMonsterDeaths(){
     }
     if(m.isElite&&m.affix==='explode'){
       const pd=dist(m.x,m.y,game.player.x,game.player.y);
-      if(pd<80)damagePlayer(30);
+      if(pd<80){ damagePlayer(30); playSFX('playerHit'); }
+      playSFX('explode');
       spawnParticles(m.x,m.y,30,'#ff4400',250,5);
     }
     tryDropEquipment(m.x,m.y,m.isBoss,game.stageIndex);
@@ -289,6 +294,9 @@ function processMonsterDeaths(){
         bobPhase: Math.random() * Math.PI * 2,
       });
     }
+    if (m.isBoss) playSFX('bossKill');
+    else if (m.isElite) playSFX('eliteKill');
+    else if (m.type === 'exploder') playSFX('explode');
     const burstColor=m.isBoss?'#ff0000':(m.isElite?'#ffaa00':'#ff6600');
     spawnParticles(m.x,m.y,m.isBoss?40:(m.isElite?25:12),burstColor,m.isBoss?200:120,m.isBoss?6:4);
     game.monsters.splice(i,1);

@@ -10,6 +10,7 @@ import { getSetEffects } from './sets.js';
 import { getSynergyEffects } from './synergies.js';
 import { recordDamage } from './testfield.js';
 import { addFloatingNumber } from './renderer.js';
+import { playSFX } from './audio.js';
 
 export function castSkill(wx,wy){
   const p=game.player;
@@ -26,6 +27,7 @@ export function castSkill(wx,wy){
       const oldX=p.x,oldY=p.y;
       p.x=clamp(wx,PLAYER_RADIUS,MAP_W-PLAYER_RADIUS);
       p.y=clamp(wy,PLAYER_RADIUS,MAP_H-PLAYER_RADIUS);
+      playSFX('teleport');
       spawnParticles(p.x,p.y,15,'#8844ff',120,4);
       const tpCD=Math.max(0.5,SKILL_CONFIG[0].baseCD*(1-cdr/100)-fx.teleportCD);
       p.skillCooldowns[idx]=tpCD;
@@ -47,6 +49,7 @@ export function castSkill(wx,wy){
       const dur=2.5+fx.blackholeDur;
       const bhRadius = sets.chronomancer && sets.chronomancer.active.two ? 220 * 1.3 : 220;
       game.skillEffects.push({type:'blackhole',x:wx,y:wy,radius:bhRadius,duration:dur,timer:dur,pullForce:180,damage:8*(1+fx.fireballDmg/100)});
+      playSFX('blackHole');
       spawnParticles(wx,wy,20,'#6622aa',100,5);
       // Chronomancer 2-piece: singularity field
       if (sets.chronomancer && sets.chronomancer.active.two) {
@@ -82,6 +85,7 @@ export function castSkill(wx,wy){
       const r=260*(1+fx.blizzardSize/100);
       const slow=0.5*(1+fx.blizzardSlow/100);
       game.skillEffects.push({type:'blizzard',x:wx,y:wy,radius:r,duration:3,timer:3,tickTimer:0.5,damage:22*(1+fx.fireballDmg/100),slowPct:Math.min(slow,0.9)});
+      playSFX('blizzard');
       spawnParticles(wx,wy,25,'#4488ff',80,4);
       // Chronomancer 3-piece: implosion check
       if (sets.chronomancer && sets.chronomancer.active.three) {
@@ -135,6 +139,7 @@ export function castSkill(wx,wy){
 
   // Harmony Burst trigger — at 3 stacks, spawn meteors
   if (hasElementalist && castElement && p.elementalistStacks === 3) {
+    playSFX('meteor');
     const stats = calcPlayerStats();
     const hasHarmonyEye = game.equipment.artifact && game.equipment.artifact.artifactId === 'harmonyEye';
 

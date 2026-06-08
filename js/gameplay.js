@@ -22,6 +22,7 @@ import { updatePickup } from './equipment.js';
 import { updateCamera } from './camera.js';
 import { enterTestfield, exitTestfield, resetStats, applyLoadout } from './testfield.js';
 import { updateSetEffects } from './sets.js';
+import { playSFX, startAmbient, stopAmbient } from './audio.js';
 
 export function startTestStage(){
   game.screen='playing';
@@ -77,6 +78,7 @@ export function startTestStage(){
     const m=createMonster(randChoice(stage.monsterTypes),mx,my,false,false,null,0);
     if(m)game.monsters.push(m);
   }
+  startAmbient('battle');
 }
 
 export function startGame(stageIndex){
@@ -135,6 +137,7 @@ export function startGame(stageIndex){
     const m=createMonster(randChoice(stage.monsterTypes),mx,my,false,false,null,stageIndex);
     if(m)game.monsters.push(m);
   }
+  startAmbient('battle');
 }
 
 export function startTestfield() {
@@ -186,6 +189,7 @@ export function startTestfield() {
 export function exitTestfieldToPrepare() {
   exitTestfield();
   game.screen = 'prepare';
+  stopAmbient();
   const stats = calcPlayerStats(false);
   game.player.maxHp = stats.maxHP;
   game.player.hp = stats.maxHP;
@@ -271,6 +275,7 @@ function checkButtonClicks(btns){
   for(const b of btns){
     const hit=game.mouseX>=b.x&&game.mouseX<=b.x+b.w&&game.mouseY>=b.y&&game.mouseY<=b.y+b.h;
     if(!hit)continue;
+    playSFX('click');
     if(b.type==='stageSelect'&&b.enabled){
       startGame(b.idx);
       return;
@@ -323,6 +328,8 @@ export function gameLoop(timestamp){
       const bossAlive=game.monsters.some(m=>m.isBoss);
       if(!bossAlive){
         game.bossDefeated=true;
+        playSFX('victory');
+        stopAmbient();
         if(game.stageIndex<9)game.unlockedStages[game.stageIndex+1]=true;
         for(let i=0;i<4;i++){
           const slots=['weapon','helmet','armor','ring','amulet','boots','bracers','belt','artifact'];
@@ -342,6 +349,8 @@ export function gameLoop(timestamp){
       game.player.hp=0;
       game.backpack.length=0;
       game.screen='death';
+      playSFX('gameOver');
+      stopAmbient();
       saveGame();
     }
   }
@@ -421,6 +430,7 @@ function updateHealthGlobes(dt) {
         const heal = Math.round(p.maxHp * g.healPct);
         p.hp = Math.min(p.maxHp, p.hp + heal);
         spawnParticles(p.x, p.y, 8, '#ff4444', 60, 2);
+        playSFX('healthGlb');
         game.healthGlobes.splice(i, 1);
       }
     }

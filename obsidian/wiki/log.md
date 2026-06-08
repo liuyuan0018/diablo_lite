@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-09] save | 游戏存档与持久化
+- 类型: concept
+- 文件: wiki/concepts/Game-Persistence.md
+- 来源: 修复"更新后存档丢失"问题 — 添加导出/导入按钮、sessionStorage 后备、装备操作自动存档补齐
+
 ## [2026-06-09] save | 音效系统设计
 - 类型: concept
 - 文件: wiki/concepts/Audio-SFX-Design.md

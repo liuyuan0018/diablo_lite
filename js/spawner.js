@@ -6,6 +6,7 @@ import { STAGES, DIFFICULTY, TEST_DIFF, TEST_STAGE, MAP_W, MAP_H, MAX_MONSTERS }
 import { randChoice, randInt, rand, clamp } from './helpers.js';
 import { createMonster } from './monsters.js';
 import { spawnParticles } from './particles.js';
+import { playSFX } from './audio.js';
 
 export function updateSpawner(dt){
   const stage=game.isTestStage?TEST_STAGE:STAGES[game.stageIndex];
@@ -55,6 +56,7 @@ export function updateSpawner(dt){
       boss.affix=randChoice(affixes);
       boss.color='#cc0000';
       game.monsters.push(boss);
+      playSFX('bossSpawn');
       spawnParticles(bx,by,50,'#cc0000',250,8);
     }
   }

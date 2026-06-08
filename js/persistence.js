@@ -23,13 +23,67 @@ export function saveGame(){
       unlockedStages:game.unlockedStages,
       activeCharacterId:game.activeCharacterId,
     };
-    localStorage.setItem('diabloLiteSave',JSON.stringify(data));
-  }catch(e){/* ignore */}
+    const json=JSON.stringify(data);
+    localStorage.setItem('diabloLiteSave',json);
+    // backup to sessionStorage as safety net
+    try{ sessionStorage.setItem('diabloLiteSave',json); }catch(e){}
+  }catch(e){ console.error('Save failed:',e); }
+}
+
+export function exportSave(){
+  try{
+    syncPlayerToChar();
+    const data={
+      version:2,
+      characters:game.characters,
+      soulCoins:game.soulCoins,
+      unlockedStages:game.unlockedStages,
+      activeCharacterId:game.activeCharacterId,
+      exportedAt: new Date().toISOString(),
+    };
+    const json=JSON.stringify(data,null,2);
+    const blob=new Blob([json],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='diablo-lite-save-'+new Date().toISOString().slice(0,10)+'.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    return true;
+  }catch(e){ console.error('Export failed:',e); return false; }
+}
+
+export function importSave(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const data=JSON.parse(reader.result);
+        if(!data.version||!data.characters){
+          reject(new Error('无效的存档文件格式'));
+          return;
+        }
+        // Basic validation
+        if(!Array.isArray(data.characters)||data.characters.length===0){
+          reject(new Error('存档文件中无角色数据'));
+          return;
+        }
+        localStorage.setItem('diabloLiteSave',JSON.stringify(data));
+        resolve(data);
+      }catch(e){ reject(e); }
+    };
+    reader.onerror=()=>reject(new Error('文件读取失败'));
+    reader.readAsText(file);
+  });
 }
 
 export function loadGame(){
   try{
-    const raw=localStorage.getItem('diabloLiteSave');
+    let raw=localStorage.getItem('diabloLiteSave');
+    // fallback to sessionStorage if localStorage is empty
+    if(!raw){
+      try{ raw=sessionStorage.getItem('diabloLiteSave'); }catch(e){}
+    }
     if(!raw){
       const c=createCharacter('勇者');
       game.characters=[c];
@@ -74,5 +128,12 @@ export function loadGame(){
     game.player.bulletSpeed=stats.bulletSpeed;
     game.player.pickupRange=stats.pickupRange;
     game.player.fireRate=stats.fireRate;
-  }catch(e){/* ignore */}
+  }catch(e){
+    console.error('Load failed:',e);
+    const c=createCharacter('勇者');
+    game.characters=[c];
+    game.activeCharacterId=c.id;
+    game.soulCoins=0;
+    game.unlockedStages=defaultStages();
+  }
 }

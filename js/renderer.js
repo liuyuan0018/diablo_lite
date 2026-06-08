@@ -6,10 +6,11 @@ import { canvas, ctx } from './canvas.js';
 import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS, ARTIFACT_DEFS, LEGENDARY_POWERS, QUALITY_MULT } from './config.js';
 import { formatTime, lerp, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
-import { saveGame } from './persistence.js';
+import { saveGame, exportSave, importSave } from './persistence.js';
 import { getSlotName } from './equipment.js';
 import { getSetEffects } from './sets.js';
 import { startTestfield } from './gameplay.js';
+import { startAmbient, stopAmbient } from './audio.js';
 
 // Button arrays — populated each render frame, read by gameplay processClick
 export let menuButtons=[];
@@ -58,8 +59,47 @@ function renderMenu(){
   ctx.fillText('轻量版暗黑风刷怪游戏',W/2,H*0.3+50);
   const bw=220,bh=56;
   const bx=W/2-bw/2,by=H*0.5;
-  menuButtons=[{x:bx,y:by,w:bw,h:bh,text:'开始游戏',action:()=>{game.screen='prepare';}}];
+  menuButtons=[{x:bx,y:by,w:bw,h:bh,text:'开始游戏',action:()=>{game.screen='prepare';stopAmbient();}}];
   drawButton(bx,by,bw,bh,'开始游戏','#6b3a1a','#ff8c42','#ffd700');
+
+  // Export / Import buttons
+  const smBW=100,smBH=32,smGap=12;
+  const smBX=W/2-smBW-smGap/2,smBY=by+bh+20;
+  const expHover=game.mouseX>=smBX&&game.mouseX<=smBX+smBW&&game.mouseY>=smBY&&game.mouseY<=smBY+smBH;
+  ctx.fillStyle=expHover?'#2a3a2a':'#1a2a1a';
+  ctx.strokeStyle=expHover?'#fff':'#4a4';ctx.lineWidth=1;
+  roundRect(ctx,smBX,smBY,smBW,smBH,4);
+  ctx.fill();ctx.stroke();
+  ctx.fillStyle='#8f8';ctx.font='12px sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText('导出存档',smBX+smBW/2,smBY+smBH/2+4);
+  menuButtons.push({x:smBX,y:smBY,w:smBW,h:smBH,action:()=>{exportSave();}});
+
+  const impBX=W/2+smGap/2;
+  const impHover=game.mouseX>=impBX&&game.mouseX<=impBX+smBW&&game.mouseY>=smBY&&game.mouseY<=smBY+smBH;
+  ctx.fillStyle=impHover?'#3a3a2a':'#2a2a1a';
+  ctx.strokeStyle=impHover?'#fff':'#aa4';ctx.lineWidth=1;
+  roundRect(ctx,impBX,smBY,smBW,smBH,4);
+  ctx.fill();ctx.stroke();
+  ctx.fillStyle='#ff8';ctx.font='12px sans-serif';
+  ctx.fillText('导入存档',impBX+smBW/2,smBY+smBH/2+4);
+  menuButtons.push({x:impBX,y:smBY,w:smBW,h:smBH,action:()=>{
+    const inp=document.createElement('input');
+    inp.type='file';inp.accept='.json';
+    inp.onchange=async()=>{
+      const file=inp.files[0];
+      if(!file)return;
+      try{
+        await importSave(file);
+        // reload the game state from the imported save
+        location.reload();
+      }catch(e){
+        alert('导入失败: '+e.message);
+      }
+    };
+    inp.click();
+  }});
+
   ctx.font='14px sans-serif';
   ctx.fillStyle='#555';
   ctx.fillText('v1.0',W/2,H*0.85);
@@ -1137,6 +1177,7 @@ export function renderPauseMenu(){
       if (!game.bossDefeated) game.backpack.length = 0;
       saveGame();
       game.screen='prepare';
+      stopAmbient();
     }},
     {x:bx2,y:by,w:bw,h:bh,action:()=>{game.showPauseMenu=false;}},
   ];
@@ -1227,6 +1268,7 @@ export function renderBackpackOverlay(){
       if(dhover&&game.mouseDown&&!game.clickProcessed){
         game.clickProcessed=true;
         game.backpack.splice(i,1);
+        saveGame();
         ctx.restore();return;
       }
       if(canEquip&&hover&&game.mouseDown&&!game.clickProcessed){
@@ -1609,7 +1651,7 @@ function renderVictory(){
   }
   const bw=200,bh=40;
   const byBtn=H-44;
-  victoryButtons.push({x:W/2-bw/2,y:byBtn,w:bw,h:bh,text:'返回准备',action:()=>{game.screen='prepare';saveGame();}});
+  victoryButtons.push({x:W/2-bw/2,y:byBtn,w:bw,h:bh,text:'返回准备',action:()=>{game.screen='prepare';stopAmbient();saveGame();}});
   drawButton(W/2-bw/2,byBtn,bw,bh,'返回准备','#3a3a1a','#aaa','#ffd700');
 }
 
@@ -1620,6 +1662,7 @@ function pickupGroundItem(idx){
   game.backpack.push({slot:item.slot,quality:item.quality,ilvl:item.ilvl,statValue:item.statValue,stat:item.stat,name:item.name,color:item.color,power:item.power||null});
   const realIdx=game.drops.indexOf(item);
   if(realIdx>=0)game.drops.splice(realIdx,1);
+  saveGame();
 }
 
 function equipFromBackpack(idx){
@@ -1635,6 +1678,7 @@ function equipFromBackpack(idx){
   p.maxHp=s.maxHP;p.atk=s.atk;p.cdr=s.cdr;
   p.bulletSpeed=s.bulletSpeed;p.pickupRange=s.pickupRange;p.fireRate=s.fireRate;
   p.hp=Math.min(Math.round(p.maxHp*ratio),p.maxHp);
+  saveGame();
 }
 
 // --- Death ---
@@ -1651,7 +1695,7 @@ function renderDeath(){
   ctx.fillText('等级: '+game.player.level, W/2, H*0.44);
   const bw=200,bh=50;
   const bx=W/2-bw/2,by=H*0.55;
-  deathButtons=[{x:bx,y:by,w:bw,h:bh,text:'返回主菜单',action:()=>{game.screen='menu';}}];
+  deathButtons=[{x:bx,y:by,w:bw,h:bh,text:'返回主菜单',action:()=>{game.screen='menu';startAmbient('menu');}}];
   drawButton(bx,by,bw,bh,'返回主菜单','#3a1a1a','#aaa','#ff4444');
 }
 
