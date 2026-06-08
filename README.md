@@ -6,8 +6,8 @@
 
 ```bash
 python server.py
-# 本机: http://localhost:8080
-# 局域网: http://<你的IP>:8080（如 192.168.1.x:8080）
+# 本机: http://localhost:8088
+# 局域网: http://<你的IP>:8088（如 192.168.1.x:8088）
 ```
 
 ## 技术栈

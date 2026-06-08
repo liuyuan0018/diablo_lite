@@ -1,7 +1,7 @@
 import http.server
 import socketserver
 
-PORT = 8080
+PORT = 8088
 
 class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
