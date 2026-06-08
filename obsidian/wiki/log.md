@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-09] save | 音效系统设计
+- 类型: concept
+- 文件: wiki/concepts/Audio-SFX-Design.md
+- 来源: 完整的音效系统重设计 — 四层混音架构、频谱分区、20个音效逐层定义、引擎技术细节（node生命周期/增益包络/vary随机化）
+
 ## [2026-06-08] autoresearch | 品类纠正：竖屏放置挂机 ≠ 竖屏实时战斗（假设调研第三波修正）
 - 搜索: 6 次 WebSearch
 - 更新: 3 (concepts/Competitive-Assumptions完全重写, entities/Hero-Without-Flash纠偏, questions/Research-Mobile-Habby-Games)
