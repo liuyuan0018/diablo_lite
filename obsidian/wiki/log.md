@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-08] save | 战斗平衡 — 难度重调 + 黑洞易伤 + 元素戒指
+- 类型: concept (new) + update × 3
+- 文件: wiki/concepts/Combat-Balance.md (new), wiki/concepts/Build-Testfield.md (update)
+- 来源: 难度曲线重调（前两章随等级成长、第四章起陡增），黑洞新增 3s 易伤 debuff（受伤害+50%），元素戒指作为传奇词缀（50-150%），测试场自由搭配新增槽位选择弹窗
+
 ## [2026-06-07] save | 测试场 UI 完善 + 装备弹窗套装/法器显示
 - 类型: concept (update)
 - 文件: wiki/concepts/Build-Testfield.md (update)

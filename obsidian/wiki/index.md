@@ -6,7 +6,8 @@
 
 ## 核心概念
 
-- [[concepts/Build-Testfield|Build 测试场]] — 训练木桩 + 一键配装 + DPS 统计，沙箱隔离
+- [[concepts/Combat-Balance|战斗平衡]] — 难度重调、黑洞易伤(+50%)、元素戒指(50-150%)
+- [[concepts/Build-Testfield|Build 测试场]] — 训练木桩 + 一键配装 + DPS 统计 + 槽位选择弹窗，沙箱隔离
 - [[concepts/Build-Constraint-System|Build 约束体系]] — 套装(2套×3层) + 传奇协同(4组) + 法器(4个)，9 槽位体系
 - [[concepts/Character-Management|角色管理系统]] — 多角色存档架构，独立装备/等级，自动迁移旧存档
 - [[concepts/LootDetailView|装备悬停对比弹窗]] — 悬停物品触发左右对比弹窗，属性差异绿/红/金标记
