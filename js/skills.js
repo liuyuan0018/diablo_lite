@@ -61,10 +61,11 @@ export function castSkill(wx,wy){
       // Arcane element tracking for Elementalist set
       castElement = 'arcane';
       if (hasElementalist) {
+        p.elementalistAutoUsed = false;
         if (castElement !== p.elementalistLastElement) {
           p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
         } else {
-          p.elementalistStacks = 0;
+          p.elementalistStacks = 1;
         }
         p.elementalistLastElement = castElement;
       }
@@ -113,10 +114,11 @@ export function castSkill(wx,wy){
       // Ice element tracking for Elementalist set
       castElement = 'ice';
       if (hasElementalist) {
+        p.elementalistAutoUsed = false;
         if (castElement !== p.elementalistLastElement) {
           p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
         } else {
-          p.elementalistStacks = 0;
+          p.elementalistStacks = 1;
         }
         p.elementalistLastElement = castElement;
       }
@@ -171,6 +173,7 @@ export function castSkill(wx,wy){
 
     p.elementalistStacks = 0;
     p.elementalistLastElement = null;
+    p.elementalistAutoUsed = false;
 
     // 4-piece: create elemental aura
     if (sets.elementalist && sets.elementalist.active.four) {

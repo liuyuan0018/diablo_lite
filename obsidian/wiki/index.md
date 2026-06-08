@@ -6,6 +6,7 @@
 
 ## 核心概念
 
+- [[concepts/Elementalist-Harmony-Stacking|元素使谐律叠层]] — 自动攻击癞子牌、autoUsed 单次限制、同元素重置到 1 而非 0
 - [[concepts/Combat-Balance|战斗平衡]] — 难度重调、黑洞易伤(+50%)、元素戒指(50-150%)
 - [[concepts/Build-Testfield|Build 测试场]] — 训练木桩 + 一键配装 + DPS 统计 + 槽位选择弹窗，沙箱隔离
 - [[concepts/Build-Constraint-System|Build 约束体系]] — 套装(2套×3层) + 传奇协同(4组) + 法器(4个)，9 槽位体系
@@ -16,7 +17,7 @@
 - [[concepts/Build|Build 系统]] — 流派分化与装备组合（v2：三层约束体系）
 - [[concepts/Difficulty|难度曲线]] — 10 关指数难度设计
 - [[concepts/Skills|技能系统]] — 3 技能 + 自动攻击
-- [[concepts/ProjectilePierce|火球穿透机制]] — 穿透计数器、命中记录、同帧多目标
+- [[concepts/Competitive-Assumptions|三项假设验证]] — 受众规模/深度传递/变现模式的证据评估
 
 ## 实体
 
@@ -59,6 +60,25 @@
 - [[sources/Maxroll-LoD-Twister-Guide|Maxroll LoD Twister Guide]]
 - [[sources/Maxroll-LoD-Hydra-Guide|Maxroll LoD Hydra Guide]]
 - [[sources/Blizzard-Forum-Typhon-TK|Blizzard Forum Typhon TK]]
+
+## Mobile Habby Games 调研 (2026-06-08)
+
+- [[questions/Research-Mobile-Habby-Games|Mobile Habby Games vs Diablo Lite 竞争力分析]] — 三款Habby手游对比 + 我们的核心竞争力判断
+- [[comparisons/Diablo-Lite-vs-Habby|Diablo Lite vs Habby 对比矩阵]] — 13维度逐项对比
+- [[concepts/Habby-Template|Habby 模板化生产体系]] — 7条设计规律 + 模板适用范围
+- [[concepts/Power-Wall-Problem|Power Wall 问题]] — Roguelike×数值付费的结构性矛盾
+
+### Habby 游戏实体
+- [[entities/Archero|Archero (弓箭传说)]] — 类型定义者，$2.65亿
+- [[entities/Survivor.io|Survivor.io (弹壳特攻队)]] — 生存竞技场模板，$5亿+
+- [[entities/PunBall|PunBall (砰砰法师)]] — 物理弹射，模板偏离案例
+
+### Mobile 调研来源
+- [[sources/Naavik-Survivorio-vs-Archero|Naavik — Survivor.io vs Archero 深度对比]]
+- [[sources/DoF-Habby-Hybridcasual-Empire|Deconstructor of Fun — Habby 混合休闲帝国]]
+
+### 竖屏ARPG对标产品
+- [[entities/Hero-Without-Flash|英雄没有闪]] — 年流水21亿，竖屏半自动暗黑Like，50+流派
 
 ## 设计决策
 

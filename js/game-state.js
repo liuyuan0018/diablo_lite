@@ -39,6 +39,7 @@ export const game = {
     hitInvuln:0,
     elementalistStacks: 0,
     elementalistLastElement: null,
+    elementalistAutoUsed: false,
     elementalistAura: null,
     singularityFields: [],
     temporalResonanceTimer: 0,

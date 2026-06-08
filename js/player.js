@@ -188,13 +188,12 @@ export function updatePlayer(dt){
     });
     p.fireTimer=1/p.fireRate;
     spawnParticles(p.x+Math.cos(a)*25,p.y+Math.sin(a)*25,2,'#ffaa00',30,2);
-    // Auto-attack fireball = fire element
     const sets = getSetEffects(!!game.sandboxEquipment);
     if (sets.elementalist && sets.elementalist.active.two) {
-      if (p.elementalistLastElement !== 'fire') {
+      if (!p.elementalistAutoUsed && p.elementalistLastElement !== 'fire') {
         p.elementalistStacks = Math.min(3, p.elementalistStacks + 1);
+        p.elementalistAutoUsed = true;
       }
-      p.elementalistLastElement = 'fire';
     }
   }
   let closeMonster=false;

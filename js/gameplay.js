@@ -48,6 +48,7 @@ export function startTestStage(){
   // Reset set/synergy state
   game.player.elementalistStacks = 0;
   game.player.elementalistLastElement = null;
+  game.player.elementalistAutoUsed = false;
   game.player.elementalistAura = null;
   game.player.singularityFields = [];
   game.player.temporalResonanceTimer = 0;
@@ -103,6 +104,7 @@ export function startGame(stageIndex){
   // Reset set/synergy state
   game.player.elementalistStacks = 0;
   game.player.elementalistLastElement = null;
+  game.player.elementalistAutoUsed = false;
   game.player.elementalistAura = null;
   game.player.singularityFields = [];
   game.player.temporalResonanceTimer = 0;
@@ -154,6 +156,7 @@ export function startTestfield() {
   game.player.hitInvuln = 0;
   game.player.elementalistStacks = 0;
   game.player.elementalistLastElement = null;
+  game.player.elementalistAutoUsed = false;
   game.player.elementalistAura = null;
   game.player.singularityFields = [];
   game.player.temporalResonanceTimer = 0;

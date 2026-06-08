@@ -1,5 +1,28 @@
 # 变更日志
 
+## [2026-06-08] autoresearch | 品类纠正：竖屏放置挂机 ≠ 竖屏实时战斗（假设调研第三波修正）
+- 搜索: 6 次 WebSearch
+- 更新: 3 (concepts/Competitive-Assumptions完全重写, entities/Hero-Without-Flash纠偏, questions/Research-Mobile-Habby-Games)
+- 关键发现: 英雄没有闪/迷雾大陆是放置挂机游戏，不是实时动作ARPG。**竖屏 × 实时主动技能战斗 × 深度Build —— 这个交叉点从未被尝试。** 最高风险假设变为"竖屏能否承载3主动技能"，必须原型验证
+
+## [2026-06-08] autoresearch | 三项竞争力假设验证 (假设调研第二波)
+- 搜索: 18 次 WebSearch
+- 创建页面: 1 (concept/Competitive-Assumptions), 更新 1 (questions/Research-Mobile-Habby-Games)
+- 综合页: [[concepts/Competitive-Assumptions|三项假设验证]]
+- 关键发现: 三项假设中两项强证据、一项中强证据。Soul Knight Prequel/Torchlight Infinite/Diablo Immortal/Duet Night Abyss 分别验证了深度Build需求、移动端复杂度承载、和纯外观变现的可行性
+
+## [2026-06-08] autoresearch | Mobile Habby Games vs Diablo Lite 竞争力分析 (v2: 移动端同赛道)
+- 轮次: 2
+- 搜索: 18 次 WebSearch + 3 次 WebFetch
+- 创建页面: 10 (2 sources, 3 entities, 3 concepts, 1 question, 1 comparison)
+- 综合页: [[questions/Research-Mobile-Habby-Games|Research-Mobile-Habby-Games]]
+- v2更新: 用户明确目标平台也是手游后，重新以"同赛道正面竞争"视角重写分析。核心结论：Build三层约束体系是Habby无法复制的核心壁垒。三个待验证假设：受众规模、上手门槛、变现模式
+
+## [2026-06-08] save | 元素使谐律叠层机制 — 自动攻击癞子牌 + autoUsed 修复
+- 类型: concept (new) + entity (update)
+- 文件: wiki/concepts/Elementalist-Harmony-Stacking.md (new), wiki/entities/Elementalist-Set.md (update, 去除 stub)
+- 来源: 发现自动攻击火球可反复充当元素轮转桥梁（黑洞→火球→火球→暴风雪也能到 3 层）。修复为癞子牌模式——每技能周期限用一次，不修改 lastElement；同元素技能重置改为 stacks=1 而非 0。4 文件改动（game-state + player + skills + gameplay）
+
 ## [2026-06-08] save | 战斗平衡 — 难度重调 + 黑洞易伤 + 元素戒指
 - 类型: concept (new) + update × 3
 - 文件: wiki/concepts/Combat-Balance.md (new), wiki/concepts/Build-Testfield.md (update)
