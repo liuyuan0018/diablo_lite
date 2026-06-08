@@ -5,7 +5,7 @@ created: 2026-06-07
 updated: 2026-06-07
 tags: [difficulty, stages, scaling, diablo4]
 status: mature
-related: ["[[Build 系统]]", "[[怪物系统]]"]
+related: ["[[concepts/Build|Build 系统]]", "[[entities/Monsters|怪物系统]]"]
 ---
 
 # 难度曲线

@@ -5,7 +5,7 @@ created: 2026-06-07
 updated: 2026-06-07
 tags: [legendary, powers, affixes, build]
 status: mature
-related: ["[[Build 系统]]", "[[装备系统]]", "[[技能系统]]"]
+related: ["[[concepts/Build|Build 系统]]", "[[concepts/Equipment|装备系统]]", "[[concepts/Skills|技能系统]]"]
 ---
 
 # 传奇词缀

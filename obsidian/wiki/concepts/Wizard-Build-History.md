@@ -4,6 +4,7 @@ title: "Diablo 3 Wizard Build 发展史"
 domain: d3-wizard-builds
 aliases: ["法师build演变", "Wizard build evolution"]
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d3-wizard-builds, history, design]
 status: developing
 related: ["[[Critical-Mass-Permafreeze]]", "[[Tal-Rasha-Set]]", "[[Firebird-Set]]", "[[Typhon-Veil-Set]]", "[[Delsere-Magnum-Opus]]", "[[Vyr-Amazing-Arcana]]", "[[Legacy-of-Dreams-Gem]]"]

@@ -4,6 +4,7 @@ title: "D4 Sorcerer Enchantment 系统"
 domain: d4-sorcerer-builds
 aliases: ["附魔系统", "D4 Enchantment Slots"]
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d4-sorcerer-builds, class-mechanics]
 status: seed
 related: ["[[D4-Sorcerer-Build-Evolution]]", "[[D3-Build-Design-Lessons]]"]

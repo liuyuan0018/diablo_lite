@@ -5,7 +5,7 @@ created: 2026-06-07
 updated: 2026-06-07
 tags: [architecture, canvas, gameloop, rendering, modules, es-modules]
 status: developing
-related: ["[[装备系统]]", "[[技能系统]]"]
+related: ["[[concepts/Equipment|装备系统]]", "[[concepts/Skills|技能系统]]"]
 ---
 
 # 游戏架构

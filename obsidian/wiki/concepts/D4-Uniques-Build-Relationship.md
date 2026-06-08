@@ -4,6 +4,7 @@ title: "D4 暗金装备与 Build 的关系"
 domain: d4-sorcerer-builds
 aliases: ["D4 Uniques and Builds", "暗金装备与build设计"]
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d4-sorcerer-builds, item-design]
 status: developing
 related: ["[[D4-Sorcerer-Build-Evolution]]", "[[D4-Enchantment-System]]", "[[D3-Build-Design-Lessons]]"]

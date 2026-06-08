@@ -5,7 +5,7 @@ created: 2026-06-07
 updated: 2026-06-07
 tags: [projectile, pierce, fireball, penetration, bugfix]
 status: mature
-related: ["[[传奇词缀]]", "[[技能系统]]", "[[怪物系统]]"]
+related: ["[[concepts/LegendaryPowers|传奇词缀]]", "[[concepts/Skills|技能系统]]", "[[entities/Monsters|怪物系统]]"]
 ---
 
 # 火球穿透机制

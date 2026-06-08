@@ -4,6 +4,7 @@ title: "Diablo 4 Sorcerer Build 发展史"
 domain: d4-sorcerer-builds
 aliases: ["D4法师build演变", "D4 Sorcerer build evolution"]
 created: 2026-06-07
+updated: 2026-06-07
 tags: [research, d4-sorcerer-builds, history, design]
 status: developing
 related: ["[[Wizard-Build-History]]", "[[D4-Enchantment-System]]", "[[D3-Build-Design-Lessons]]"]

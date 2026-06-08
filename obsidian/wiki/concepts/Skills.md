@@ -5,7 +5,7 @@ created: 2026-06-07
 updated: 2026-06-07
 tags: [skills, teleport, blackhole, blizzard, cooldown]
 status: developing
-related: ["[[传奇词缀]]", "[[Build 系统]]", "[[怪物系统]]"]
+related: ["[[concepts/LegendaryPowers|传奇词缀]]", "[[concepts/Build|Build 系统]]", "[[entities/Monsters|怪物系统]]"]
 ---
 
 # 技能系统

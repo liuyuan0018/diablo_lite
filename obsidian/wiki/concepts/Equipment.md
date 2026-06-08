@@ -6,7 +6,7 @@ updated: 2026-06-07
 design_decision: "Stage 4+ drops always ilvl 70 — late-game focuses on quality/affix filter, removing level lottery. Set items only drop at ilvl 70 (stage 3+); non-set legendaries available at all levels to maintain anticipation."
 tags: [equipment, ilvl, quality, legendary]
 status: developing
-related: ["[[Build 系统]]", "[[难度曲线]]", "[[传奇词缀]]"]
+related: ["[[concepts/Build|Build 系统]]", "[[concepts/Difficulty|难度曲线]]", "[[concepts/LegendaryPowers|传奇词缀]]"]
 ---
 
 # 装备系统

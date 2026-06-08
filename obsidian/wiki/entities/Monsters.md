@@ -5,7 +5,7 @@ created: 2026-06-07
 updated: 2026-06-07
 tags: [monsters, boss, elite, affixes]
 status: developing
-related: ["[[难度曲线]]"]
+related: ["[[concepts/Difficulty|难度曲线]]"]
 ---
 
 # 怪物系统

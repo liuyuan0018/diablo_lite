@@ -5,7 +5,7 @@ created: 2026-06-07
 updated: 2026-06-07
 tags: [ui, equipment, victory, backpack, tooltip, compare]
 status: developing
-related: ["[[装备系统]]"]
+related: ["[[concepts/Equipment|装备系统]]"]
 ---
 
 # 装备悬停对比弹窗
