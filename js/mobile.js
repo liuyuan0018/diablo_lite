@@ -149,10 +149,12 @@ export function initMobile() {
   });
 
   // === Canvas touch (aim + tap to cast, scroll in menus) ===
-  canvas.addEventListener('touchstart', (e) => {
+  document.addEventListener('touchstart', (e) => {
     for (const t of e.changedTouches) {
       if (canvasTouchId !== null) continue;
-      // Skip touches on mobile control buttons (their own handlers pick them up)
+      if (joyTouchId === t.identifier) continue;
+      if (game.skillDrag.touchId === t.identifier) continue;
+      // Skip touches on mobile control buttons (handled by their own listeners)
       const target = e.target;
       if (target && target.closest && (target.closest('#joystickZone') || target.closest('#skillBtns') || target.closest('#btnBackpack') || target.closest('#btnPause'))) continue;
       e.preventDefault();
@@ -215,15 +217,6 @@ export function initMobile() {
       }
     }
   }
-
-  canvas.addEventListener('touchend', (e) => {
-    for (const t of e.changedTouches) {
-      if (t.identifier === canvasTouchId) {
-        canvasTouchId = null;
-        game.mouseDown = false;
-      }
-    }
-  });
 
   // === Update skill button CD text ===
   const origRender = () => {
