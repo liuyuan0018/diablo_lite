@@ -102,24 +102,25 @@ export function registerInputHandlers(){
     }
   },{passive:false});
 
+  const isMobile = 'ontouchstart' in window;
   window.addEventListener('resize',()=>{
-    const vw = window.visualViewport || window;
-    const w = vw.width || window.innerWidth;
-    const h = vw.height || window.innerHeight;
-    canvas.width = w;
-    canvas.height = h;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
+    if (isMobile && window.visualViewport) {
+      canvas.width = window.visualViewport.width;
+      canvas.height = window.visualViewport.height;
+      canvas.style.width = window.visualViewport.width + 'px';
+      canvas.style.height = window.visualViewport.height + 'px';
+    } else {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
   });
 
-  if (window.visualViewport) {
+  if (isMobile && window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
-      const w = window.visualViewport.width;
-      const h = window.visualViewport.height;
-      canvas.width = w;
-      canvas.height = h;
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
+      canvas.width = window.visualViewport.width;
+      canvas.height = window.visualViewport.height;
+      canvas.style.width = window.visualViewport.width + 'px';
+      canvas.style.height = window.visualViewport.height + 'px';
     });
   }
 }

@@ -10,13 +10,17 @@ import { startAmbient } from './audio.js';
 import { initMobile } from './mobile.js';
 
 function syncCanvasSize(){
-  const vw = window.visualViewport || window;
-  const w = vw.width || window.innerWidth;
-  const h = vw.height || window.innerHeight;
-  canvas.width = w;
-  canvas.height = h;
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
+  const isMobile = 'ontouchstart' in window;
+  if (isMobile && window.visualViewport) {
+    const vw = window.visualViewport;
+    canvas.width = vw.width;
+    canvas.height = vw.height;
+    canvas.style.width = vw.width + 'px';
+    canvas.style.height = vw.height + 'px';
+  } else {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
 }
 
 function init(){
