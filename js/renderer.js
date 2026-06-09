@@ -1131,48 +1131,52 @@ function renderHUD(){
     ctx.fillStyle = '#ffd700';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Boss 已击败 · 按 Esc 返回', bx + bw / 2, by + bh / 2 + 4);
+    const escText = ('ontouchstart' in window) ? 'Boss 已击败 · 点击暂停返回' : 'Boss 已击败 · 按 Esc 返回';
+    ctx.fillText(escText, bx + bw / 2, by + bh / 2 + 4);
   }
 
-  const barCenterX=W/2;
-  const barY=H-90;
-  const iconSize=56;
-  const gap=10;
-  const totalW=3*iconSize+2*gap;
-  const barX=barCenterX-totalW/2-10;
-  ctx.fillStyle='rgba(0,0,0,0.65)';
-  roundRect(ctx,barX-5,barY-5,totalW+20,iconSize+20,12);
-  ctx.fill();
-  for(let i=0;i<3;i++){
-    const ix=barCenterX-totalW/2+i*(iconSize+gap);
-    const iy=barY;
-    const isActive=i===game.activeSkill;
-    ctx.fillStyle=isActive?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.4)';
-    roundRect(ctx,ix,iy,iconSize,iconSize,8);
+  // PC skill bar — hide on mobile (mobileControls handles skills)
+  if (!('ontouchstart' in window)) {
+    const barCenterX=W/2;
+    const barY=H-90;
+    const iconSize=56;
+    const gap=10;
+    const totalW=3*iconSize+2*gap;
+    const barX=barCenterX-totalW/2-10;
+    ctx.fillStyle='rgba(0,0,0,0.65)';
+    roundRect(ctx,barX-5,barY-5,totalW+20,iconSize+20,12);
     ctx.fill();
-    ctx.strokeStyle=isActive?'#fff':'rgba(255,255,255,0.15)';
-    ctx.lineWidth=isActive?2:1;
-    roundRect(ctx,ix,iy,iconSize,iconSize,8);
-    ctx.stroke();
-    ctx.textAlign='center';
-    ctx.font='bold 18px sans-serif';
-    ctx.fillStyle='#fff';
-    ctx.fillText(SKILL_CONFIG[i].icon,ix+iconSize/2,iy+28);
-    ctx.font='9px sans-serif';
-    ctx.fillStyle='#aaa';
-    ctx.fillText(SKILL_CONFIG[i].name,ix+iconSize/2,iy+44);
-    ctx.font='bold 10px sans-serif';
-    ctx.fillStyle='#888';
-    ctx.fillText(String(i+1),ix+iconSize/2,iy-5);
-    const cd=game.player.skillCooldowns[i];
-    if(cd>0){
-      ctx.fillStyle='rgba(0,0,0,0.6)';
+    for(let i=0;i<3;i++){
+      const ix=barCenterX-totalW/2+i*(iconSize+gap);
+      const iy=barY;
+      const isActive=i===game.activeSkill;
+      ctx.fillStyle=isActive?'rgba(255,255,255,0.12)':'rgba(0,0,0,0.4)';
       roundRect(ctx,ix,iy,iconSize,iconSize,8);
       ctx.fill();
-      ctx.fillStyle='#fff';
-      ctx.font='bold 14px sans-serif';
+      ctx.strokeStyle=isActive?'#fff':'rgba(255,255,255,0.15)';
+      ctx.lineWidth=isActive?2:1;
+      roundRect(ctx,ix,iy,iconSize,iconSize,8);
+      ctx.stroke();
       ctx.textAlign='center';
-      ctx.fillText(Math.ceil(cd)+'s',ix+iconSize/2,iy+iconSize/2+5);
+      ctx.font='bold 18px sans-serif';
+      ctx.fillStyle='#fff';
+      ctx.fillText(SKILL_CONFIG[i].icon,ix+iconSize/2,iy+28);
+      ctx.font='9px sans-serif';
+      ctx.fillStyle='#aaa';
+      ctx.fillText(SKILL_CONFIG[i].name,ix+iconSize/2,iy+44);
+      ctx.font='bold 10px sans-serif';
+      ctx.fillStyle='#888';
+      ctx.fillText(String(i+1),ix+iconSize/2,iy-5);
+      const cd=game.player.skillCooldowns[i];
+      if(cd>0){
+        ctx.fillStyle='rgba(0,0,0,0.6)';
+        roundRect(ctx,ix,iy,iconSize,iconSize,8);
+        ctx.fill();
+        ctx.fillStyle='#fff';
+        ctx.font='bold 14px sans-serif';
+        ctx.textAlign='center';
+        ctx.fillText(Math.ceil(cd)+'s',ix+iconSize/2,iy+iconSize/2+5);
+      }
     }
   }
 }
@@ -1245,7 +1249,8 @@ export function renderBackpackOverlay(){
   ctx.fillStyle='#888';ctx.font='11px sans-serif';
   const canEquip=game.screen==='prepare'||game.screen==='victory';
   const isCombat=game.screen==='playing';
-  ctx.fillText(canEquip?'悬停对比 · 点击装备 | ✕丢弃 | 按 B 关闭':'悬停对比 · ✕丢弃 | 按 B 关闭',px+pw/2,py+46);
+  const closeHint = ('ontouchstart' in window) ? '点击包按钮关闭' : '按 B 关闭';
+  ctx.fillText(canEquip?'悬停对比 · 点击装备 | ✕丢弃 | '+closeHint:'悬停对比 · ✕丢弃 | '+closeHint,px+pw/2,py+46);
 
   const bp=game.backpack;
   const statLabels={atk:'攻',cdr:'CD',maxHp:'命',bulletSpeed:'速',pickupRange:'拾',movespeed:'移'};
