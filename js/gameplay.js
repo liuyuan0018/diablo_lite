@@ -86,6 +86,8 @@ export function startTestStage(){
 export function startGame(stageIndex){
   game.screen='playing';
   game.isTestStage=false;
+  game.showBackpack=false;
+  game.showPauseMenu=false;
   game.stageIndex=stageIndex;
   game.time=0;
   game.kills=0;
