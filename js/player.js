@@ -109,7 +109,7 @@ export function updatePlayer(dt){
     b.timer-=dt;
     if(b.timer<=0)p.buffs.splice(i,1);
   }
-  let mx=0,my=0;
+  let mx=game.moveDir.x||0,my=game.moveDir.y||0;
   if(game.keys.w)my-=1;
   if(game.keys.s)my+=1;
   if(game.keys.a)mx-=1;

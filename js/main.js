@@ -7,6 +7,7 @@ import { loadGame } from './persistence.js';
 import { registerInputHandlers } from './input.js';
 import { gameLoop } from './gameplay.js';
 import { startAmbient } from './audio.js';
+import { initMobile } from './mobile.js';
 
 function init(){
   canvas.width=window.innerWidth;
@@ -15,6 +16,7 @@ function init(){
   game.screen='menu';
   startAmbient('menu');
   registerInputHandlers();
+  initMobile();
   requestAnimationFrame(gameLoop);
 }
 

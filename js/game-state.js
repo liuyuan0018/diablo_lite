@@ -22,6 +22,7 @@ export const game = {
   showBackpack:false,
   showPauseMenu:false,
   keys:{w:false,a:false,s:false,d:false},
+		moveDir:{x:0,y:0},
   moveSpeed:220,
   camera:{x:0,y:0},
   player:{
