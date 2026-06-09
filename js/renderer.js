@@ -971,32 +971,55 @@ function renderParticles(){
 }
 
 function renderSkillPreview(){
-  // On mobile, preview only during drag; on desktop, when a skill is selected
+  const skillIdx = game.skillDrag.active ? game.skillDrag.skillIdx : game.activeSkill;
+  // On mobile, preview only during drag; on desktop, when a non-teleport skill is selected
   if ('ontouchstart' in window) {
     if (!game.skillDrag.active) return;
   } else {
-    if (game.activeSkill === 0) return;
+    if (skillIdx === 0) return;
   }
   // Use drag coords if skill drag is active, otherwise fall back to mouse
   const wx = game.skillDrag.active ? game.skillDrag.worldX : game.mouseX + game.camera.x;
   const wy = game.skillDrag.active ? game.skillDrag.worldY : game.mouseY + game.camera.y;
   const sx=wx-game.camera.x;
   const sy=wy-game.camera.y;
-  const radius=game.activeSkill===1?220:260;
-  const color=game.activeSkill===1?'#9944cc':'#4488ff';
-  // Drag active: brighter, more visible preview
-  const alphaMult = game.skillDrag.active ? 1.5 : 1;
-  ctx.strokeStyle=`rgba(${game.activeSkill===1?'153,68,204':'68,136,255'},${0.4*alphaMult})`;
-  ctx.lineWidth = game.skillDrag.active ? 3 : 2;
-  ctx.setLineDash([6,4]);
-  ctx.beginPath();
-  ctx.arc(sx,sy,radius,0,Math.PI*2);
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle=`rgba(${game.activeSkill===1?'153,68,204':'68,136,255'},${0.15*alphaMult})`;
-  ctx.beginPath();
-  ctx.arc(sx,sy,radius,0,Math.PI*2);
-  ctx.fill();
+
+  if (skillIdx === 0) {
+    // Teleport: crosshair reticle
+    const r = 18;
+    ctx.strokeStyle = '#ffaa00';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(sx, sy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    // Cross lines
+    ctx.beginPath();
+    ctx.moveTo(sx - r - 8, sy); ctx.lineTo(sx - 4, sy);
+    ctx.moveTo(sx + 4, sy); ctx.lineTo(sx + r + 8, sy);
+    ctx.moveTo(sx, sy - r - 8); ctx.lineTo(sx, sy - 4);
+    ctx.moveTo(sx, sy + 4); ctx.lineTo(sx, sy + r + 8);
+    ctx.stroke();
+    // Center dot
+    ctx.fillStyle = '#ffaa00';
+    ctx.beginPath();
+    ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    const radius = skillIdx === 1 ? 220 : 260;
+    const color = skillIdx === 1 ? '#9944cc' : '#4488ff';
+    const alphaMult = game.skillDrag.active ? 1.5 : 1;
+    ctx.strokeStyle=`rgba(${skillIdx===1?'153,68,204':'68,136,255'},${0.4*alphaMult})`;
+    ctx.lineWidth = game.skillDrag.active ? 3 : 2;
+    ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    ctx.arc(sx,sy,radius,0,Math.PI*2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=`rgba(${skillIdx===1?'153,68,204':'68,136,255'},${0.15*alphaMult})`;
+    ctx.beginPath();
+    ctx.arc(sx,sy,radius,0,Math.PI*2);
+    ctx.fill();
+  }
 }
 
 function renderVignette(){
