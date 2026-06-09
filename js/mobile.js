@@ -27,7 +27,6 @@ export function initMobile() {
 
   joystickZone.addEventListener('touchstart', (e) => {
     e.preventDefault();
-    e.stopPropagation();
     if (joyTouchId !== null) return;
     const t = e.changedTouches[0];
     joyTouchId = t.identifier;

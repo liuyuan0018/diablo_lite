@@ -60,7 +60,7 @@ function renderMenu(){
   ctx.fillText('轻量版暗黑风刷怪游戏',W/2,H*0.3+50);
   const bw=220,bh=56;
   const bx=W/2-bw/2,by=H*0.5;
-  menuButtons=[{x:bx,y:by,w:bw,h:bh,text:'开始游戏',action:()=>{game.screen='prepare';stopAmbient();}}];
+  menuButtons=[{x:bx,y:by,w:bw,h:bh,text:'开始游戏',action:()=>{game.screen='prepare';game.showBackpack=false;game.showPauseMenu=false;stopAmbient();}}];
   drawButton(bx,by,bw,bh,'开始游戏','#6b3a1a','#ff8c42','#ffd700');
 
   // Export / Import buttons
@@ -1224,6 +1224,7 @@ export function renderPauseMenu(){
       if (!game.bossDefeated) game.backpack.length = 0;
       saveGame();
       game.screen='prepare';
+      game.showBackpack=false; game.showPauseMenu=false;
       stopAmbient();
     }},
     {x:bx2,y:by,w:bw,h:bh,action:()=>{game.showPauseMenu=false;}},
@@ -1762,7 +1763,7 @@ function renderVictory(){
   }
   const bw=200,bh=40;
   const byBtn=H-44;
-  victoryButtons.push({x:W/2-bw/2,y:byBtn,w:bw,h:bh,text:'返回准备',action:()=>{game.screen='prepare';stopAmbient();saveGame();}});
+  victoryButtons.push({x:W/2-bw/2,y:byBtn,w:bw,h:bh,text:'返回准备',action:()=>{game.screen='prepare';game.showBackpack=false;game.showPauseMenu=false;stopAmbient();saveGame();}});
   drawButton(W/2-bw/2,byBtn,bw,bh,'返回准备','#3a3a1a','#aaa','#ffd700');
 }
 
@@ -1806,7 +1807,7 @@ function renderDeath(){
   ctx.fillText('等级: '+game.player.level, W/2, H*0.44);
   const bw=200,bh=50;
   const bx=W/2-bw/2,by=H*0.55;
-  deathButtons=[{x:bx,y:by,w:bw,h:bh,text:'返回主菜单',action:()=>{game.screen='menu';startAmbient('menu');}}];
+  deathButtons=[{x:bx,y:by,w:bw,h:bh,text:'返回主菜单',action:()=>{game.screen='menu';game.showBackpack=false;game.showPauseMenu=false;startAmbient('menu');}}];
   drawButton(bx,by,bw,bh,'返回主菜单','#3a1a1a','#aaa','#ff4444');
 }
 
