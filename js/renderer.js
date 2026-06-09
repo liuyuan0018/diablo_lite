@@ -116,32 +116,55 @@ function renderPrepare(){
   ctx.fillStyle='#ffd700';
   ctx.fillText('准备战斗',W/2,45);
 
-  // Character bar
+  // Character bar — center the whole row
   const activeChar=getActiveCharacter();
+  const charName = activeChar ? activeChar.name : '--';
+  // Measure each piece in the font it will actually render with
+  ctx.font='13px sans-serif';
+  const labelW = ctx.measureText('角色：').width;
+  ctx.font='bold 14px sans-serif';
+  const nameW = ctx.measureText(charName).width;
+  ctx.font='11px sans-serif';
+  const switchLabelW = ctx.measureText('切换 ▶').width;
+  const switchW = switchLabelW + 14;
+  const newLabelW = ctx.measureText('+新角色').width;
+  const newW = newLabelW + 14;
+
   const charBarY=55;
+  const charH = 28;
+  const totalGroupW = labelW + 4 + nameW + 10 + switchW + 6 + newW;
+  const groupStartX = W/2 - totalGroupW/2;
+
+  // Label "角色："
   ctx.font='13px sans-serif';
   ctx.fillStyle='#888';
-  ctx.textAlign='center';
-  ctx.fillText('角色: ',W/2-55,charBarY+14);
+  ctx.textAlign='left';
+  ctx.fillText('角色：', groupStartX, charBarY + charH/2 + 5);
+
+  // Name (gold)
+  const nameX = groupStartX + labelW + 4;
   ctx.fillStyle='#ffd700';
   ctx.font='bold 14px sans-serif';
-  ctx.fillText(activeChar?activeChar.name:'--',W/2+8,charBarY+14);
+  ctx.fillText(charName, nameX, charBarY + charH/2 + 5);
 
-  const switchBW=70,switchBH=24;
-  const switchBX=W/2+60,switchBY=charBarY;
+  // Switch button
+  const switchBX = nameX + nameW + 10, switchBY = charBarY;
+  const switchBW = switchW, switchBH = charH;
   const switchHover=game.mouseX>=switchBX&&game.mouseX<=switchBX+switchBW&&game.mouseY>=switchBY&&game.mouseY<=switchBY+switchBH;
-  ctx.fillStyle=switchHover?'#3a3a4a':'#1a2a3a';
-  ctx.strokeStyle=switchHover?'#fff':'#4488ff';ctx.lineWidth=1;
+  ctx.fillStyle=switchHover?'#335577':'#1a2a3a';
+  ctx.strokeStyle=switchHover?'#88ccff':'#4488ff';ctx.lineWidth=1;
   roundRect(ctx,switchBX,switchBY,switchBW,switchBH,4);
   ctx.fill();ctx.stroke();
   ctx.fillStyle='#8af';ctx.font='11px sans-serif';
+  ctx.textAlign='center';
   ctx.fillText('切换 ▶',switchBX+switchBW/2,switchBY+switchBH/2+4);
 
-  const newBW=70;
-  const newBX=switchBX+switchBW+8,newBY=charBarY;
+  // New character button
+  const newBX = switchBX + switchBW + 6, newBY = charBarY;
+  const newBW = newW;
   const newHover=game.mouseX>=newBX&&game.mouseX<=newBX+newBW&&game.mouseY>=newBY&&game.mouseY<=newBY+switchBH;
-  ctx.fillStyle=newHover?'#3a3a4a':'#1a2a3a';
-  ctx.strokeStyle=newHover?'#fff':'#44aa44';ctx.lineWidth=1;
+  ctx.fillStyle=newHover?'#335533':'#1a2a1a';
+  ctx.strokeStyle=newHover?'#88ff88':'#44aa44';ctx.lineWidth=1;
   roundRect(ctx,newBX,newBY,newBW,switchBH,4);
   ctx.fill();ctx.stroke();
   ctx.fillStyle='#8f8';ctx.font='11px sans-serif';
@@ -150,7 +173,7 @@ function renderPrepare(){
   // Char bar button data (pushed after prepButtons reset below)
   const charBarBtns=[
     {x:switchBX,y:switchBY,w:switchBW,h:switchBH,action:()=>{game.showCharSelect=true;}},
-    {x:newBX,y:newBY,w:newBW,h:switchBH,action:()=>{
+    {x:newBX,y:newBY,w:newBW,h:charH,action:()=>{
       const name=prompt('输入角色名称:','勇者'+(game.characters.length+1));
       if(name===null)return;
       const c=createCharacter(name.trim()||('勇者'+(game.characters.length+1)));
