@@ -702,77 +702,94 @@ function renderProjectiles(){
 }
 
 function renderSkillEffects(){
+  // Legacy skillEffects (only non-aura deferred effects like singularitySpawn)
   for(const e of game.skillEffects){
     const sx=e.x-game.camera.x;
     const sy=e.y-game.camera.y;
     if(sx<-200||sx>canvas.width+200||sy<-200||sy>canvas.height+200)continue;
-    const progress=1-e.timer/e.duration;
-    if(e.type==='blackhole'){
-      const grad=ctx.createRadialGradient(sx,sy,0,sx,sy,e.radius);
-      grad.addColorStop(0,'rgba(80,20,120,0.8)');
-      grad.addColorStop(0.5,'rgba(60,10,90,0.5)');
-      grad.addColorStop(1,'rgba(40,5,60,0)');
-      ctx.fillStyle=grad;
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius,0,Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle='rgba(120,40,180,0.6)';
-      ctx.lineWidth=3;
-      const rot=progress*Math.PI*4;
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius*0.7,0,Math.PI*1.5);
-      ctx.stroke();
-      ctx.strokeStyle='rgba(80,20,140,0.4)';
-      ctx.lineWidth=2;
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius*0.9,rot,rot+Math.PI);
-      ctx.stroke();
-    }else if(e.type==='blizzard'){
-      ctx.fillStyle='rgba(50,100,200,0.25)';
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius,0,Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle='rgba(100,180,255,0.5)';
-      ctx.lineWidth=2;
-      ctx.setLineDash([8,8]);
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius,0,Math.PI*2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.strokeStyle='rgba(150,200,255,0.3)';
-      ctx.lineWidth=1;
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius*0.6,0,Math.PI*2);
-      ctx.stroke();
-    }else if(e.type==='poisonPool'){
-      ctx.fillStyle='rgba(0,180,0,0.2)';
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius,0,Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle='rgba(0,200,0,0.4)';
-      ctx.lineWidth=2;
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius,0,Math.PI*2);
-      ctx.stroke();
-      ctx.fillStyle='rgba(0,255,0,0.1)';
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius*0.5,0,Math.PI*2);
-      ctx.fill();
-    }else if(e.type==='harmonyMeteor'){
-      const progress=1-e.timer/e.duration;
-      const currentRadius=e.radius*progress;
-      ctx.strokeStyle=`rgba(255,200,50,${1-progress})`;
-      ctx.lineWidth=3;
-      ctx.beginPath();
-      ctx.arc(sx,sy,currentRadius,0,Math.PI*2);
-      ctx.stroke();
-    }else if(e.type==='singularityImplosion'){
-      const progress=1-e.timer/e.duration;
-      ctx.strokeStyle=`rgba(136,68,255,${1-progress*0.5})`;
-      ctx.lineWidth=4;
-      ctx.beginPath();
-      ctx.arc(sx,sy,e.radius*(1-progress*0.3),0,Math.PI*2);
-      ctx.stroke();
+    // singularitySpawn has no visual — just skip
+  }
+  // Active auras (aura engine)
+  for(const a of game.activeAuras){
+    const sx=a.x-game.camera.x;
+    const sy=a.y-game.camera.y;
+    if(sx<-200||sx>canvas.width+200||sy<-200||sy>canvas.height+200)continue;
+    const progress=Math.min(1, a.elapsed / a.duration);
+
+    switch(a.style){
+      case 'blackhole': {
+        const grad=ctx.createRadialGradient(sx,sy,0,sx,sy,a.radius);
+        grad.addColorStop(0,'rgba(80,20,120,0.8)');
+        grad.addColorStop(0.5,'rgba(60,10,90,0.5)');
+        grad.addColorStop(1,'rgba(40,5,60,0)');
+        ctx.fillStyle=grad;
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius,0,Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle='rgba(120,40,180,0.6)';
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius*0.7,0,Math.PI*1.5);
+        ctx.stroke();
+        ctx.strokeStyle='rgba(80,20,140,0.4)';
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius*0.9,progress*Math.PI*4,progress*Math.PI*4+Math.PI);
+        ctx.stroke();
+        break;
+      }
+      case 'blizzard': {
+        ctx.fillStyle='rgba(50,100,200,0.25)';
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius,0,Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle='rgba(100,180,255,0.5)';
+        ctx.lineWidth=2;
+        ctx.setLineDash([8,8]);
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius,0,Math.PI*2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle='rgba(150,200,255,0.3)';
+        ctx.lineWidth=1;
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius*0.6,0,Math.PI*2);
+        ctx.stroke();
+        break;
+      }
+      case 'poisonPool': {
+        ctx.fillStyle='rgba(0,180,0,0.2)';
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius,0,Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle='rgba(0,200,0,0.4)';
+        ctx.lineWidth=2;
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius,0,Math.PI*2);
+        ctx.stroke();
+        ctx.fillStyle='rgba(0,255,0,0.1)';
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius*0.5,0,Math.PI*2);
+        ctx.fill();
+        break;
+      }
+      case 'harmonyMeteor': {
+        const mr = a.radius * progress;
+        ctx.strokeStyle=`rgba(255,200,50,${1-progress})`;
+        ctx.lineWidth=3;
+        ctx.beginPath();
+        ctx.arc(sx,sy,mr,0,Math.PI*2);
+        ctx.stroke();
+        break;
+      }
+      case 'singularityImplosion': {
+        ctx.strokeStyle=`rgba(136,68,255,${1-progress*0.5})`;
+        ctx.lineWidth=4;
+        ctx.beginPath();
+        ctx.arc(sx,sy,a.radius*(1-progress*0.3),0,Math.PI*2);
+        ctx.stroke();
+        break;
+      }
     }
   }
 

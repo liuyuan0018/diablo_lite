@@ -1,56 +1,45 @@
 # 当前热点
 
-> 2026-06-09 | 装备系统配置驱动化重构
+> 2026-06-09 | 技能系统原子化 + 表现层分离
 
 ## 刚发生
 
-将 Diablo Lite 装备系统从硬编码 if-else 重构为配置驱动架构。核心成果：
+技能系统从 switch-case 大块重构为原子架构，确立了技能→光环→Buff 三层模型。
 
-### 三张配置表
+### 核心洞察
 
-- `js/config/buff-table.js` — 所有 stat Buff 定义为数据行（传说威能/法器条件/套装 stat/技能计时），每行包含 condition + effects
-- `js/config/equipment-table.js` — SLOT_DEF / ARTIFACT_DEFS / QUALITY_* 的唯一真相源，config.js 改为 re-export
-- `js/config/drop-table.js` — 品质掉落曲线 + 词条池 + weightedChoice 选择器
+`periodicDamage` 不是独立原子 — 它是光环（aura）的一个 modifier。同样地，pull、debuff 施加都是光环 modifier。
 
-### 两个运行时引擎
+三者关系：**技能通过原子创建光环，光环通过 modifier 向实体施加 Buff。** 是"动作→区域→状态"的因果链。
 
-- `js/buff-engine.js` — rebuildAllBuffs（装备→buff实例）→ evaluateStatCalc（条件求值+效果聚合）→ getActiveBuffs（buff栏渲染）
-- `js/config/skill-hooks.js` + buff-engine dispatchHook — 5 个钩子（onTeleportCast/onBlackholeCast/onBlizzardCast/onProjectileSpawn/onSingularitySpawn），每条 `{id, condition, apply}`
+### 技能原子（6 种）
 
-### 数据流
+movement / spawnAura / applyBuff / stateTrack / cooldownMod / conditional
 
-```
-equipment-table.js ──→ equipment-factory.js ──→ equipment.js (掉落/拾取)
-                              │
-buff-table.js ──→ buff-engine.js ──→ calcPlayerStats (stat 计算)
-                              │
-skill-hooks.js ──→ buff-engine.js ──→ skills.js (技能参数修改)
-                              │
-drop-table.js ──→ equipment-factory.js (品质曲线)
-```
+每个技能是 atoms[] 列表，castSkill 变为统一执行器遍历原子。元素追踪（3处）和时空共鸣（2处）的 copy-paste 通过 stateTrack/cooldownMod 消除。
 
-### calcPlayerStats 重构
+### 光环引擎
 
-前：遍历装备累加 → 查 artifact if-else → 查 set if-else → 查 legendary 手工乘 → 返回
-后：`rebuildAllBuffs()` + `evaluateStatCalc()` → 聚合 deltas → 只保留 fireballDmg 手工处理（乘 bATK 非 baseATK）
+`js/atoms/aura-engine.js` 的 `tickAuras(dt)` 替代了 updateSkillEffects 的 ~140 行 switch。7 种光环风格定义在 aura-defs.js，每种由 modifier 列表组成。
 
-### 未配置化
+modifier: damageTick(连续/间隔/单发/终结) / pull(恒定/递增) / applyBuff / onEnd
 
-内爆逻辑、谐律叠层/爆发、harmonyEye 追踪弹、ringElement 轮转、synergies（点燃/冻结/双倍/CD减半）——复杂多步骤逻辑暂留在代码中。
+### 表现层分离
 
-## 设计提炼
+`js/atoms/skill-presentation.js` 是唯一引用 particles.js/audio.js/renderer.js 的文件。引擎层只调用 `present.xxx()`，不看具体实现。
 
-- 掉落表 `QUALITY_CURVE` 每行自带 `condition` 字段（如 `{ type: 'minStage', value: 3 }`），`weightedChoice(items, ctx)` 按 ctx 过滤后再加权随机。行自己声明可用条件，不需外置 STAGE_RESTRICTIONS 或 `Math.min(q, cap)` 补救逻辑。
+### 代码消除
+
+skills.js castSkill switch (~170行) + updateSkillEffects switch (~140行) → createAura() + tickAuras() + present
 
 ## 活跃领域
 
-- 配置驱动架构 ([[concepts/Config-Driven-Buff-System|Buff/装备系统]])
-- 装备系统稳定性 ([[concepts/Equipment-Data-Flow-Pitfalls|装备数据流转陷阱]])
-- Build 约束体系 ([[concepts/Build-Constraint-System|Build 约束体系]])
-- Build 测试场 ([[concepts/Build-Testfield|测试场]])
+- 技能原子化 ([[concepts/Skill-Atom-Aura-Architecture|三层架构]])
+- 配置驱动 ([[concepts/Config-Driven-Buff-System|Buff/装备系统]])
+- 装备系统 ([[concepts/Equipment-Data-Flow-Pitfalls|陷阱]])
 
 ## 最近归档
 
-- [[concepts/Config-Driven-Buff-System|配置驱动的 Buff/装备系统]] — 三表两引擎架构，硬编码→数据驱动
-- [[concepts/Equipment-Data-Flow-Pitfalls|装备数据流转陷阱]] — 手工重建反模式、字段丢失、三处流转 Bug 修复
-- [[concepts/Game-Persistence|游戏存档与持久化]] — localStorage+sessionStorage 双保险、导出/导入
+- [[concepts/Skill-Atom-Aura-Architecture|技能原子/光环/Buff 架构]] — 因果链、6原子、7光环、表现层分离
+- [[concepts/Config-Driven-Buff-System|配置驱动的 Buff/装备]] — 三表两引擎
+- [[concepts/Equipment-Data-Flow-Pitfalls|装备数据流转陷阱]]

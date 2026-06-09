@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-09] save | 技能原子/光环/Buff 三层架构
+- 类型: concept
+- 文件: wiki/concepts/Skill-Atom-Aura-Architecture.md
+- 来源: 技能系统重构 — 技能拆为 6 种原子，光环作为 modifier 容器，Buff 为实体状态，表现层分离到 skill-presentation.js
+
 ## [2026-06-09] save | 掉落表 condition 字段 + Buff 系统更新
 - 类型: concept (update)
 - 文件: wiki/concepts/Config-Driven-Buff-System.md

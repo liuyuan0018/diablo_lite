@@ -3,6 +3,7 @@
 // ============================================================
 import { game } from './game-state.js';
 import { PLAYER_RADIUS, MAP_W, MAP_H, DIFFICULTY, TEST_DIFF, MONSTER_BASE, MAX_MONSTERS } from './config.js';
+import { createAura } from './atoms/aura-engine.js';
 import { dist, clamp, rand, randChoice, angle } from './helpers.js';
 import { damagePlayer } from './player.js';
 import { spawnParticles } from './particles.js';
@@ -257,10 +258,7 @@ function processMonsterDeaths(){
       }
     }
     if(m.type==='devourer'){
-      game.skillEffects.push({
-        type:'poisonPool',x:m.x,y:m.y,radius:50,
-        duration:4,timer:4,damage:m.atk*0.5,
-      });
+      createAura('poisonPool', { x: m.x, y: m.y, damage: m.atk * 0.5 });
     }
     if(m.isElite&&m.affix==='split'){
       for(let j=0;j<2+Math.floor(Math.random()*2);j++){

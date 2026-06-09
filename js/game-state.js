@@ -48,6 +48,7 @@ export const game = {
   monsters:[],
   projectiles:[],
   skillEffects:[],
+  activeAuras:[], // aura engine
   particles:[],
   towers:[],
   drops:[],
