@@ -217,10 +217,19 @@ function renderPrepare(){
   if(game.hoveredItem && !game.selectedEquipSlot){
     renderCompareTooltip(game.hoveredItem);
   }
-  // Testfield button
+  // Pre-calc stage layout so we can position testfield button correctly
+  const stageY = narrow ? ey + eh + 30 : H - 210;
+  const btnW = narrow ? 90 : 110, btnH = 54, gap = narrow ? 6 : 10;
+  const cols = narrow ? 4 : 5;
+  const totalW = cols * btnW + (cols - 1) * gap;
+  const startX = (W - totalW) / 2;
+  const totalRows = narrow ? Math.ceil(10 / cols) : 2;
+  const stageEndY = stageY + totalRows * (btnH + gap) - gap;
+
+  // Testfield button — on narrow screens, below stage select; otherwise at bottom
   const tfBtnW = 160, tfBtnH = 44;
   const tfBtnX = 10;
-  const tfBtnY = H - tfBtnH - 10;
+  const tfBtnY = narrow ? Math.min(stageEndY + 15, H - tfBtnH - 10) : H - tfBtnH - 10;
   const tfHover = game.mouseX >= tfBtnX && game.mouseX <= tfBtnX + tfBtnW && game.mouseY >= tfBtnY && game.mouseY <= tfBtnY + tfBtnH;
   ctx.fillStyle = tfHover ? '#2a2a1a' : '#1a1a0a';
   ctx.strokeStyle = tfHover ? '#ffd700' : '#886600';
@@ -237,15 +246,12 @@ function renderPrepare(){
     text: '测试场',
     action: () => { startTestfield(); },
   });
-  const stageY=H-210;
+
+  // Stage select
   ctx.font='bold 18px sans-serif';
   ctx.fillStyle='#ffd700';
   ctx.textAlign='center';
   ctx.fillText('选择关卡',W/2,stageY-15);
-  const btnW=narrow ? 100 : 110, btnH=54, gap=8;
-  const cols = narrow ? 3 : 5;
-  const totalW=cols*btnW+(cols-1)*gap;
-  const startX=(W-totalW)/2;
   for(let i=0;i<10;i++){
     const row=Math.floor(i/cols);
     const col=i%cols;
