@@ -103,7 +103,23 @@ export function registerInputHandlers(){
   },{passive:false});
 
   window.addEventListener('resize',()=>{
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
+    const vw = window.visualViewport || window;
+    const w = vw.width || window.innerWidth;
+    const h = vw.height || window.innerHeight;
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = w + 'px';
+    canvas.style.height = h + 'px';
   });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const w = window.visualViewport.width;
+      const h = window.visualViewport.height;
+      canvas.width = w;
+      canvas.height = h;
+      canvas.style.width = w + 'px';
+      canvas.style.height = h + 'px';
+    });
+  }
 }

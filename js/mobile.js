@@ -104,8 +104,9 @@ export function initMobile() {
   canvas.addEventListener('touchstart', (e) => {
     for (const t of e.changedTouches) {
       if (canvasTouchId !== null) continue;
-      // Don't handle if touch started on an overlay button (they preventDefault)
-      if (e.target !== canvas && e.target.tagName !== 'CANVAS') continue;
+      // Skip touches on mobile control buttons (their own handlers pick them up)
+      const target = e.target;
+      if (target && target.closest && (target.closest('#joystickZone') || target.closest('#skillBtns') || target.closest('#btnBackpack') || target.closest('#btnPause'))) continue;
       e.preventDefault();
       canvasTouchId = t.identifier;
       const rect = canvas.getBoundingClientRect();

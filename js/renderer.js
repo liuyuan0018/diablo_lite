@@ -52,10 +52,10 @@ function renderMenu(){
     ctx.beginPath();ctx.arc(x,y,2+Math.sin(Date.now()/1000+i*3)*1,0,Math.PI*2);ctx.fill();
   }
   ctx.textAlign='center';
-  ctx.font='bold 64px sans-serif';
+  ctx.font=`bold ${W<400?36:64}px sans-serif`;
   ctx.fillStyle='#ff6b35';
   ctx.fillText('DIABLO LITE',W/2,H*0.3);
-  ctx.font='20px sans-serif';
+  ctx.font=`${W<400?14:20}px sans-serif`;
   ctx.fillStyle='#888';
   ctx.fillText('轻量版暗黑风刷怪游戏',W/2,H*0.3+50);
   const bw=220,bh=56;
@@ -167,9 +167,13 @@ function renderPrepare(){
   ];
 
   const stats=calcPlayerStats();
-  const px2=40,py2=100,pw2=280,ph2=240;
+  const narrow = W < 640;
+  // Stats panel — on narrow screens, span full width at top
+  const spx = narrow ? 10 : 40;
+  const spw = narrow ? W - 20 : 280;
+  const spy = 100, sph = narrow ? 110 : 240;
   ctx.fillStyle='#111122';ctx.strokeStyle='#334';ctx.lineWidth=1;
-  roundRect(ctx,px2,py2,pw2,ph2,8);
+  roundRect(ctx, spx, spy, spw, sph, 8);
   ctx.fill();ctx.stroke();
   ctx.textAlign='left';
   ctx.font='14px sans-serif';
@@ -183,11 +187,23 @@ function renderPrepare(){
     `弹道速度: ${stats.bulletSpeed}`,
     `拾取范围: ${stats.pickupRange}`,
   ];
+  const lineH = narrow ? 22 : 28;
+  const cols2 = narrow ? 2 : 1;
   lines.forEach((txt,i)=>{
     ctx.fillStyle=i===0?'#ffd700':'#ccc';
-    ctx.fillText(txt,px2+15,py2+25+i*28);
+    if (narrow) {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      ctx.fillText(txt, spx + 15 + col * (spw / 2), spy + 25 + row * lineH);
+    } else {
+      ctx.fillText(txt, spx + 15, spy + 25 + i * lineH);
+    }
   });
-  const ex=W-320,ey=100,ew=280,eh=260;
+  // Equipment grid — on narrow screens, below stats
+  const ex = narrow ? 10 : W - 320;
+  const ey = narrow ? spy + sph + 10 : 100;
+  const ew = narrow ? W - 20 : 280;
+  const eh = narrow ? Math.min(240, H - ey - 250) : 260;
   renderEquipGrid(ex, ey, ew, eh, game.equipment, equipSlots, prepButtons);
   prepButtons=[];
   for(const b of charBarBtns)prepButtons.push(b);
@@ -226,12 +242,13 @@ function renderPrepare(){
   ctx.fillStyle='#ffd700';
   ctx.textAlign='center';
   ctx.fillText('选择关卡',W/2,stageY-15);
-  const btnW=110,btnH=54,gap=10;
-  const totalW=5*btnW+4*gap;
+  const btnW=narrow ? 100 : 110, btnH=54, gap=8;
+  const cols = narrow ? 3 : 5;
+  const totalW=cols*btnW+(cols-1)*gap;
   const startX=(W-totalW)/2;
   for(let i=0;i<10;i++){
-    const row=Math.floor(i/5);
-    const col=i%5;
+    const row=Math.floor(i/cols);
+    const col=i%cols;
     const bx=startX+col*(btnW+gap);
     const by=stageY+row*(btnH+gap);
     const unlocked=game.unlockedStages[i];

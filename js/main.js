@@ -9,9 +9,18 @@ import { gameLoop } from './gameplay.js';
 import { startAmbient } from './audio.js';
 import { initMobile } from './mobile.js';
 
+function syncCanvasSize(){
+  const vw = window.visualViewport || window;
+  const w = vw.width || window.innerWidth;
+  const h = vw.height || window.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+}
+
 function init(){
-  canvas.width=window.innerWidth;
-  canvas.height=window.innerHeight;
+  syncCanvasSize();
   loadGame();
   game.screen='menu';
   startAmbient('menu');
