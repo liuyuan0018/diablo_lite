@@ -23,7 +23,7 @@ canvas{display:block;width:100vw;height:100vh;cursor:crosshair}
 #btnBackpack,#btnPause{position:absolute;top:12px;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.5);color:#fff;font-size:13px;font-weight:bold;text-align:center;display:flex;align-items:center;justify-content:center;outline:none;pointer-events:auto;-webkit-tap-highlight-color:transparent}
 #btnBackpack{left:12px;top:calc(12px + env(safe-area-inset-top,0px))}
 #btnPause{right:12px;top:calc(12px + env(safe-area-inset-top,0px))}
-@media(pointer:coarse){#mobileControls{display:block}}
+@media(pointer:coarse), screen and (max-width:1024px){#mobileControls{display:block}}
 </style>
 </head>
 <body>
