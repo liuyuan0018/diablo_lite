@@ -2,6 +2,9 @@
 // SECTION 1: CONSTANTS & CONFIG
 // ============================================================
 import { clamp, rand, randChoice } from './helpers.js';
+// Used locally AND re-exported below
+import { QUALITY_NAMES, QUALITY_COLORS, QUALITY_MULT, SLOT_DEF, ARTIFACT_DEFS } from './config/equipment-table.js';
+export { QUALITY_NAMES, QUALITY_COLORS, QUALITY_MULT, SLOT_DEF, ARTIFACT_DEFS };
 
 export const MAP_W = 3000, MAP_H = 3000;
 export const TILE_SIZE = 64;
@@ -61,26 +64,11 @@ export const SKILL_CONFIG = [
   { name:'暴雪', icon:'❄', baseCD:15, desc:'Blizzard' },
 ];
 
-export const QUALITY_NAMES = ['普通','魔法','稀有','传说','套装'];
-export const QUALITY_COLORS = ['#aaaaaa','#4488ff','#ffd700','#ff6600','#44ff44'];
-export const QUALITY_MULT = [1, 1.4, 1.9, 2.5, 2.5]; // set = legendary mult
 export const AFFIX_COLORS = { fast:'#ffd700', split:'#44ff44', explode:'#ff4444', vampiric:'#aa44ff', shielded:'#4488ff' };
 export const MAX_LEVEL = 70;
 
 export const TEST_DIFF = { power:0.3, bossMult:1, spawnRate:0.3, eliteEvery:8, killsBoss:15, expMult:50 };
 export const TEST_STAGE = { name:'测试关卡', monsterTypes:['zombie','skeleton','ghost','exploder','spearman','spider','shadowMage','devourer','gargoyle','deathKnight'], bossType:'zombie' };
-
-export const SLOT_DEF = {
-  weapon:{ stat:'atk', name:'武器', base:10, desc:'攻击力' },
-  helmet:{ stat:'cdr', name:'头盔', base:3, desc:'冷却缩减' },
-  armor:{ stat:'maxHp', name:'护甲', base:25, desc:'最大生命' },
-  ring:{ stat:'bulletSpeed', name:'戒指', base:30, desc:'弹道速度' },
-  amulet:{ stat:'pickupRange', name:'项链', base:12, desc:'拾取范围' },
-  boots:{ stat:'movespeed', name:'靴子', base:0, desc:'移动速度', legendary:true },
-  bracers:{ stat:'atk', name:'护腕', base:8, desc:'攻击力' },
-  belt:{ stat:'maxHp', name:'腰带', base:20, desc:'最大生命' },
-  artifact:{ stat:'artifact', name:'法器', base:0, desc:'特殊效果', legendary:true },
-};
 
 export const LEGENDARY_POWERS = [
   { name:'传送余震', desc:'传送后在原地留下黑洞(+{v}%范围)', min:30, max:80, stat:'blackholeSize' },
@@ -131,30 +119,6 @@ export const SYNERGY_DEFS = [
     desc: '传送后2s内下一个非传送技能CD减半',
   },
 ];
-
-export const ARTIFACT_DEFS = [
-  { id:'harmonyEye', name:'谐律之眼', setName:'elementalist', desc:'谐律爆发追踪单体，伤害+50%范围缩小' },
-  { id:'fieldGenerator', name:'力场发生器', setName:'chronomancer', desc:'力场持续+3s，不被坍缩消耗' },
-  { id:'feather', name:'缓落之羽', setName:null, desc:'HP>80%时技能伤害+25%移速+20%' },
-  { id:'criticalFragment', name:'临界碎片', setName:null, desc:'任一技能CD<3s时所有技能伤害+30%' },
-];
-
-export function ilvlFactor(ilv){ return 0.35 + ilv*0.0236; }
-
-export function rollIlvl(stageIdx){
-  if(stageIdx>=3)return 70;
-  const ranges=[[1,15],[8,22],[15,30]];
-  const r=ranges[stageIdx]||ranges[0];
-  return Math.floor(rand(r[0],r[1]+1));
-}
-
-export function rollStatValue(slot,quality,ilvl){
-  const def=SLOT_DEF[slot];
-  if(!def||def.base===0)return 0;
-  const base=def.base*ilvlFactor(ilvl)*QUALITY_MULT[quality];
-  const v=base*(0.75+Math.random()*0.5);
-  return Math.round(v);
-}
 
 export function rollLegendaryPower(ilvl){
   const p={...randChoice(LEGENDARY_POWERS)};

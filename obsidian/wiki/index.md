@@ -6,6 +6,7 @@
 
 ## 核心概念
 
+- [[concepts/Config-Driven-Buff-System|配置驱动的 Buff/装备系统]] — 三表两引擎架构：Buff 表 + 装备表 + 掉落表 + Buff Engine + Skill Hooks
 - [[concepts/Equipment-Data-Flow-Pitfalls|装备数据流转陷阱]] — 手工重建对象反模式、字段丢失、流转链路排查清单
 - [[concepts/Game-Persistence|游戏存档与持久化]] — localStorage + sessionStorage 双保险、导出/导入、自动存档触发点
 - [[concepts/Elementalist-Harmony-Stacking|元素使谐律叠层]] — 自动攻击癞子牌、autoUsed 单次限制、同元素重置到 1 而非 0

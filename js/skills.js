@@ -8,6 +8,7 @@ import { spawnParticles } from './particles.js';
 import { calcPlayerStats, damagePlayer, getRingMultiplier } from './player.js';
 import { getSetEffects } from './sets.js';
 import { getSynergyEffects } from './synergies.js';
+import { addTimedBuff, dispatchHook } from './buff-engine.js';
 import { recordDamage } from './testfield.js';
 import { addFloatingNumber } from './renderer.js';
 import { playSFX } from './audio.js';
@@ -29,15 +30,17 @@ export function castSkill(wx,wy){
       p.y=clamp(wy,PLAYER_RADIUS,MAP_H-PLAYER_RADIUS);
       playSFX('teleport');
       spawnParticles(p.x,p.y,15,'#8844ff',120,4);
-      const tpCD=Math.max(0.5,SKILL_CONFIG[0].baseCD*(1-cdr/100)-fx.teleportCD);
-      p.skillCooldowns[idx]=tpCD;
-      if(fx.blackholeSize>0){
-        const r=120*(1+fx.blackholeSize/100);
-        game.skillEffects.push({type:'blackhole',x:oldX,y:oldY,radius:r,duration:1.5,timer:1.5,pullForce:120,damage:5});
-        spawnParticles(oldX,oldY,12,'#6622aa',80,4);
+      const tpState = { cooldown: SKILL_CONFIG[0].baseCD * (1 - cdr / 100), spawnEffects: [] };
+      dispatchHook('onTeleportCast', tpState, { fx, sets, player: p, equipment: game.equipment });
+      p.skillCooldowns[idx] = Math.max(0.5, tpState.cooldown);
+      for (const eff of tpState.spawnEffects) {
+        if (eff.type === 'blackhole') {
+          game.skillEffects.push({type:'blackhole',x:oldX,y:oldY,radius:eff.radius,duration:eff.duration,timer:eff.duration,pullForce:eff.pullForce,damage:eff.damage});
+          spawnParticles(oldX,oldY,12,'#6622aa',80,4);
+        }
       }
-      p.buffs=p.buffs.filter(b=>b.type!=='ghost');
-      if(game.equipment.boots&&game.equipment.boots.quality===3)p.buffs.push({type:'ghost',timer:2});
+      p.buffs=p.buffs.filter(b=>b.type!=='ghost'); // compat: clear old-style ghost
+      if(game.equipment.boots&&game.equipment.boots.quality===3)addTimedBuff('ghost');
       // Temporal Resonance synergy
       const synTp = getSynergyEffects();
       if (synTp.temporalResonance) {
@@ -46,20 +49,15 @@ export function castSkill(wx,wy){
       break;
     }
     case 1:{
-      const dur=2.5+fx.blackholeDur;
-      const bhRadius = sets.chronomancer && sets.chronomancer.active.two ? 220 * 1.3 : 220;
-      game.skillEffects.push({type:'blackhole',x:wx,y:wy,radius:bhRadius,duration:dur,timer:dur,pullForce:180,damage:8*(1+fx.fireballDmg/100)});
+      const bhState = { radius: 220, duration: 2.5, tickDmg: 8, spawnEffects: [] };
+      dispatchHook('onBlackholeCast', bhState, { fx, sets, player: p, equipment: game.equipment });
+      game.skillEffects.push({type:'blackhole',x:wx,y:wy,radius:bhState.radius,duration:bhState.duration,timer:bhState.duration,pullForce:180,damage:bhState.tickDmg});
       playSFX('blackHole');
       spawnParticles(wx,wy,20,'#6622aa',100,5);
-      // Chronomancer 2-piece: singularity field
-      if (sets.chronomancer && sets.chronomancer.active.two) {
-        game.skillEffects.push({
-          type: 'singularitySpawn',
-          x: wx, y: wy,
-          radius: 220,
-          timer: dur, duration: dur,
-          damage: 0,
-        });
+      for (const eff of bhState.spawnEffects) {
+        if (eff.type === 'singularitySpawn') {
+          game.skillEffects.push({type:'singularitySpawn',x:wx,y:wy,radius:eff.radius,timer:bhState.duration,duration:bhState.duration,damage:0});
+        }
       }
       // Arcane element tracking for Elementalist set
       castElement = 'arcane';
@@ -82,9 +80,9 @@ export function castSkill(wx,wy){
       break;
     }
     case 2:{
-      const r=260*(1+fx.blizzardSize/100);
-      const slow=0.5*(1+fx.blizzardSlow/100);
-      game.skillEffects.push({type:'blizzard',x:wx,y:wy,radius:r,duration:3,timer:3,tickTimer:0.5,damage:22*(1+fx.fireballDmg/100),slowPct:Math.min(slow,0.9)});
+      const blState = { radius: 260, slowPct: 0.5, tickDmg: 22 };
+      dispatchHook('onBlizzardCast', blState, { fx, sets, player: p, equipment: game.equipment });
+      game.skillEffects.push({type:'blizzard',x:wx,y:wy,radius:blState.radius,duration:3,timer:3,tickTimer:0.5,damage:blState.tickDmg,slowPct:Math.min(blState.slowPct,0.9)});
       playSFX('blizzard');
       spawnParticles(wx,wy,25,'#4488ff',80,4);
       // Chronomancer 3-piece: implosion check
@@ -294,8 +292,9 @@ export function updateSkillEffects(dt){
       }
       case 'singularitySpawn': {
         if (e.timer <= 0) {
-          const hasFieldGen = game.equipment.artifact && game.equipment.artifact.artifactId === 'fieldGenerator';
-          const fieldDuration = hasFieldGen ? 7 : 4;
+          const fgState = { duration: 4 };
+          dispatchHook('onSingularitySpawn', fgState, { fx: {}, sets: {}, player: game.player, equipment: game.equipment });
+          const fieldDuration = fgState.duration;
           game.player.singularityFields.push({
             x: e.x, y: e.y,
             radius: 220,

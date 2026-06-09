@@ -8,13 +8,13 @@ import { spawnParticles } from './particles.js';
 import { playSFX } from './audio.js';
 import { getSetEffects } from './sets.js';
 import { getSynergyEffects } from './synergies.js';
+import { rebuildAllBuffs, evaluateStatCalc, hasBuff, tickTimedBuffs, dispatchHook } from './buff-engine.js';
 
 export function damagePlayer(amount){
   const p=game.player;
   const stats=calcPlayerStats();
   const dr=stats.setDmgReduc||0;
-  const ghostBuff=p.buffs.find(b=>b.type==='ghost');
-  let dmg=ghostBuff?amount*0.5:amount;
+  let dmg=hasBuff('ghost')?amount*0.5:amount;
   dmg=dmg*(1-Math.min(dr,0.8)); // cap DR at 80%
   p.hp-=dmg;
 }
@@ -33,62 +33,37 @@ export function calcPlayerStats(sandbox){
   const lv=game.player.level;
   const baseHP=100+(lv-1)*5;
   const baseATK=10+(lv-1)*2;
-  let bHP=0,bATK=0,bCDR=0,bSpeed=0,bRange=0,bMove=0;
-  const eq=sandbox?(game.sandboxEquipment||game.equipment):game.equipment;
-  for(const slot of Object.keys(eq)){
-    const e=eq[slot];
-    if(!e||e.statValue===undefined)continue;
-    switch(e.stat){
-      case 'atk':bATK+=e.statValue;break;
-      case 'cdr':bCDR+=e.statValue;break;
-      case 'maxHp':bHP+=e.statValue;break;
-      case 'bulletSpeed':bSpeed+=e.statValue;break;
-      case 'pickupRange':bRange+=e.statValue;break;
-      case 'movespeed':bMove+=e.statValue;break;
-    }
-  }
-  const bSpeedVal=BASE_BULLET_SPEED+bSpeed;
+
+  // Rebuild equipment-derived buffs, then evaluate
+  rebuildAllBuffs(sandbox);
+  const deltas = evaluateStatCalc();
+
+  // Extract additive stats from buff engine deltas
+  const bHP    = (deltas.maxHp       ? deltas.maxHp.add       : 0);
+  const bATK   = (deltas.atk         ? deltas.atk.add         : 0);
+  const bCDR   = (deltas.cdr         ? deltas.cdr.add         : 0);
+  const bSpeed = (deltas.bulletSpeed ? deltas.bulletSpeed.add : 0);
+  const bRange = (deltas.pickupRange ? deltas.pickupRange.add : 0);
+  const bMove  = (deltas.movespeed   ? deltas.movespeed.add   : 0);
+
+  // Multiplicative effects from buff engine
+  const atkMul    = deltas.atk      ? deltas.atk.mul      : 1;
+  const moveMul   = deltas.moveMult ? deltas.moveMult.mul : 1;
+  const bDR       = deltas.dmgReduc ? deltas.dmgReduc.add : 0;
+
+  // Skill-modifying legendary effects (pierce, blizzardSize, etc.)
   const fx=getLegendaryEffects(sandbox);
 
-  const sets = getSetEffects(sandbox);
-  let setDmgMult = 1;
-  let setDmgReduc = 0;
-
-  // Elementalist 2-piece: +15% per harmony stack
-  if (sets.elementalist && sets.elementalist.active.two) {
-    setDmgMult += game.player.elementalistStacks * 0.15;
-  }
-  // Elementalist 4-piece: 10% DR per harmony stack
-  if (sets.elementalist && sets.elementalist.active.four) {
-    setDmgReduc += game.player.elementalistStacks * 0.10;
-  }
-
+  // fireballDmg applies only to bATK, not baseATK — handled manually
+  const bSpeedVal=BASE_BULLET_SPEED+bSpeed;
   const fireRate = BASE_FIRE_RATE + (bSpeedVal - BASE_BULLET_SPEED) * 0.01;
-  const finalAtk = Math.round(baseATK + bATK * (1 + fx.fireballDmg / 100));
-  const scaledAtk = Math.round(finalAtk * setDmgMult);
+  const finalAtk = Math.round((baseATK + bATK * (1 + fx.fireballDmg / 100)) * atkMul);
 
-  // Artifact effects
-  let artifactAtk = scaledAtk;
-  let moveMult = 1;
-  const art = game.equipment.artifact;
-  if (art && art.artifactId === 'feather') {
-    const hpRatio = game.player.hp / Math.max(1, game.player.maxHp);
-    if (hpRatio > 0.8) {
-      const ratio = Math.min(1, (hpRatio - 0.8) / 0.2);
-      artifactAtk = Math.round(scaledAtk * (1 + ratio * 0.25));
-      moveMult = 1 + ratio * 0.20;
-    }
-  }
-  if (art && art.artifactId === 'criticalFragment') {
-    const anyLowCD = game.player.skillCooldowns.some(cd => cd > 0 && cd < 3);
-    if (anyLowCD) {
-      artifactAtk = Math.round(scaledAtk * 1.30);
-    }
-  }
+  const sets = getSetEffects(sandbox);
+  const setDmgMult = atkMul; // keep for backward compat — now from buff engine
 
   const ringEl = game.player.ringElement;
-  const ringMult = game.player.ringCycleTimer; // for display
-  return {maxHP: baseHP + bHP, atk: artifactAtk, cdr: Math.min(bCDR + fx.globalCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, moveMult, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc, synergies: getSynergyEffects(), ringElement: ringEl, ringTimer: ringMult};
+  return {maxHP: baseHP + bHP, atk: finalAtk, cdr: Math.min(bCDR, 60), bulletSpeed: bSpeedVal, pickupRange: BASE_PICKUP_RANGE + bRange, movespeed: bMove, moveMult: moveMul, fireRate, legendary: fx, sets, setDmgMult, setDmgReduc: bDR, synergies: getSynergyEffects(), ringElement: ringEl, ringTimer: game.player.ringCycleTimer};
 }
 
 export function getRingMultiplier(element) {
@@ -126,6 +101,9 @@ export function updatePlayer(dt){
     p.ringCycleTimer += dt;
     if (p.ringCycleTimer >= 4) { p.ringCycleTimer -= 4; p.ringElement = (p.ringElement + 1) % 3; }
   }
+  // Timed buffs (ghost, etc.) — managed by buff engine
+  tickTimedBuffs(dt);
+  // Legacy compat: also clean up old-style ghost buffs
   for(let i=p.buffs.length-1;i>=0;i--){
     const b=p.buffs[i];
     b.timer-=dt;
@@ -180,12 +158,14 @@ export function updatePlayer(dt){
     const a=angle(p.x,p.y,nearest.x,nearest.y);
     const spread=(Math.random()-0.5)*0.1;
     const fx=getLegendaryEffects();
+    const hookState = { pierce: 0 };
+    dispatchHook('onProjectileSpawn', hookState, { fx, sets: {}, player: p, equipment: game.equipment });
     game.projectiles.push({
       x:p.x,y:p.y,
       vx:Math.cos(a+spread)*speed,
       vy:Math.sin(a+spread)*speed,
       damage:p.atk,size:5,isEnemy:false,color:'#ff8800',
-      life:2, pierce:fx.pierce||0,
+      life:2, pierce:hookState.pierce,
     });
     playSFX('fire');
     p.fireTimer=1/p.fireRate;

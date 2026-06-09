@@ -2,83 +2,20 @@
 // SECTION 11: EQUIPMENT
 // ============================================================
 import { game } from './game-state.js';
-import { SLOT_DEF, QUALITY_NAMES, QUALITY_COLORS, rollIlvl, rollStatValue, rollLegendaryPower, MAX_LEVEL, SET_DEFS, ARTIFACT_DEFS, BASE_PICKUP_RANGE } from './config.js';
-import { rand, randChoice, dist } from './helpers.js';
+import { QUALITY_COLORS, BASE_PICKUP_RANGE, MAX_LEVEL } from './config.js';
+import { SLOT_DEF } from './config/equipment-table.js';
+import { randChoice, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { spawnParticles } from './particles.js';
 import { saveGame } from './persistence.js';
 import { playSFX } from './audio.js';
+import {
+  generateEquipment, generateArtifact,
+  rollQuality, rollBossQuality,
+} from './equipment-factory.js';
 
-export function generateEquipment(slot,boss,stageIdx){
-  if(!boss&&Math.random()>0.15)return null;
-  const ilvl=rollIlvl(stageIdx);
-  const quality=boss?rollBossQuality(stageIdx):rollQuality(stageIdx);
-  const statValue=rollStatValue(slot,quality,ilvl);
-  const eq={
-    slot, quality, ilvl, statValue,
-    name:QUALITY_NAMES[quality]+SLOT_DEF[slot].name,
-    color:QUALITY_COLORS[quality],
-    stat:SLOT_DEF[slot].stat,
-  };
-  if(quality===4){
-    const setKeys=Object.keys(SET_DEFS);
-    const setName=randChoice(setKeys);
-    const def=SET_DEFS[setName];
-    const validSlot=randChoice(def.parts);
-    const newStatValue=rollStatValue(validSlot,quality,ilvl);
-    eq.slot=validSlot;
-    eq.statValue=newStatValue;
-    eq.stat=SLOT_DEF[validSlot].stat;
-    eq.setName=setName;
-    eq.color=QUALITY_COLORS[4];
-    eq.name=QUALITY_NAMES[4]+' '+def.name+' '+SLOT_DEF[validSlot].name+' ['+ilvl+']';
-    eq.power=null;
-  }
-  if(quality===3){
-    eq.power=rollLegendaryPower(ilvl);
-    eq.name+=' ['+ilvl+']';
-  }else{
-    eq.name+=' ['+ilvl+']';
-  }
-  return eq;
-}
-
-export function generateArtifact(boss,stageIdx){
-  const ilvl=rollIlvl(stageIdx);
-  const quality=boss?rollBossQuality(stageIdx):rollQuality(stageIdx);
-  const artDef=randChoice(ARTIFACT_DEFS);
-  const eq = {
-    slot:'artifact',
-    quality:Math.min(quality,3),
-    ilvl,
-    statValue:0,
-    name:QUALITY_NAMES[Math.min(quality,3)]+artDef.name+' ['+ilvl+']',
-    color:QUALITY_COLORS[Math.min(quality,3)],
-    stat:'artifact',
-    power:null,
-    artifactId:artDef.id,
-    setName:artDef.setName,
-    desc:artDef.desc,
-  };
-  return eq;
-}
-
-export function rollQuality(stageIdx){
-  const r=Math.random();
-  if(r<0.40)return 0;
-  if(r<0.68)return 1;
-  if(r<0.85)return 2;
-  if(r<0.96||stageIdx<3)return 3; // set only at ilvl 70 (stage 3+), else legendary
-  return 4;
-}
-
-export function rollBossQuality(stageIdx){
-  const r=Math.random();
-  if(r<0.40)return 2;
-  if(stageIdx<3)return 3; // set only at ilvl 70 (stage 3+), else legendary
-  if(r<0.82)return 3;
-  return 4;
-}
+// Re-export factory functions for backward compat
+export { generateEquipment, generateArtifact, rollQuality, rollBossQuality };
 
 export function getSlotName(slot){ return SLOT_DEF[slot]?SLOT_DEF[slot].name:slot; }
 

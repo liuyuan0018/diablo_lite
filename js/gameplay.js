@@ -8,6 +8,7 @@ import { calcPlayerStats } from './player.js';
 import { createMonster } from './monsters.js';
 import { spawnParticles } from './particles.js';
 import { generateEquipment, generateArtifact } from './equipment.js';
+import { resetBuffs } from './buff-engine.js';
 import { saveGame } from './persistence.js';
 import { canvas, ctx } from './canvas.js';
 import { render, renderBackpackOverlay, renderPauseMenu, menuButtons, prepButtons, equipSlots, victoryButtons, deathButtons, pauseButtons, charButtons, addFloatingNumber, testfieldButtons, applySlotItem } from './renderer.js';
@@ -46,6 +47,7 @@ export function startTestStage(){
   game.player.fireTimer=0;
   game.player.skillCooldowns=[0,0,0];
   game.player.buffs=[];
+  resetBuffs();
   // Reset set/synergy state
   game.player.elementalistStacks = 0;
   game.player.elementalistLastElement = null;
@@ -103,6 +105,7 @@ export function startGame(stageIndex){
   game.player.fireTimer=0;
   game.player.skillCooldowns=[0,0,0];
   game.player.buffs=[];
+  resetBuffs();
   // Reset set/synergy state
   game.player.elementalistStacks = 0;
   game.player.elementalistLastElement = null;
@@ -156,6 +159,7 @@ export function startTestfield() {
   game.player.fireTimer = 0;
   game.player.skillCooldowns = [0, 0, 0];
   game.player.buffs = [];
+  resetBuffs();
   game.player.hitInvuln = 0;
   game.player.elementalistStacks = 0;
   game.player.elementalistLastElement = null;

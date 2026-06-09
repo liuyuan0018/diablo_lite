@@ -1,5 +1,15 @@
 # 变更日志
 
+## [2026-06-09] save | 掉落表 condition 字段 + Buff 系统更新
+- 类型: concept (update)
+- 文件: wiki/concepts/Config-Driven-Buff-System.md
+- 来源: QUALITY_CURVE 每行加 condition 字段替代 STAGE_RESTRICTIONS + Math.min cap
+
+## [2026-06-09] save | 配置驱动的 Buff/装备系统
+- 类型: concept
+- 文件: wiki/concepts/Config-Driven-Buff-System.md
+- 来源: 装备系统重构 — 三表（Buff/装备/掉落）+ Buff Engine + Skill Hooks，将硬编码效果迁移为数据驱动
+
 ## [2026-06-09] save | 装备数据流转陷阱
 - 类型: concept
 - 文件: wiki/concepts/Equipment-Data-Flow-Pitfalls.md

@@ -6,7 +6,7 @@ import { calcPlayerStats } from './player.js';
 import {
   SET_DEFS, LEGENDARY_POWERS,
   QUALITY_NAMES, QUALITY_COLORS, QUALITY_MULT,
-  SLOT_DEF, ARTIFACT_DEFS,
+  SLOT_DEF, ARTIFACT_DEFS, rollLegendaryPower,
 } from './config.js';
 import { randChoice } from './helpers.js';
 
@@ -196,9 +196,10 @@ export function applyLoadout(presetName) {
         name: QUALITY_NAMES[quality] + artDef.name + ' [70]',
         color: QUALITY_COLORS[quality],
         stat: 'artifact',
-        power: null,
+        power: quality === 3 ? rollLegendaryPower(ilvl) : null,
         artifactId: cfg.artifactId,
         setName: artDef.setName,
+        desc: artDef.desc,
       };
     } else if (cfg.power) {
       const quality = 3;

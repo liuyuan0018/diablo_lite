@@ -3,13 +3,14 @@
 // ============================================================
 import { game, getActiveCharacter, syncPlayerToChar, syncCharToPlayer, createCharacter } from './game-state.js';
 import { canvas, ctx } from './canvas.js';
-import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS, ARTIFACT_DEFS, LEGENDARY_POWERS, QUALITY_MULT } from './config.js';
+import { QUALITY_COLORS, QUALITY_NAMES, SKILL_CONFIG, STAGES, DIFFICULTY, SLOT_DEF, MAP_W, MAP_H, TILE_SIZE, AFFIX_COLORS, PLAYER_RADIUS, SET_DEFS, ARTIFACT_DEFS, LEGENDARY_POWERS, QUALITY_MULT, rollLegendaryPower } from './config.js';
 import { formatTime, lerp, dist } from './helpers.js';
 import { calcPlayerStats } from './player.js';
 import { saveGame, exportSave, importSave } from './persistence.js';
 import { getSlotName } from './equipment.js';
 import { getSetEffects } from './sets.js';
 import { startTestfield } from './gameplay.js';
+import { getActiveBuffs } from './buff-engine.js';
 import { startAmbient, stopAmbient } from './audio.js';
 
 // Button arrays — populated each render frame, read by gameplay processClick
@@ -288,7 +289,12 @@ function renderEquipDetail(){
     ctx.font='13px sans-serif';
     ctx.fillStyle='#ccc';
     const statDesc={atk:'攻击力',cdr:'冷却缩减',maxHp:'最大生命',bulletSpeed:'弹道速度',pickupRange:'拾取范围',movespeed:'移动速度'};
-    ctx.fillText((statDesc[eq.stat]||'')+' +'+eq.statValue,px+pw/2,py+100);
+    if(eq.stat==='artifact'&&eq.desc){
+      ctx.fillStyle='#ffaa44';ctx.font='11px sans-serif';
+      ctx.fillText(eq.desc,px+pw/2,py+100);
+    }else{
+      ctx.fillText((statDesc[eq.stat]||'')+' +'+eq.statValue,px+pw/2,py+100);
+    }
     if(eq.power){
       ctx.fillStyle='#ff6600';ctx.font='11px sans-serif';
       const pd=eq.power.desc.replace('{v}',eq.power.value);
@@ -934,50 +940,44 @@ function renderVignette(){
 // --- HUD ---
 function renderBuffBar(W, H){
   const p = game.player;
-  const buffs = [];
+
+  // Engine-managed buffs (legendary powers, artifacts, sets, skill buffs)
+  const buffs = getActiveBuffs().map(b => ({
+    name: b.name,
+    color: b.color,
+    detail: b.detail,
+  }));
+
+  // Player-state displays (not purely stat-driven — need game state context)
 
   // Elementalist stacks
   if (p.elementalistStacks > 0) {
+    const elMap = { fire: '火', ice: '冰', arcane: '奥' };
     buffs.push({
-      label: '谐律×' + p.elementalistStacks,
+      name: '谐律×' + p.elementalistStacks,
       color: p.elementalistStacks >= 3 ? '#ffd700' : '#ff8800',
-      detail: p.elementalistLastElement || '',
+      detail: elMap[p.elementalistLastElement] || '',
     });
   }
 
   // Temporal Resonance
   if (p.temporalResonanceTimer > 0) {
     buffs.push({
-      label: '时空共鸣',
+      name: '时空共鸣',
       color: '#8844ff',
       detail: Math.ceil(p.temporalResonanceTimer) + 's',
     });
   }
 
-  // Active set detection
+  // Chronomancer set presence (buff engine only tracks stat effects; this shows set identity)
   try {
     const sets = getSetEffects(!!game.sandboxEquipment);
-    if (sets.elementalist && sets.elementalist.active.two) {
-      buffs.push({ label: '元素使', color: '#44ff44', detail: '套装' });
-    }
     if (sets.chronomancer && sets.chronomancer.active.two) {
-      buffs.push({ label: '时空术士', color: '#4488ff', detail: '套装' });
+      buffs.push({ name: '时空术士', color: '#4488ff', detail: '套装' });
     }
   } catch(e) {}
 
-  // Artifact effects
-  const art = (game.sandboxEquipment || game.equipment).artifact;
-  if (art) {
-    if (art.artifactId === 'feather' && p.hp / p.maxHp > 0.8) {
-      buffs.push({ label: '缓落', color: '#ffcc44', detail: '增伤' });
-    }
-    if (art.artifactId === 'criticalFragment') {
-      const anyLow = p.skillCooldowns.some(cd => cd > 0 && cd < 3);
-      if (anyLow) buffs.push({ label: '临界', color: '#ff6644', detail: '增伤' });
-    }
-  }
-
-  // Elemental ring (legendary power)
+  // Elemental ring (skill-modifying, not stat-driven)
   const eqSrc = game.sandboxEquipment || game.equipment;
   let ringMax = 0;
   for (const eq of Object.values(eqSrc)) {
@@ -990,7 +990,7 @@ function renderBuffBar(W, H){
     const elColors = ['#ff4400', '#4488ff', '#aa44ff'];
     const el = p.ringElement;
     const remain = Math.ceil(4 - p.ringCycleTimer);
-    buffs.push({ label: '戒·'+elNames[el], color: elColors[el], detail: '+' + ringMax + '% ' + remain + 's' });
+    buffs.push({ name: '戒·'+elNames[el], color: elColors[el], detail: '+' + ringMax + '% ' + remain + 's' });
   }
 
   if (buffs.length === 0) return;
@@ -1011,7 +1011,7 @@ function renderBuffBar(W, H){
     ctx.fillStyle = b.color;
     ctx.font = 'bold 10px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(b.label, cx + chipW / 2, barY + 12);
+    ctx.fillText(b.name, cx + chipW / 2, barY + 12);
     if (b.detail) {
       ctx.fillStyle = '#888';
       ctx.font = '8px sans-serif';
@@ -1256,9 +1256,14 @@ export function renderBackpackOverlay(){
         ctx.fillStyle='#ffaa44';
         ctx.font='7px sans-serif';
         ctx.fillText(item.desc,cx+cellW/2,cy+cellW/2+8);
-        ctx.fillStyle='#ffd700';
-        ctx.font='bold 7px sans-serif';
-        ctx.fillText('✦法器',cx+cellW/2,cy+cellW/2+20);
+        if(item.power){
+          ctx.fillStyle='#ff6600';ctx.font='bold 7px sans-serif';
+          ctx.fillText('★传奇',cx+cellW/2,cy+cellW/2+20);
+        }else{
+          ctx.fillStyle='#ffd700';
+          ctx.font='bold 7px sans-serif';
+          ctx.fillText('✦法器',cx+cellW/2,cy+cellW/2+20);
+        }
       }else{
         const sn=statLabels[item.stat]||'?';
         ctx.fillText(sn+'+'+item.statValue,cx+cellW/2,cy+cellW/2+10);
@@ -1332,8 +1337,13 @@ export function renderCompareTooltip(hoveredItem){
     ctx.fillText(equipped.name,tx+tw/2,ty+45);
     ctx.fillStyle='#888';ctx.font='10px sans-serif';
     ctx.fillText('Lv.'+equipped.ilvl+' · '+QUALITY_NAMES[equipped.quality],tx+tw/2,ty+65);
-    ctx.fillStyle='#ccc';ctx.font='bold 13px sans-serif';
-    ctx.fillText((statDesc[equipped.stat]||'')+' +'+equipped.statValue,tx+tw/2,ty+85);
+    if(equipped.stat==='artifact'&&equipped.desc){
+      ctx.fillStyle='#ffaa44';ctx.font='11px sans-serif';
+      ctx.fillText(equipped.desc,tx+tw/2,ty+85);
+    }else{
+      ctx.fillStyle='#ccc';ctx.font='bold 13px sans-serif';
+      ctx.fillText((statDesc[equipped.stat]||'')+' +'+equipped.statValue,tx+tw/2,ty+85);
+    }
     if(equipped.power){
       ctx.fillStyle='#ff6600';ctx.font='10px sans-serif';
       ctx.fillText('★ '+equipped.power.desc.replace('{v}',equipped.power.value),tx+tw/2,ty+105);
@@ -1402,8 +1412,13 @@ export function renderCompareTooltip(hoveredItem){
     ctx.fillText(equipped.name,lx+lw/2,ly+16);
     ctx.fillStyle='#888';ctx.font='10px sans-serif';
     ctx.fillText('Lv.'+equipped.ilvl+' · '+QUALITY_NAMES[equipped.quality],lx+lw/2,ly+34);
-    ctx.fillStyle='#ccc';ctx.font='12px sans-serif';
-    ctx.fillText((statDesc[equipped.stat]||'')+' +'+equipped.statValue,lx+lw/2,ly+54);
+    if(equipped.stat==="artifact"&&equipped.desc){
+      ctx.fillStyle='#ffaa44';ctx.font='11px sans-serif';
+      ctx.fillText(equipped.desc,lx+lw/2,ly+54);
+    }else{
+      ctx.fillStyle='#ccc';ctx.font='12px sans-serif';
+      ctx.fillText((statDesc[equipped.stat]||'')+' +'+equipped.statValue,lx+lw/2,ly+54);
+    }
     if(equipped.power){
       ctx.fillStyle='#ff6600';ctx.font='10px sans-serif';
       ctx.fillText('★ '+equipped.power.desc.replace('{v}',equipped.power.value),lx+lw/2,ly+72);
@@ -1427,7 +1442,21 @@ export function renderCompareTooltip(hoveredItem){
   ctx.fillStyle='#888';ctx.font='10px sans-serif';
   ctx.fillText('Lv.'+hoveredItem.ilvl+' · '+QUALITY_NAMES[hoveredItem.quality],rx+rw/2,ry+34);
 
-  if(equipped){
+  if(hoveredItem.stat==='artifact'&&hoveredItem.desc){
+    // Artifact: show desc instead of stat value
+    if(equipped&&equipped.stat==='artifact'&&equipped.desc){
+      if(hoveredItem.artifactId===equipped.artifactId){
+        ctx.fillStyle='#ffd700';ctx.font='bold 10px sans-serif';
+        ctx.fillText(hoveredItem.desc+' (=)',rx+rw/2,ry+54);
+      }else{
+        ctx.fillStyle='#ffaa00';ctx.font='bold 10px sans-serif';
+        ctx.fillText(hoveredItem.desc+' (不同)',rx+rw/2,ry+54);
+      }
+    }else{
+      ctx.fillStyle='#ffd700';ctx.font='bold 10px sans-serif';
+      ctx.fillText(hoveredItem.desc+' ✦新',rx+rw/2,ry+54);
+    }
+  }else if(equipped){
     const hVal=hoveredItem.statValue;
     const eVal=equipped.statValue;
     const diff=hVal-eVal;
@@ -1580,8 +1609,13 @@ function renderVictory(){
       if(d.stat==='artifact'&&d.desc){
         ctx.fillStyle='#ffaa44';ctx.font='8px sans-serif';
         ctx.fillText(d.desc,cx+cellW/2,cy+40);
-        ctx.fillStyle='#ffd700';ctx.font='bold 7px sans-serif';
-        ctx.fillText('✦法器',cx+cellW/2,cy+53);
+        if(d.power){
+          ctx.fillStyle='#ff6600';ctx.font='bold 7px sans-serif';
+          ctx.fillText('★传奇',cx+cellW/2,cy+53);
+        }else{
+          ctx.fillStyle='#ffd700';ctx.font='bold 7px sans-serif';
+          ctx.fillText('✦法器',cx+cellW/2,cy+53);
+        }
       }else{
         ctx.fillStyle='#ccc';ctx.font='9px sans-serif';
         ctx.fillText((statLabels[d.stat]||'?')+'+'+d.statValue,cx+cellW/2,cy+42);
@@ -1643,8 +1677,13 @@ function renderVictory(){
       if(item.stat==='artifact'&&item.desc){
         ctx.fillStyle='#ffaa44';ctx.font='8px sans-serif';
         ctx.fillText(item.desc,cx+cellW/2,cy+48);
-        ctx.fillStyle='#ffd700';ctx.font='bold 7px sans-serif';
-        ctx.fillText('✦法器',cx+cellW/2,cy+62);
+        if(item.power){
+          ctx.fillStyle='#ff6600';ctx.font='bold 7px sans-serif';
+          ctx.fillText('★传奇',cx+cellW/2,cy+62);
+        }else{
+          ctx.fillStyle='#ffd700';ctx.font='bold 7px sans-serif';
+          ctx.fillText('✦法器',cx+cellW/2,cy+62);
+        }
       }else{
         ctx.fillStyle='#ccc';ctx.font='9px sans-serif';
         ctx.fillText((statLabels[item.stat]||'?')+'+'+item.statValue,cx+cellW/2,cy+50);
@@ -2019,9 +2058,13 @@ function renderSlotPickerPopup() {
   }
 
   if (slot === 'artifact') {
-    // Artifact options
+    // Artifact options (legendary powers come with artifacts)
     for (const ad of ARTIFACT_DEFS) {
       options.push({ label: ad.name, quality: 3, key: 'artifact_' + ad.id, artifactId: ad.id, setName: ad.setName });
+    }
+    // Legendary powers for artifact slot
+    for (const lp of LEGENDARY_POWERS) {
+      options.push({ label: lp.name + ' (' + lp.desc.replace('{v}', lp.max) + ')', quality: 3, key: 'power_' + lp.stat, power: lp });
     }
   } else {
     // Legendary powers relevant to this slot
@@ -2119,7 +2162,7 @@ export function applySlotItem(slot, option) {
     game.sandboxEquipment[slot] = { slot, quality: q, ilvl, statValue: sv, name: QUALITY_NAMES[4] + ' ' + def.name + ' ' + SLOT_DEF[slot].name + ' [70]', color: QUALITY_COLORS[4], stat: SLOT_DEF[slot].stat, power: null, setName: option.setName };
   } else if (option.key.startsWith('artifact_')) {
     const ad = ARTIFACT_DEFS.find(a => a.id === option.artifactId);
-    game.sandboxEquipment[slot] = { slot: 'artifact', quality: 3, ilvl, statValue: 0, name: QUALITY_NAMES[3] + ad.name + ' [70]', color: QUALITY_COLORS[3], stat: 'artifact', power: null, artifactId: ad.id, setName: ad.setName };
+    game.sandboxEquipment[slot] = { slot: 'artifact', quality: 3, ilvl, statValue: 0, name: QUALITY_NAMES[3] + ad.name + ' [70]', color: QUALITY_COLORS[3], stat: 'artifact', power: rollLegendaryPower(ilvl), artifactId: ad.id, setName: ad.setName, desc: ad.desc };
   }
   const stats = calcPlayerStats(true);
   game.player.maxHp = stats.maxHP; game.player.hp = stats.maxHP;
