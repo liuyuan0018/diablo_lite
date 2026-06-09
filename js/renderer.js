@@ -971,7 +971,12 @@ function renderParticles(){
 }
 
 function renderSkillPreview(){
-  if(game.activeSkill===0)return;
+  // On mobile, preview only during drag; on desktop, when a skill is selected
+  if ('ontouchstart' in window) {
+    if (!game.skillDrag.active) return;
+  } else {
+    if (game.activeSkill === 0) return;
+  }
   // Use drag coords if skill drag is active, otherwise fall back to mouse
   const wx = game.skillDrag.active ? game.skillDrag.worldX : game.mouseX + game.camera.x;
   const wy = game.skillDrag.active ? game.skillDrag.worldY : game.mouseY + game.camera.y;
