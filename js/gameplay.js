@@ -234,13 +234,16 @@ export function processClick(){
   if(game.screen==='playing'){
     if(game.showPauseMenu){checkButtonClicks(pauseButtons);return;}
     if(game.showBackpack)return;
-    const wx=game.mouseX+game.camera.x;
-    const wy=game.mouseY+game.camera.y;
-    if(game.mouseY>canvas.height-100&&game.mouseX>canvas.width/2-120&&game.mouseX<canvas.width/2+120){
-      return;
+    // On mobile, skill casting is drag-to-cast from skill buttons — don't cast on canvas tap
+    if (!('ontouchstart' in window)) {
+      const wx=game.mouseX+game.camera.x;
+      const wy=game.mouseY+game.camera.y;
+      if(game.mouseY>canvas.height-100&&game.mouseX>canvas.width/2-120&&game.mouseX<canvas.width/2+120){
+        return;
+      }
+      if(game.mouseY<50)return;
+      castSkill(clamp(wx,0,MAP_W),clamp(wy,0,MAP_H));
     }
-    if(game.mouseY<50)return;
-    castSkill(clamp(wx,0,MAP_W),clamp(wy,0,MAP_H));
   }else if(game.screen==='menu'){
     checkButtonClicks(menuButtons);
   }else if(game.screen==='prepare'){

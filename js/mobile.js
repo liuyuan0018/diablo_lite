@@ -1,6 +1,7 @@
 import { game } from './game-state.js';
 import { canvas } from './canvas.js';
 import { clamp } from './helpers.js';
+import { castSkill } from './skills.js';
 
 let joyTouchId = null;
 let joyCenter = { x: 0, y: 0 };
@@ -52,10 +53,18 @@ export function initMobile() {
     game.moveDir = { x: 0, y: 0 };
   }
 
+  function getWorldCoords(touch) {
+    const rect = canvas.getBoundingClientRect();
+    const sx = touch.clientX - rect.left;
+    const sy = touch.clientY - rect.top;
+    return { x: clamp(sx + game.camera.x, 0, 20000), y: clamp(sy + game.camera.y, 0, 20000) };
+  }
+
   document.addEventListener('touchmove', (e) => {
     for (const t of e.changedTouches) {
       if (t.identifier === joyTouchId) updateJoystick(t);
       if (t.identifier === canvasTouchId) handleCanvasMove(t);
+      if (t.identifier === game.skillDrag.touchId) updateSkillDrag(t);
     }
   }, { passive: false });
 
@@ -63,6 +72,7 @@ export function initMobile() {
     for (const t of e.changedTouches) {
       if (t.identifier === joyTouchId) resetJoystick();
       if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
+      if (t.identifier === game.skillDrag.touchId) endSkillDrag(t);
     }
   });
 
@@ -70,14 +80,52 @@ export function initMobile() {
     for (const t of e.changedTouches) {
       if (t.identifier === joyTouchId) resetJoystick();
       if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
+      if (t.identifier === game.skillDrag.touchId) cancelSkillDrag();
     }
   });
 
-  // === Skill buttons ===
+  // === Skill buttons — drag to cast ===
+  function updateSkillDrag(touch) {
+    const wc = getWorldCoords(touch);
+    game.skillDrag.worldX = wc.x;
+    game.skillDrag.worldY = wc.y;
+    // Optionally highlight the button more during drag
+  }
+
+  function endSkillDrag(touch) {
+    if (!game.skillDrag.active) return;
+    const idx = game.skillDrag.skillIdx;
+    game.skillDrag.active = false;
+    game.skillDrag.touchId = null;
+    // Cast only if not on CD and in playing mode
+    if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
+      const wc = getWorldCoords(touch);
+      game.activeSkill = idx;
+      castSkill(wc.x, wc.y);
+    }
+    // Restore button state
+    skillBtns.forEach(b => b.classList.toggle('on', parseInt(b.dataset.skill) === idx && game.screen === 'playing'));
+  }
+
+  function cancelSkillDrag() {
+    game.skillDrag.active = false;
+    game.skillDrag.touchId = null;
+    skillBtns.forEach(b => b.classList.remove('on'));
+  }
+
   skillBtns.forEach(btn => {
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault(); e.stopPropagation();
-      game.activeSkill = parseInt(btn.dataset.skill);
+      const idx = parseInt(btn.dataset.skill);
+      const t = e.changedTouches[0];
+      // Start drag-to-cast
+      game.skillDrag.active = true;
+      game.skillDrag.skillIdx = idx;
+      game.skillDrag.touchId = t.identifier;
+      const wc = getWorldCoords(t);
+      game.skillDrag.worldX = wc.x;
+      game.skillDrag.worldY = wc.y;
+      game.activeSkill = idx;
       skillBtns.forEach(b => b.classList.toggle('on', b === btn));
     });
   });

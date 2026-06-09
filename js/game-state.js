@@ -16,6 +16,7 @@ export const game = {
   mouseDown:false,
   clickProcessed:false,
   activeSkill:0,
+  skillDrag:{active:false,skillIdx:null,touchId:null,worldX:0,worldY:0},
   selectedEquipSlot:null,
   hoveredItem:null,
   bpScroll:0, groundScroll:0,

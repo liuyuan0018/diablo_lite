@@ -949,20 +949,23 @@ function renderParticles(){
 
 function renderSkillPreview(){
   if(game.activeSkill===0)return;
-  const wx=game.mouseX+game.camera.x;
-  const wy=game.mouseY+game.camera.y;
+  // Use drag coords if skill drag is active, otherwise fall back to mouse
+  const wx = game.skillDrag.active ? game.skillDrag.worldX : game.mouseX + game.camera.x;
+  const wy = game.skillDrag.active ? game.skillDrag.worldY : game.mouseY + game.camera.y;
   const sx=wx-game.camera.x;
   const sy=wy-game.camera.y;
   const radius=game.activeSkill===1?220:260;
   const color=game.activeSkill===1?'#9944cc':'#4488ff';
-  ctx.strokeStyle=color+'66';
-  ctx.lineWidth=2;
+  // Drag active: brighter, more visible preview
+  const alphaMult = game.skillDrag.active ? 1.5 : 1;
+  ctx.strokeStyle=`rgba(${game.activeSkill===1?'153,68,204':'68,136,255'},${0.4*alphaMult})`;
+  ctx.lineWidth = game.skillDrag.active ? 3 : 2;
   ctx.setLineDash([6,4]);
   ctx.beginPath();
   ctx.arc(sx,sy,radius,0,Math.PI*2);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle=color+'15';
+  ctx.fillStyle=`rgba(${game.activeSkill===1?'153,68,204':'68,136,255'},${0.15*alphaMult})`;
   ctx.beginPath();
   ctx.arc(sx,sy,radius,0,Math.PI*2);
   ctx.fill();
