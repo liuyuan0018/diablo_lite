@@ -12,27 +12,15 @@ let hasMoved = false;
 export function initMobile() {
   if (!('ontouchstart' in window)) return;
 
-  const joystickZone = document.getElementById('joystickZone');
   const joystickThumb = document.getElementById('joystickThumb');
   const skillBtns = document.querySelectorAll('.skill-btn');
-  const btnBackpack = document.getElementById('btnBackpack');
-  const btnPause = document.getElementById('btnPause');
 
-  // === Joystick ===
+  // === Joystick helpers ===
   function getJoyCenter() {
     const base = document.getElementById('joystickBase');
     const r = base.getBoundingClientRect();
     return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
-
-  joystickZone.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (joyTouchId !== null) return;
-    const t = e.changedTouches[0];
-    joyTouchId = t.identifier;
-    joyCenter = getJoyCenter();
-    updateJoystick(t);
-  });
 
   function updateJoystick(touch) {
     const maxR = 34;
@@ -60,115 +48,60 @@ export function initMobile() {
     return { x: clamp(sx + game.camera.x, 0, 20000), y: clamp(sy + game.camera.y, 0, 20000) };
   }
 
-  document.addEventListener('touchmove', (e) => {
-    for (const t of e.changedTouches) {
-      if (t.identifier === joyTouchId) updateJoystick(t);
-      if (t.identifier === canvasTouchId) handleCanvasMove(t);
-      if (t.identifier === game.skillDrag.touchId) updateSkillDrag(t);
-    }
-  }, { passive: false });
-
-  document.addEventListener('touchend', (e) => {
-    for (const t of e.changedTouches) {
-      if (t.identifier === joyTouchId) resetJoystick();
-      if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
-      if (t.identifier === game.skillDrag.touchId) endSkillDrag(t);
-    }
-  });
-
-  document.addEventListener('touchcancel', (e) => {
-    for (const t of e.changedTouches) {
-      if (t.identifier === joyTouchId) resetJoystick();
-      if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
-      if (t.identifier === game.skillDrag.touchId) cancelSkillDrag();
-    }
-  });
-
-  // === Skill buttons — drag to cast ===
-  function updateSkillDrag(touch) {
-    const wc = getWorldCoords(touch);
-    game.skillDrag.worldX = wc.x;
-    game.skillDrag.worldY = wc.y;
-    // Optionally highlight the button more during drag
+  function startCanvasTouch(t) {
+    const rect = canvas.getBoundingClientRect();
+    game.mouseX = t.clientX - rect.left;
+    game.mouseY = t.clientY - rect.top;
+    game.mouseDown = true;
+    game.clickProcessed = false;
+    touchStartX = t.clientX; touchStartY = t.clientY;
+    hasMoved = false;
   }
 
-  function endSkillDrag(touch) {
-    if (!game.skillDrag.active) return;
-    const idx = game.skillDrag.skillIdx;
-    game.skillDrag.active = false;
-    game.skillDrag.touchId = null;
-    // Cast only if not on CD and in playing mode
-    if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
-      const wc = getWorldCoords(touch);
-      game.activeSkill = idx;
-      castSkill(wc.x, wc.y);
-    }
-    // Restore button state
-    skillBtns.forEach(b => b.classList.toggle('on', parseInt(b.dataset.skill) === idx && game.screen === 'playing'));
-  }
-
-  function cancelSkillDrag() {
-    game.skillDrag.active = false;
-    game.skillDrag.touchId = null;
-    skillBtns.forEach(b => b.classList.remove('on'));
-  }
-
-  skillBtns.forEach(btn => {
-    btn.addEventListener('touchstart', (e) => {
-      e.preventDefault(); e.stopPropagation();
-      const idx = parseInt(btn.dataset.skill);
-      const t = e.changedTouches[0];
-      // Start drag-to-cast
-      game.skillDrag.active = true;
-      game.skillDrag.skillIdx = idx;
-      game.skillDrag.touchId = t.identifier;
-      const wc = getWorldCoords(t);
-      game.skillDrag.worldX = wc.x;
-      game.skillDrag.worldY = wc.y;
-      game.activeSkill = idx;
-      skillBtns.forEach(b => b.classList.toggle('on', b === btn));
-    });
-  });
-
-  // === Menu buttons ===
-  btnBackpack.addEventListener('touchstart', (e) => {
-    e.preventDefault(); e.stopPropagation();
-    if (game.screen === 'playing') {
-      if (game.showPauseMenu) game.showPauseMenu = false;
-      game.showBackpack = !game.showBackpack;
-      if (game.showBackpack) game.bpScroll = 0;
-    }
-  });
-
-  btnPause.addEventListener('touchstart', (e) => {
-    e.preventDefault(); e.stopPropagation();
-    // The actual Escape key handler logic is in input.js, but we need it here too
-    // dispatch a keydown event for Escape so the existing handler picks it up
-    const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
-    document.dispatchEvent(ev);
-  });
-
-  // === Canvas touch (aim + tap to cast, scroll in menus) ===
+  // === Unified touchstart handler at document level ===
   document.addEventListener('touchstart', (e) => {
     for (const t of e.changedTouches) {
-      if (canvasTouchId !== null) continue;
-      if (joyTouchId === t.identifier) continue;
-      if (game.skillDrag.touchId === t.identifier) continue;
-      // Skip touches on mobile control buttons (handled by their own listeners)
       const target = e.target;
-      if (target && target.closest && (target.closest('#joystickZone') || target.closest('#skillBtns') || target.closest('#btnBackpack') || target.closest('#btnPause'))) continue;
+
+      // 1) Joystick zone
+      if (target.closest('#joystickZone')) {
+        e.preventDefault();
+        if (joyTouchId !== null) continue;
+        joyTouchId = t.identifier;
+        joyCenter = getJoyCenter();
+        updateJoystick(t);
+        continue;
+      }
+
+      // 2) Skill buttons — handled by their own listeners (stopPropagation blocks us)
+      // 3) Backpack button
+      if (target.closest('#btnBackpack')) {
+        e.preventDefault();
+        if (game.screen === 'playing') {
+          if (game.showPauseMenu) game.showPauseMenu = false;
+          game.showBackpack = !game.showBackpack;
+          if (game.showBackpack) game.bpScroll = 0;
+        }
+        continue;
+      }
+
+      // 4) Pause button
+      if (target.closest('#btnPause')) {
+        e.preventDefault();
+        const ev = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+        document.dispatchEvent(ev);
+        continue;
+      }
+
+      // 5) Canvas touch (menus, stage select, etc.)
+      if (canvasTouchId !== null) continue;
       e.preventDefault();
       canvasTouchId = t.identifier;
-      const rect = canvas.getBoundingClientRect();
-      game.mouseX = t.clientX - rect.left;
-      game.mouseY = t.clientY - rect.top;
-      game.mouseDown = true;
-      game.clickProcessed = false;
-      touchStartX = t.clientX; touchStartY = t.clientY;
-      hasMoved = false;
+      startCanvasTouch(t);
     }
   }, { passive: false });
 
+  // === Unified touchmove ===
   function handleCanvasMove(touch) {
     const rect = canvas.getBoundingClientRect();
     const cx = touch.clientX - rect.left;
@@ -180,8 +113,7 @@ export function initMobile() {
     if (dx > 8 || dy > 8) hasMoved = true;
     if (!hasMoved) return;
 
-    // Scroll handling for menu overlays
-    const deltaY = touchStartY - touch.clientY; // positive = scroll down
+    const deltaY = touchStartY - touch.clientY;
     touchStartX = touch.clientX; touchStartY = touch.clientY;
 
     const W = canvas.width, H = canvas.height;
@@ -217,6 +149,72 @@ export function initMobile() {
       }
     }
   }
+
+  document.addEventListener('touchmove', (e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) updateJoystick(t);
+      else if (t.identifier === canvasTouchId) handleCanvasMove(t);
+      else if (t.identifier === game.skillDrag.touchId) updateSkillDrag(t);
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchend', (e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) resetJoystick();
+      else if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
+      else if (t.identifier === game.skillDrag.touchId) endSkillDrag(t);
+    }
+  });
+
+  document.addEventListener('touchcancel', (e) => {
+    for (const t of e.changedTouches) {
+      if (t.identifier === joyTouchId) resetJoystick();
+      else if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
+      else if (t.identifier === game.skillDrag.touchId) cancelSkillDrag();
+    }
+  });
+
+  // === Skill drag-to-cast ===
+  function updateSkillDrag(touch) {
+    const wc = getWorldCoords(touch);
+    game.skillDrag.worldX = wc.x;
+    game.skillDrag.worldY = wc.y;
+  }
+
+  function endSkillDrag(touch) {
+    if (!game.skillDrag.active) return;
+    const idx = game.skillDrag.skillIdx;
+    game.skillDrag.active = false;
+    game.skillDrag.touchId = null;
+    if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
+      const wc = getWorldCoords(touch);
+      game.activeSkill = idx;
+      castSkill(wc.x, wc.y);
+    }
+    skillBtns.forEach(b => b.classList.toggle('on', parseInt(b.dataset.skill) === idx && game.screen === 'playing'));
+  }
+
+  function cancelSkillDrag() {
+    game.skillDrag.active = false;
+    game.skillDrag.touchId = null;
+    skillBtns.forEach(b => b.classList.remove('on'));
+  }
+
+  skillBtns.forEach(btn => {
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      const idx = parseInt(btn.dataset.skill);
+      const t = e.changedTouches[0];
+      game.skillDrag.active = true;
+      game.skillDrag.skillIdx = idx;
+      game.skillDrag.touchId = t.identifier;
+      const wc = getWorldCoords(t);
+      game.skillDrag.worldX = wc.x;
+      game.skillDrag.worldY = wc.y;
+      game.activeSkill = idx;
+      skillBtns.forEach(b => b.classList.toggle('on', b === btn));
+    });
+  });
 
   // === Update skill button CD text ===
   const origRender = () => {
