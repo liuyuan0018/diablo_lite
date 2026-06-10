@@ -72,7 +72,8 @@ export function initMobile() {
         continue;
       }
 
-      // 2) Skill buttons — handled by their own listeners (stopPropagation blocks us)
+      // 2) Skill buttons — skip entire skillBtns zone (individual buttons use stopPropagation)
+      if (target.closest('#skillBtns')) continue;
       // 3) Backpack button
       if (target.closest('#btnBackpack')) {
         e.preventDefault();
