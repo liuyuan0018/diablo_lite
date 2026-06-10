@@ -232,10 +232,17 @@ export function initMobile() {
     });
   });
 
-  // === Update skill button CD text ===
+  // === Update skill button CD text & control visibility ===
+  const joystickZone2 = document.getElementById('joystickZone');
+  const skillBtnsContainer = document.getElementById('skillBtns');
   const origRender = () => {
     if (!('ontouchstart' in window)) return;
     requestAnimationFrame(() => {
+      // Show joystick + skill buttons only during gameplay
+      const playing = game.screen === 'playing' && !game.showPauseMenu;
+      if (joystickZone2) joystickZone2.style.display = playing ? '' : 'none';
+      if (skillBtnsContainer) skillBtnsContainer.style.display = playing ? '' : 'none';
+
       skillBtns.forEach(btn => {
         const idx = parseInt(btn.dataset.skill);
         const cd = game.player.skillCooldowns[idx] || 0;
