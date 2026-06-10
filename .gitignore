@@ -17,3 +17,4 @@ Thumbs.db
 # Local tool settings
 .claude/
 .superpowers/
+.worktrees/
