@@ -174,7 +174,7 @@ export function initMobile() {
     for (const t of e.changedTouches) {
       if (t.identifier === joyTouchId) resetJoystick();
       else if (t.identifier === game.skillDrag.touchId) endSkillDrag(t);
-      else if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
+      else if (t.identifier === canvasTouchId) { canvasTouchId = null; /* keep mouseDown for processClick */ }
     }
   });
 

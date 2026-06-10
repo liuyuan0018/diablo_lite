@@ -218,6 +218,8 @@ export function processClick(){
   }
   if(game.showBackpack)return;
   game.clickProcessed=true;
+  // On mobile, auto-reset mouseDown after processing (touchend already fired)
+  if ('ontouchstart' in window) game.mouseDown = false;
   if (game.screen === 'testfield') {
     for (const b of testfieldButtons) {
       const hit = game.mouseX >= b.x && game.mouseX <= b.x + b.w && game.mouseY >= b.y && game.mouseY <= b.y + b.h;
