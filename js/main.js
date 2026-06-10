@@ -12,14 +12,13 @@ import { initMobile } from './mobile.js';
 function syncCanvasSize(){
   const isMobile = 'ontouchstart' in window || window.FORCE_MOBILE;
   if (isMobile) {
-    canvas.width = Math.max(window.innerWidth, 320);
-    canvas.height = Math.max(window.innerHeight, 568);
+    canvas.width = Math.min(window.innerWidth, window.innerHeight);
+    canvas.height = Math.max(window.innerWidth, window.innerHeight);
   } else {
     canvas.width = 1920;
     canvas.height = 1080;
   }
   fitCanvas();
-  console.log('[canvas] size=' + canvas.width + 'x' + canvas.height + ' css=' + canvas.style.width + 'x' + canvas.style.height + ' viewport=' + window.innerWidth + 'x' + window.innerHeight);
 }
 
 function fitCanvas() {

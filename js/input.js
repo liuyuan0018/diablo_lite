@@ -117,8 +117,8 @@ export function registerInputHandlers(){
   function fitCanvas() {
     const isMobile = 'ontouchstart' in window || window.FORCE_MOBILE;
     if (isMobile) {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = Math.min(window.innerWidth, window.innerHeight);
+      canvas.height = Math.max(window.innerWidth, window.innerHeight);
     }
     const maxW = window.innerWidth;
     const maxH = window.innerHeight;
