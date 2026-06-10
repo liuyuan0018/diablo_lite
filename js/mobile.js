@@ -16,6 +16,31 @@ export function initMobile() {
   const joystickThumb = document.getElementById('joystickThumb');
   const skillBtns = document.querySelectorAll('.skill-btn');
 
+  // === Canvas-level touchstart (fires before document-level) ===
+  canvas.addEventListener('touchstart', (e) => {
+    for (const t of e.changedTouches) {
+      if (canvasTouchId !== null) continue;
+      if (game.skillDrag.touchId === t.identifier) continue;
+      const target = e.target;
+      if (target && target.closest && (target.closest('#joystickZone') || target.closest('#skillBtns') || target.closest('#btnBackpack') || target.closest('#btnPause'))) continue;
+      e.preventDefault();
+      e.stopPropagation();
+      canvasTouchId = t.identifier;
+      if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
+        game.skillDrag.active = true;
+        game.skillDrag.skillIdx = game.activeSkill;
+        game.skillDrag.touchId = t.identifier;
+        const wc = getWorldCoords(t);
+        game.skillDrag.worldX = wc.x;
+        game.skillDrag.worldY = wc.y;
+        touchStartX = t.clientX; touchStartY = t.clientY;
+        hasMoved = false;
+      } else {
+        startCanvasTouch(t);
+      }
+    }
+  }, { passive: false });
+
   // === Joystick helpers ===
   function getJoyCenter() {
     const base = document.getElementById('joystickBase');
