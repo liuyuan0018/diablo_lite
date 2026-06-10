@@ -209,7 +209,10 @@ export function exitTestfieldToPrepare() {
 }
 
 export function processClick(){
-  if(!game.mouseDown||game.clickProcessed)return;
+  if(!game.mouseDown||game.clickProcessed){
+    if(game.screen==='prepare') console.log('[processClick] EARLY RETURN mouseDown='+game.mouseDown+' clickProcessed='+game.clickProcessed+' backpack='+game.showBackpack);
+    return;
+  }
   // Mobile: tap above bottom compare panel closes selection
   if('ontouchstart' in window&&game.showBackpack&&game.bpSelectedIndex!==null&&game.mouseY<canvas.height-220){
     game.clickProcessed=true;
@@ -259,6 +262,7 @@ export function processClick(){
   }else if(game.screen==='menu'){
     checkButtonClicks(menuButtons);
   }else if(game.screen==='prepare'){
+    console.log('[processClick] PREPARE showCharSelect='+game.showCharSelect+' selectedEquipSlot='+game.selectedEquipSlot);
     if(game.showCharSelect){
       for(let i=charButtons.length-1;i>=0;i--){
         const b=charButtons[i];
