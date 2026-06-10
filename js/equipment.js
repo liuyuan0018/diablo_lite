@@ -64,7 +64,7 @@ export function gainExp(amount){
   while(p.exp>=p.expToNext&&p.level<MAX_LEVEL){
     p.exp-=p.expToNext;
     p.level++;
-    p.expToNext=Math.floor(100+p.level*40);
+    p.expToNext=Math.floor(60+p.level*15);
     const stats=calcPlayerStats();
     p.maxHp=stats.maxHP;
     p.hp=Math.min(p.hp+5,p.maxHp);

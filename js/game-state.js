@@ -29,7 +29,7 @@ export const game = {
   player:{
     x:1500,y:1500,
     hp:100,maxHp:100,
-    level:1,exp:0,expToNext:100,
+    level:1,exp:0,expToNext:75,
     atk:10,
     cdr:0,
     bulletSpeed:200,
@@ -116,7 +116,7 @@ export function createCharacter(name){
   return{
     id:'char_'+Date.now(),
     name:n,
-    level:1,exp:0,expToNext:100,
+    level:1,exp:0,expToNext:75,
     equipment:{weapon:null,helmet:null,armor:null,ring:null,amulet:null,boots:null,bracers:null,belt:null,artifact:null},
     backpack:[],
     createdAt:Date.now()
