@@ -209,6 +209,7 @@ export function exitTestfieldToPrepare() {
 }
 
 export function processClick(){
+  console.log('[processClick] mouseDown='+game.mouseDown+' clickProcessed='+game.clickProcessed+' showBackpack='+game.showBackpack+' screen='+game.screen);
   if(!game.mouseDown||game.clickProcessed)return;
   // Mobile: tap above bottom compare panel closes selection
   if('ontouchstart' in window&&game.showBackpack&&game.bpSelectedIndex!==null&&game.mouseY<canvas.height-220){
