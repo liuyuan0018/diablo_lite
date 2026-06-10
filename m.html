@@ -10,11 +10,9 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-/* Wrapper — same centering as the canvas */
-#gameWrapper{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);overflow:hidden}
-canvas{display:block;cursor:crosshair}
-/* Mobile virtual controls — positioned relative to the canvas wrapper */
-#mobileControls{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:10}
+canvas{display:block;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);cursor:crosshair}
+/* Mobile virtual controls */
+#mobileControls{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:10}
 #joystickZone{display:none;position:absolute;bottom:40px;left:40px;width:140px;height:140px;pointer-events:auto}
 #joystickBase{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2)}
 #joystickThumb{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.4);transition:none}
@@ -29,20 +27,18 @@ canvas{display:block;cursor:crosshair}
 </head>
 <body>
 <div id="err" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#111;z-index:99;color:#f44;font:16px monospace;padding:40px;white-space:pre-wrap;overflow:auto;"></div>
-<div id="gameWrapper">
-	<canvas id="gameCanvas"></canvas>
-	<div id="mobileControls">
-		<div id="joystickZone" style="display:none">
-			<div id="joystickBase"><div id="joystickThumb"></div></div>
-		</div>
-		<div id="skillBtns" style="display:none">
-			<button class="skill-btn" data-skill="0">闪</button>
-			<button class="skill-btn on" data-skill="1">洞</button>
-			<button class="skill-btn" data-skill="2">雪</button>
-		</div>
-		<button id="btnBackpack">包</button>
-		<button id="btnPause">||</button>
+<canvas id="gameCanvas"></canvas>
+<div id="mobileControls">
+	<div id="joystickZone" style="display:none">
+		<div id="joystickBase"><div id="joystickThumb"></div></div>
 	</div>
+	<div id="skillBtns" style="display:none">
+		<button class="skill-btn" data-skill="0">闪</button>
+		<button class="skill-btn on" data-skill="1">洞</button>
+		<button class="skill-btn" data-skill="2">雪</button>
+	</div>
+	<button id="btnBackpack">包</button>
+	<button id="btnPause">||</button>
 </div>
 <script type="module" src="js/main.js"></script>
 <script>
