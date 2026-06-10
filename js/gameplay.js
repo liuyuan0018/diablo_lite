@@ -312,7 +312,10 @@ function checkButtonClicks(btns){
 }
 
 let lastTime=performance.now();
+let frameCount=0;
 export function gameLoop(timestamp){
+  frameCount++;
+  if(frameCount%60===0) console.log('[loop] frame='+frameCount+' screen='+game.screen);
   const dt=Math.min((timestamp-lastTime)/1000,0.05);
   lastTime=timestamp;
   processClick();
