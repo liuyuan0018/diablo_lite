@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Diablo Lite</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+canvas{display:block;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);cursor:crosshair}
+/* Mobile virtual controls */
+#mobileControls{display:none;position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:10}
+#joystickZone{position:absolute;bottom:calc(40px + env(safe-area-inset-bottom,0px));left:40px;width:140px;height:140px;pointer-events:auto}
+#joystickBase{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2)}
+#joystickThumb{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.4);transition:none}
+#skillBtns{position:absolute;bottom:calc(40px + env(safe-area-inset-bottom,0px));right:20px;display:flex;gap:10px;pointer-events:auto}
+.skill-btn{position:relative;width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);background:rgba(0,0,0,0.5);color:#fff;font-size:14px;font-weight:bold;text-align:center;display:flex;align-items:center;justify-content:center;outline:none;-webkit-tap-highlight-color:transparent}
+.skill-btn.on{border-color:#ff8c42;background:rgba(255,140,66,0.3);color:#ff8c42}
+.skill-btn .cd{position:absolute;bottom:2px;font-size:10px;color:#f88}
+#btnBackpack,#btnPause{position:absolute;top:12px;width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.5);color:#fff;font-size:13px;font-weight:bold;text-align:center;display:flex;align-items:center;justify-content:center;outline:none;pointer-events:auto;-webkit-tap-highlight-color:transparent}
+#btnBackpack{left:12px;top:calc(12px + env(safe-area-inset-top,0px))}
+#btnPause{right:12px;top:calc(12px + env(safe-area-inset-top,0px))}
+#mobileControls{display:block} /* /m always shows mobile UI */
+</style>
+</head>
+<body>
+<div id="err" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#111;z-index:99;color:#f44;font:16px monospace;padding:40px;white-space:pre-wrap;overflow:auto;"></div>
+<canvas id="gameCanvas"></canvas>
+<div id="mobileControls">
+	<div id="joystickZone">
+		<div id="joystickBase"><div id="joystickThumb"></div></div>
+	</div>
+	<div id="skillBtns">
+		<button class="skill-btn" data-skill="0">闪</button>
+		<button class="skill-btn on" data-skill="1">洞</button>
+		<button class="skill-btn" data-skill="2">雪</button>
+	</div>
+	<button id="btnBackpack">包</button>
+	<button id="btnPause">||</button>
+</div>
+<script type="module" src="js/main.js"></script>
+<script>
+window.ontouchstart=function(){};window.FORCE_MOBILE=true;
+// Clone mouse events as touch events so mobile UI works with desktop mouse
+(function(){
+  var active=false;
+  document.addEventListener('mousedown',function(e){
+    active=true;
+    var t=new TouchEvent('touchstart',{bubbles:true,cancelable:true,
+      changedTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
+      touches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
+      targetTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})]});
+    e.target.dispatchEvent(t);
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!active)return;
+    var t=new TouchEvent('touchmove',{bubbles:true,cancelable:true,
+      changedTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
+      touches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
+      targetTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})]});
+    e.target.dispatchEvent(t);
+  });
+  document.addEventListener('mouseup',function(e){
+    active=false;
+    var t=new TouchEvent('touchend',{bubbles:true,cancelable:true,
+      changedTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
+      touches:[],
+      targetTouches:[]});
+    e.target.dispatchEvent(t);
+  });
+})();
+</script>
+</body>
+</html>
