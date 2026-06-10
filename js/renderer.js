@@ -43,6 +43,9 @@ export function render(){
 
 // --- Menu ---
 function renderMenu(){
+  // Safety: reset overlay flags so menu clicks always work
+  if (game.showBackpack) game.showBackpack = false;
+  if (game.showPauseMenu) game.showPauseMenu = false;
   const W=canvas.width,H=canvas.height;
   const isMobile = 'ontouchstart' in window;
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
