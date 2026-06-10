@@ -628,9 +628,10 @@ function renderEquipDetail(){
 
 function renderCharSelect(){
   const W=canvas.width,H=canvas.height;
+  const isMobile = 'ontouchstart' in window;
   ctx.fillStyle='rgba(0,0,0,0.7)';
   ctx.fillRect(0,0,W,H);
-  const pw=400,ph=Math.min(420,H-60);
+  const pw=isMobile?800:400,ph=isMobile?Math.min(800,H-80):Math.min(420,H-60);
   const px=(W-pw)/2,py=(H-ph)/2;
   ctx.fillStyle='#151525';ctx.strokeStyle='#ffd700';ctx.lineWidth=2;
   roundRect(ctx,px,py,pw,ph,10);
@@ -649,7 +650,7 @@ function renderCharSelect(){
   charButtons.push({x:cbx,y:cby,w:cbw,h:cbh,action:()=>{game.showCharSelect=false;}});
 
   const listY=py+45,listH=ph-100;
-  const itemH=52,gap=4;
+  const itemH=isMobile?60:52,gap=4;
   const totalH=game.characters.length*(itemH+gap);
   const maxScroll=Math.max(0,totalH-listH);
   if(game.charScroll===undefined)game.charScroll=0;
@@ -2497,15 +2498,28 @@ function renderTestField() {
   renderFloatingNumbers();
   renderDamageHUD();
   renderHUD();
-  // Equipment grid on right side (reused from prepare screen)
-  const eqW = 290, eqH = 300;
-  const eqX = W - eqW - 10, eqY = 50;
-  let testfieldEquipSlots = [];
-  renderEquipGrid(eqX, eqY, eqW, eqH, game.sandboxEquipment, testfieldEquipSlots, testfieldButtons);
-  if (game.showLoadoutPanel) renderLoadoutPanel();
-  renderLoadoutToggle();
-  if (game.hoveredItem) renderCompareTooltip(game.hoveredItem);
-  renderSlotPickerPopup();
+  const isMobile = 'ontouchstart' in window;
+  if (isMobile) {
+    const eqW = W - 20, eqH = 200;
+    const eqX = 10, eqY = H - eqH - 60;
+    let testfieldEquipSlots = [];
+    renderEquipGrid(eqX, eqY, eqW, eqH, game.sandboxEquipment, testfieldEquipSlots, testfieldButtons);
+    renderDamageHUD();
+    renderLoadoutToggle();
+    if (game.showLoadoutPanel) renderLoadoutPanel();
+    if (game.hoveredItem) renderCompareTooltip(game.hoveredItem);
+    renderSlotPickerPopup();
+  } else {
+    // Equipment grid on right side (reused from prepare screen)
+    const eqW = 290, eqH = 300;
+    const eqX = W - eqW - 10, eqY = 50;
+    let testfieldEquipSlots = [];
+    renderEquipGrid(eqX, eqY, eqW, eqH, game.sandboxEquipment, testfieldEquipSlots, testfieldButtons);
+    if (game.showLoadoutPanel) renderLoadoutPanel();
+    renderLoadoutToggle();
+    if (game.hoveredItem) renderCompareTooltip(game.hoveredItem);
+    renderSlotPickerPopup();
+  }
 }
 
 function renderDummies() {
@@ -2618,7 +2632,8 @@ function renderDamageHUD() {
 
 function renderLoadoutPanel() {
   const W = canvas.width, H = canvas.height;
-  const pw = 320, ph = H - 80, px = 10, py = 50;
+  const isMobile = 'ontouchstart' in window;
+  const pw = isMobile ? W - 10 : 320, ph = isMobile ? H - 60 : H - 80, px = 10, py = 50;
 
   ctx.fillStyle = 'rgba(10, 10, 25, 0.95)';
   ctx.strokeStyle = '#445';
