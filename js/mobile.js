@@ -19,13 +19,17 @@ export function initMobile() {
   // === Canvas-level touchstart (fires before document-level) ===
   canvas.addEventListener('touchstart', (e) => {
     for (const t of e.changedTouches) {
-      if (canvasTouchId !== null) continue;
-      if (game.skillDrag.touchId === t.identifier) continue;
+      console.log('[canvas touch] id=' + t.identifier + ' target=' + (e.target && e.target.tagName) + ' screen=' + game.screen);
+      if (canvasTouchId !== null) { console.log('[canvas touch] SKIP: canvasTouchId already set'); continue; }
+      if (game.skillDrag.touchId === t.identifier) { console.log('[canvas touch] SKIP: skillDrag active'); continue; }
       const target = e.target;
-      if (target && target.closest && (target.closest('#joystickZone') || target.closest('#skillBtns') || target.closest('#btnBackpack') || target.closest('#btnPause'))) continue;
+      if (target && target.closest && (target.closest('#joystickZone') || target.closest('#skillBtns') || target.closest('#btnBackpack') || target.closest('#btnPause'))) {
+        console.log('[canvas touch] SKIP: on control'); continue;
+      }
       e.preventDefault();
       e.stopPropagation();
       canvasTouchId = t.identifier;
+      console.log('[canvas touch] PROCESSED screen=' + game.screen + ' mouseDown=' + game.mouseDown);
       if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
         game.skillDrag.active = true;
         game.skillDrag.skillIdx = game.activeSkill;
