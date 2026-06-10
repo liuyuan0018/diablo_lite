@@ -240,8 +240,8 @@ export function initMobile() {
     requestAnimationFrame(() => {
       // Show joystick + skill buttons only during gameplay
       const playing = game.screen === 'playing' && !game.showPauseMenu;
-      if (joystickZone2) joystickZone2.style.display = playing ? '' : 'none';
-      if (skillBtnsContainer) skillBtnsContainer.style.display = playing ? '' : 'none';
+      if (joystickZone2) joystickZone2.style.display = playing ? 'block' : 'none';
+      if (skillBtnsContainer) skillBtnsContainer.style.display = playing ? 'flex' : 'none';
 
       skillBtns.forEach(btn => {
         const idx = parseInt(btn.dataset.skill);
