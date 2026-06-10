@@ -253,7 +253,7 @@ function renderPrepare(){
 
     // Overlays
     if(game.showCharSelect){renderCharSelect();return;}
-    if(game.selectedEquipSlot){renderEquipDetail();}
+    if(game.selectedEquipSlot){renderEquipDetail();return;}
 
     // --- Tab content ---
     if(game.prepareTab==='equip'){
@@ -564,42 +564,57 @@ function renderPrepare(){
 
 function renderEquipDetail(){
   const W=canvas.width,H=canvas.height;
+  const isMobile = 'ontouchstart' in window;
   ctx.fillStyle='rgba(0,0,0,0.6)';
   ctx.fillRect(0,0,W,H);
-  const pw=300,ph=220;
-  const px=W/2-pw/2,py=H/2-ph/2;
+  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'};
+  const statDesc={atk:'攻击力',cdr:'冷却缩减',maxHp:'最大生命',bulletSpeed:'弹道速度',pickupRange:'拾取范围',movespeed:'移动速度'};
+  const slot=game.selectedEquipSlot;
+  const eq=game.equipment[slot];
+
+  // Collect matching backpack items
+  const matching=[];
+  for(let i=0;i<game.backpack.length;i++){
+    if(game.backpack[i].slot===slot) matching.push({index:i,item:game.backpack[i]});
+  }
+
+  // Mobile: wider, taller modal with backpack items listed inline
+  const pw=isMobile?W-24:300;
+  const ph=isMobile?Math.min(180+matching.length*46,H-60):220;
+  const px=isMobile?12:(W/2-pw/2);
+  const py=isMobile?30:(H/2-ph/2);
+
   ctx.fillStyle='#1a1a2e';ctx.strokeStyle='#ffd700';ctx.lineWidth=2;
   roundRect(ctx,px,py,pw,ph,10);
   ctx.fill();ctx.stroke();
-  const slot=game.selectedEquipSlot;
-  const eq=game.equipment[slot];
-  const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'};
+
   ctx.textAlign='center';
-  ctx.font='bold 18px sans-serif';
+  ctx.font='bold '+(isMobile?'20':'18')+'px sans-serif';
   ctx.fillStyle='#ffd700';
-  ctx.fillText(slotNames[slot]||slot,px+pw/2,py+30);
+  ctx.fillText(slotNames[slot]||slot,px+pw/2,py+28);
+
   if(eq){
     ctx.fillStyle=QUALITY_COLORS[eq.quality]||'#aaa';
-    ctx.font='bold 14px sans-serif';
-    ctx.fillText(eq.name,px+pw/2,py+55);
-    ctx.font='12px sans-serif';
+    ctx.font='bold '+(isMobile?'15':'14')+'px sans-serif';
+    ctx.fillText(eq.name,px+pw/2,py+52);
+    ctx.font=(isMobile?'12':'12')+'px sans-serif';
     ctx.fillStyle='#888';
-    ctx.fillText('等级: '+eq.ilvl+'  |  品质: '+QUALITY_NAMES[eq.quality],px+pw/2,py+80);
+    ctx.fillText('等级: '+eq.ilvl+'  |  品质: '+QUALITY_NAMES[eq.quality],px+pw/2,py+72);
     ctx.font='13px sans-serif';
     ctx.fillStyle='#ccc';
-    const statDesc={atk:'攻击力',cdr:'冷却缩减',maxHp:'最大生命',bulletSpeed:'弹道速度',pickupRange:'拾取范围',movespeed:'移动速度'};
     if(eq.stat==='artifact'&&eq.desc){
       ctx.fillStyle='#ffaa44';ctx.font='11px sans-serif';
-      ctx.fillText(eq.desc,px+pw/2,py+100);
+      ctx.fillText(eq.desc,px+pw/2,py+92);
     }else{
-      ctx.fillText((statDesc[eq.stat]||'')+' +'+eq.statValue,px+pw/2,py+100);
+      ctx.fillText((statDesc[eq.stat]||'')+' +'+eq.statValue,px+pw/2,py+92);
     }
     if(eq.power){
       ctx.fillStyle='#ff6600';ctx.font='11px sans-serif';
       const pd=eq.power.desc.replace('{v}',eq.power.value);
-      ctx.fillText('传奇: '+pd,px+pw/2,py+118);
+      ctx.fillText('传奇: '+pd,px+pw/2,py+108);
     }
-    const bx=px+pw/2-60,by=py+120,bw=120,bh=36;
+    // Unequip button
+    const bx=px+pw/2-60,by=py+116,bw=120,bh=34;
     ctx.fillStyle='#3a1a1a';ctx.strokeStyle='#f44';ctx.lineWidth=1;
     if(game.mouseX>=bx&&game.mouseX<=bx+bw&&game.mouseY>=by&&game.mouseY<=by+bh){
       ctx.fillStyle='#5a2a2a';ctx.strokeStyle='#fff';
@@ -621,12 +636,73 @@ function renderEquipDetail(){
     }});
   }else{
     ctx.fillStyle='#666';ctx.font='14px sans-serif';
-    ctx.fillText('该槽位为空',px+pw/2,py+80);
+    ctx.fillText('该槽位为空',px+pw/2,py+70);
   }
-  const cbx=px+pw-30,cby=py+6,cbw=24,cbh=24;
+
+  // Mobile: divider + matching backpack items
+  if(isMobile&&matching.length>0){
+    const topY=eq?py+158:py+96;
+    ctx.strokeStyle='#444';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(px+10,topY);ctx.lineTo(px+pw-10,topY);ctx.stroke();
+    ctx.textAlign='left';
+    ctx.fillStyle='#ffd700';ctx.font='bold 11px sans-serif';
+    ctx.fillText('背包可替换 ('+matching.length+')',px+14,topY+18);
+    const rowH=44,startY=topY+28;
+    for(let j=0;j<matching.length;j++){
+      const mi=matching[j],item=mi.item;
+      const iy=startY+j*rowH;
+      const hover=game.mouseX>=px+6&&game.mouseX<=px+pw-6&&game.mouseY>=iy&&game.mouseY<=iy+rowH-2;
+      ctx.fillStyle=hover?'rgba(255,255,255,0.05)':'transparent';
+      roundRect(ctx,px+6,iy,pw-12,rowH-2,4);ctx.fill();
+
+      ctx.textAlign='left';
+      ctx.fillStyle=QUALITY_COLORS[item.quality]||'#aaa';
+      ctx.font='bold 11px sans-serif';
+      ctx.fillText(item.name,px+14,iy+18);
+
+      // Stat diff
+      if(eq&&item.stat!=='artifact'){
+        const diff=item.statValue-eq.statValue;
+        if(diff>0){ctx.fillStyle='#44ff44';ctx.font='bold 10px sans-serif';ctx.fillText((statDesc[item.stat]||'')+' +'+item.statValue+' ↑(+'+diff+')',px+14,iy+34);}
+        else if(diff<0){ctx.fillStyle='#ff4444';ctx.font='10px sans-serif';ctx.fillText((statDesc[item.stat]||'')+' +'+item.statValue+' ↓('+diff+')',px+14,iy+34);}
+        else{ctx.fillStyle='#ccc';ctx.font='10px sans-serif';ctx.fillText((statDesc[item.stat]||'')+' +'+item.statValue,px+14,iy+34);}
+      }else if(!eq&&item.stat!=='artifact'){
+        ctx.fillStyle='#ffd700';ctx.font='bold 10px sans-serif';ctx.fillText((statDesc[item.stat]||'')+' +'+item.statValue+' ✦新',px+14,iy+34);
+      }else if(item.stat==='artifact'&&item.desc){
+        ctx.fillStyle='#ffaa44';ctx.font='9px sans-serif';ctx.fillText(item.desc.slice(0,20),px+14,iy+30);
+      }
+
+      if(item.power){ctx.fillStyle='#ff6600';ctx.font='8px sans-serif';ctx.textAlign='right';ctx.fillText('★',px+pw-86,iy+18);}
+
+      // Equip button
+      const ebW=60,ebH=28,ebX=px+pw-ebW-12,ebY=iy+8;
+      const ebHover=game.mouseX>=ebX&&game.mouseX<=ebX+ebW&&game.mouseY>=ebY&&game.mouseY<=ebY+ebH;
+      ctx.fillStyle=ebHover?'#2a5a2a':'#1a3a1a';ctx.strokeStyle=ebHover?'#8f8':'#4a4';ctx.lineWidth=1;
+      roundRect(ctx,ebX,ebY,ebW,ebH,4);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#4f4';ctx.font='bold 11px sans-serif';ctx.textAlign='center';
+      ctx.fillText('装备',ebX+ebW/2,ebY+ebH/2+4);
+
+      const idx=mi.index;
+      prepButtons.push({x:ebX,y:ebY,w:ebW,h:ebH,text:'equip_from_detail',action:()=>{
+        equipFromBackpack(idx);
+        game.selectedEquipSlot=null;
+      }});
+    }
+  }else if(isMobile&&matching.length===0&&eq){
+    const topY=py+158;
+    ctx.strokeStyle='#444';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(px+10,topY);ctx.lineTo(px+pw-10,topY);ctx.stroke();
+    ctx.textAlign='center';
+    ctx.fillStyle='#555';ctx.font='12px sans-serif';
+    ctx.fillText('背包中没有可替换的'+(slotNames[slot]||slot)+'装备',px+pw/2,topY+28);
+  }
+
+  // Close button
+  const cbx=isMobile?px+pw-30:px+pw-30,cby=isMobile?py+4:py+6,cbw=24,cbh=24;
   ctx.fillStyle=game.mouseX>=cbx&&game.mouseX<=cbx+cbw&&game.mouseY>=cby&&game.mouseY<=cby+cbh?'#f44':'#444';
   ctx.fillRect(cbx,cby,cbw,cbh);
   ctx.fillStyle='#fff';ctx.font='bold 16px sans-serif';
+  ctx.textAlign='center';
   ctx.fillText('✕',cbx+cbw/2,cby+cbh/2+5);
   prepButtons.push({x:cbx,y:cby,w:cbw,h:cbh,text:'关闭',action:()=>{game.selectedEquipSlot=null;}});
   prepButtons.push({x:0,y:0,w:W,h:H,text:'outside',action:()=>{game.selectedEquipSlot=null;}});

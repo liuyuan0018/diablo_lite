@@ -209,10 +209,7 @@ export function exitTestfieldToPrepare() {
 }
 
 export function processClick(){
-  if(!game.mouseDown||game.clickProcessed){
-    if(game.screen==='prepare') console.log('[processClick] EARLY RETURN mouseDown='+game.mouseDown+' clickProcessed='+game.clickProcessed+' backpack='+game.showBackpack);
-    return;
-  }
+  if(!game.mouseDown||game.clickProcessed)return;
   // Mobile: tap above bottom compare panel closes selection
   if('ontouchstart' in window&&game.showBackpack&&game.bpSelectedIndex!==null&&game.mouseY<canvas.height-220){
     game.clickProcessed=true;
@@ -262,7 +259,6 @@ export function processClick(){
   }else if(game.screen==='menu'){
     checkButtonClicks(menuButtons);
   }else if(game.screen==='prepare'){
-    console.log('[processClick] PREPARE showCharSelect='+game.showCharSelect+' selectedEquipSlot='+game.selectedEquipSlot);
     if(game.showCharSelect){
       for(let i=charButtons.length-1;i>=0;i--){
         const b=charButtons[i];
@@ -297,8 +293,7 @@ export function processClick(){
 function checkButtonClicks(btns){
   for(const b of btns){
     const hit=game.mouseX>=b.x&&game.mouseX<=b.x+b.w&&game.mouseY>=b.y&&game.mouseY<=b.y+b.h;
-    if(!hit){console.log('[btn] MISS',b.text,'btnXY',b.x,b.y,b.w,b.h,'mouseXY',game.mouseX,game.mouseY);continue;}
-    console.log('[btn] HIT',b.text);
+    if(!hit)continue;
     playSFX('click');
     if(b.type==='stageSelect'&&b.enabled){
       startGame(b.idx);
@@ -312,10 +307,7 @@ function checkButtonClicks(btns){
 }
 
 let lastTime=performance.now();
-let frameCount=0;
 export function gameLoop(timestamp){
-  frameCount++;
-  if(frameCount%60===0) console.log('[loop] frame='+frameCount+' screen='+game.screen);
   const dt=Math.min((timestamp-lastTime)/1000,0.05);
   lastTime=timestamp;
   processClick();
