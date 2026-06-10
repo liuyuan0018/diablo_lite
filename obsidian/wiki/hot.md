@@ -1,45 +1,37 @@
 # 当前热点
 
-> 2026-06-09 | 技能系统原子化 + 表现层分离
+> 2026-06-10 | 移动端触摸架构 + UI 交互模式
 
 ## 刚发生
 
-技能系统从 switch-case 大块重构为原子架构，确立了技能→光环→Buff 三层模型。
+移动端适配重点从理论进入实现。建立了三层触摸事件架构，解决了快速点击丢失的系统性 bug，确定了 Canvas 固定分辨率策略，实现了无悬停的装备对比交互。
 
-### 核心洞察
+### 触摸事件架构
 
-`periodicDamage` 不是独立原子 — 它是光环（aura）的一个 modifier。同样地，pull、debuff 施加都是光环 modifier。
+三层处理：Skill Button（拖拽释放）→ Canvas（canvas 点击，stopPropagation 拦截）→ Document（控件路由 + 兜底）。
 
-三者关系：**技能通过原子创建光环，光环通过 modifier 向实体施加 Buff。** 是"动作→区域→状态"的因果链。
+**快速点击修复**：手机点击 < 16ms（一帧），touchend 在 processClick 之前重置 mouseDown 导致点击丢失。修复：touchend 只清 canvasTouchId，mouseDown 由 processClick 消费后自重置。
 
-### 技能原子（6 种）
+### Canvas 分辨率
 
-movement / spawnAura / applyBuff / stateTrack / cooldownMod / conditional
+移动端 750×1334（~0.59x 缩放于 440px 屏），桌面端 1920×1080。视口尺寸方案已被放弃——会随旋转改变宽高比，破坏 UI 布局。
 
-每个技能是 atoms[] 列表，castSkill 变为统一执行器遍历原子。元素追踪（3处）和时空共鸣（2处）的 copy-paste 通过 stateTrack/cooldownMod 消除。
+### 装备对比（无悬停）
 
-### 光环引擎
+`renderEquipDetail` 移动端显示同槽位背包物品列表，带绿色↑/红色↓数值差异和快捷装备按钮。与背包的 tap-to-select + 底部对比面板模式一致。
 
-`js/atoms/aura-engine.js` 的 `tickAuras(dt)` 替代了 updateSkillEffects 的 ~140 行 switch。7 种光环风格定义在 aura-defs.js，每种由 modifier 列表组成。
+### 拖拽释放技能
 
-modifier: damageTick(连续/间隔/单发/终结) / pull(恒定/递增) / applyBuff / onEnd
-
-### 表现层分离
-
-`js/atoms/skill-presentation.js` 是唯一引用 particles.js/audio.js/renderer.js 的文件。引擎层只调用 `present.xxx()`，不看具体实现。
-
-### 代码消除
-
-skills.js castSkill switch (~170行) + updateSkillEffects switch (~140行) → createAura() + tickAuras() + present
+按住技能按钮或直接拖拽 Canvas → 瞄准预览 → 松手释放。预选框（AOE 圈/十字准星）只在拖拽中显示。
 
 ## 活跃领域
 
-- 技能原子化 ([[concepts/Skill-Atom-Aura-Architecture|三层架构]])
-- 配置驱动 ([[concepts/Config-Driven-Buff-System|Buff/装备系统]])
-- 装备系统 ([[concepts/Equipment-Data-Flow-Pitfalls|陷阱]])
+- 移动端触摸 ([[concepts/Mobile-Touch-Handling|事件架构]])
+- 移动端 UI ([[concepts/Mobile-UI-Interaction|Canvas 策略 + 装备交互]])
+- 移动端适配 ([[concepts/Mobile-Adaptation|PC→手游转型]])
 
 ## 最近归档
 
-- [[concepts/Skill-Atom-Aura-Architecture|技能原子/光环/Buff 架构]] — 因果链、6原子、7光环、表现层分离
-- [[concepts/Config-Driven-Buff-System|配置驱动的 Buff/装备]] — 三表两引擎
-- [[concepts/Equipment-Data-Flow-Pitfalls|装备数据流转陷阱]]
+- [[concepts/Mobile-Touch-Handling|移动端触摸事件架构]] — 三层处理、快速点击修复、/m 测试
+- [[concepts/Mobile-UI-Interaction|移动端 UI 交互]] — Canvas 750×1334、装备栏触摸对比、控件显示规则
+- [[concepts/Skill-Atom-Aura-Architecture|技能原子/光环/Buff 架构]]

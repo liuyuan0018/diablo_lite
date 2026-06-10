@@ -1,11 +1,13 @@
 # Diablo Lite — 知识索引
 
-> 最后更新: 2026-06-07
+> 最后更新: 2026-06-10
 > 
 > **代码是唯一事实来源。** 本索引用于快速导航和理解设计意图，具体实现以对应系统代码为准。
 
 ## 核心概念
 
+- [[concepts/Mobile-Touch-Handling|移动端触摸事件架构]] — 三层事件处理（元素→Canvas→Document）、快速点击丢失修复、/m 桌面测试
+- [[concepts/Mobile-UI-Interaction|移动端 UI 交互]] — Canvas 固定分辨率策略（750×1334）、装备栏触摸替换悬停对比、控件显示规则
 - [[concepts/Skill-Atom-Aura-Architecture|技能原子/光环/Buff 三层架构]] — 技能→光环→Buff 因果链，6 原子 + 7 光环 + 表现层分离
 - [[concepts/Config-Driven-Buff-System|配置驱动的 Buff/装备系统]] — 三表两引擎架构：Buff 表 + 装备表 + 掉落表 + Buff Engine + Skill Hooks
 - [[concepts/Equipment-Data-Flow-Pitfalls|装备数据流转陷阱]] — 手工重建对象反模式、字段丢失、流转链路排查清单

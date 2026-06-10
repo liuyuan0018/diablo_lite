@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-10] save | 移动端触摸 & UI 交互
+- 类型: concept × 2
+- 文件: wiki/concepts/Mobile-Touch-Handling.md, wiki/concepts/Mobile-UI-Interaction.md
+- 来源: 移动端调试 session — 触摸事件架构重构、Canvas 分辨率策略、装备栏触摸对比
+
 ## [2026-06-09] save | 技能原子/光环/Buff 三层架构
 - 类型: concept
 - 文件: wiki/concepts/Skill-Atom-Aura-Architecture.md
