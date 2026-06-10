@@ -293,7 +293,8 @@ export function processClick(){
 function checkButtonClicks(btns){
   for(const b of btns){
     const hit=game.mouseX>=b.x&&game.mouseX<=b.x+b.w&&game.mouseY>=b.y&&game.mouseY<=b.y+b.h;
-    if(!hit)continue;
+    if(!hit){console.log('[btn] MISS',b.text,'btnXY',b.x,b.y,b.w,b.h,'mouseXY',game.mouseX,game.mouseY);continue;}
+    console.log('[btn] HIT',b.text);
     playSFX('click');
     if(b.type==='stageSelect'&&b.enabled){
       startGame(b.idx);
