@@ -112,9 +112,6 @@ function renderMenu(){
 
 // --- Prepare ---
 function renderPrepare(){
-  // Safety: reset overlay flags so prepare clicks always work
-  if (game.showBackpack) game.showBackpack = false;
-  if (game.showPauseMenu) game.showPauseMenu = false;
   const W=canvas.width,H=canvas.height;
   const isMobile='ontouchstart' in window;
 

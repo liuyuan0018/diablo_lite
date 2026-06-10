@@ -1,5 +1,10 @@
 # 变更日志
 
+## [2026-06-11] save | 准备界面交互流程（背包打不开修复）
+- 类型: concept
+- 文件: wiki/concepts/Prepare-Screen-Interaction-Flow.md
+- 来源: 修复 prepare 界面无法打开背包 — renderPrepare per-frame reset + mobile.js screen guard 双重问题
+
 ## [2026-06-10] save | 移动端触摸 & UI 交互
 - 类型: concept × 2
 - 文件: wiki/concepts/Mobile-Touch-Handling.md, wiki/concepts/Mobile-UI-Interaction.md

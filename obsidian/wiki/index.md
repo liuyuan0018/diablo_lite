@@ -24,6 +24,7 @@
 - [[concepts/Difficulty|难度曲线]] — 10 关指数难度设计
 - [[concepts/Skills|技能系统]] — 3 技能 + 自动攻击
 - [[concepts/Audio-SFX-Design|音效系统设计]] — 四层优先级混音架构 + 频谱分区 + 双轨(Juicy+Power)全程序化合成的音效方案
+- [[concepts/Prepare-Screen-Interaction-Flow|准备界面交互流程]] — 渲染顺序、overlay 管理、processClick 守卫、移动端触摸分流
 - [[concepts/Competitive-Assumptions|三项假设验证]] — 受众规模/深度传递/变现模式的证据评估
 
 ## 实体

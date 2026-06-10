@@ -102,11 +102,9 @@ export function initMobile() {
       // 3) Backpack button
       if (target.closest('#btnBackpack')) {
         e.preventDefault();
-        if (game.screen === 'playing') {
-          if (game.showPauseMenu) game.showPauseMenu = false;
-          game.showBackpack = !game.showBackpack;
-          if (game.showBackpack) game.bpScroll = 0;
-        }
+        if (game.showPauseMenu) game.showPauseMenu = false;
+        game.showBackpack = !game.showBackpack;
+        if (game.showBackpack) game.bpScroll = 0;
         continue;
       }
 
@@ -309,11 +307,9 @@ export function initMobile() {
 
       if (target.closest('#btnBackpack')) {
         e.preventDefault();
-        if (game.screen === 'playing') {
-          if (game.showPauseMenu) game.showPauseMenu = false;
-          game.showBackpack = !game.showBackpack;
-          if (game.showBackpack) game.bpScroll = 0;
-        }
+        if (game.showPauseMenu) game.showPauseMenu = false;
+        game.showBackpack = !game.showBackpack;
+        if (game.showBackpack) game.bpScroll = 0;
         return;
       }
 
