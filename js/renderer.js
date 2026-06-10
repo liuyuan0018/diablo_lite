@@ -1092,7 +1092,7 @@ function renderBuffBar(W, H){
   const chipW = 90, chipH = 20, gap = 6;
   const totalW = buffs.length * chipW + (buffs.length - 1) * gap;
   const startX = W / 2 - totalW / 2;
-  const barY = H - 135;
+  const barY = ('ontouchstart' in window) ? 70 : H - 135;
 
   for (let i = 0; i < buffs.length; i++) {
     const b = buffs[i];
@@ -1117,6 +1117,81 @@ function renderBuffBar(W, H){
 function renderHUD(){
   const W=canvas.width,H=canvas.height;
   const p=game.player;
+  const isMobile='ontouchstart' in window;
+  if(isMobile){
+    const capsuleW=260, capsuleH=44;
+    const capsuleX=W/2-capsuleW/2, capsuleY=8;
+    ctx.fillStyle='rgba(0,0,0,0.75)';
+    roundRect(ctx, capsuleX, capsuleY, capsuleW, capsuleH, 22);
+    ctx.fill();
+    ctx.textAlign='left';
+    ctx.font='bold 11px sans-serif';
+    ctx.fillStyle='#ff4444';
+    ctx.fillText('HP', capsuleX+8, capsuleY+20);
+    const hpBarX=capsuleX+30, hpBarY=capsuleY+12, hpBarW=115, hpBarH=10;
+    ctx.fillStyle='#333';
+    ctx.fillRect(hpBarX, hpBarY, hpBarW, hpBarH);
+    ctx.fillStyle='#cc2222';
+    ctx.fillRect(hpBarX, hpBarY, hpBarW*(p.hp/p.maxHp), hpBarH);
+    ctx.strokeStyle='rgba(255,255,255,0.2)';
+    ctx.strokeRect(hpBarX, hpBarY, hpBarW, hpBarH);
+    ctx.font='10px sans-serif';
+    ctx.fillStyle='#fff';
+    ctx.fillText(Math.floor(p.hp)+'/'+p.maxHp, hpBarX+hpBarW+4, capsuleY+20);
+    const expBarY=hpBarY+hpBarH+2;
+    ctx.fillStyle='#333';
+    ctx.fillRect(hpBarX, expBarY, hpBarW, 4);
+    ctx.fillStyle='#4488ff';
+    ctx.fillRect(hpBarX, expBarY, hpBarW*(p.exp/p.expToNext), 4);
+    ctx.textAlign='center';
+    ctx.font='bold 12px sans-serif';
+    ctx.fillStyle='#ffd700';
+    ctx.fillText((game.isTestStage?'[测试] ':'')+'Lv.'+p.level, capsuleX+capsuleW/2, capsuleY+20);
+    ctx.textAlign='right';
+    ctx.font='10px sans-serif';
+    const bpLimitM=game.screen==='playing'?8:99;
+    ctx.fillStyle=game.backpack.length>=bpLimitM?'#f88':'#aaa';
+    ctx.fillText('包:'+game.backpack.length+(game.screen==='playing'?'/8':''), capsuleX+capsuleW-6, capsuleY+20);
+    const infoY=capsuleY+capsuleH+14;
+    ctx.textAlign='center';
+    ctx.font='12px sans-serif';
+    ctx.fillStyle='#888';
+    let infoLine=formatTime(game.time)+' | 击杀: '+game.kills;
+    if(!game.bossSpawned){
+      infoLine+=' | Boss: '+game.kills+'/'+game.killsForBoss;
+    }
+    ctx.fillText(infoLine, W/2, infoY);
+    renderBuffBar(W, H);
+    if(game.bossSpawned&&!game.bossDefeated){
+      ctx.textAlign='center';
+      ctx.font='bold 12px sans-serif';
+      ctx.fillStyle='#ff4444';
+      ctx.fillText('BOSS已出现!', W/2, infoY+18);
+    }
+    try{
+      const synStats=calcPlayerStats();
+      if(synStats.synergies&&synStats.synergies.all&&synStats.synergies.all.length>0){
+        ctx.font='10px sans-serif';
+        ctx.fillStyle='#ffaa00';
+        ctx.textAlign='center';
+        ctx.fillText('协同: '+synStats.synergies.all.map(s=>s.name).join(' '), W/2, infoY+34);
+      }
+    }catch(e){}
+    if(game.bossDefeated){
+      const bw=240, bh=28;
+      const bx=W/2-bw/2, by=infoY+50;
+      ctx.fillStyle='rgba(0,0,0,0.7)';
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=1;
+      roundRect(ctx, bx, by, bw, bh, 4);
+      ctx.fill(); ctx.stroke();
+      ctx.fillStyle='#ffd700';
+      ctx.font='bold 11px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('Boss 已击败 · 点击暂停返回', bx+bw/2, by+bh/2+4);
+    }
+    return;
+  }
   ctx.fillStyle='rgba(0,0,0,0.75)';
   ctx.fillRect(0,0,W,44);
   ctx.strokeStyle='rgba(255,255,255,0.1)';
