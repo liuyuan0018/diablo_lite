@@ -1615,6 +1615,282 @@ export function renderPauseMenu(){
 
 export function renderBackpackOverlay(){
   const W=canvas.width,H=canvas.height;
+
+  // === MOBILE PORTRAIT VERSION ===
+  if ('ontouchstart' in window) {
+    ctx.fillStyle='rgba(0,0,0,0.85)';
+    ctx.fillRect(0,0,W,H);
+    game.hoveredItem=null;
+    const bp=game.backpack;
+    const statLabels={atk:'攻',cdr:'CD',maxHp:'命',bulletSpeed:'速',pickupRange:'拾',movespeed:'移'};
+    const statDesc={atk:'攻击力',cdr:'冷却缩减',maxHp:'最大生命',bulletSpeed:'弹道速度',pickupRange:'拾取范围',movespeed:'移动速度'};
+    const slotNames={weapon:'武器',helmet:'头盔',armor:'护甲',ring:'戒指',amulet:'项链',boots:'靴子',bracers:'护腕',belt:'腰带',artifact:'法器'};
+
+    const cols=4,gap=8;
+    const pw=Math.min(1000,W-20);
+    const cellW=Math.floor((pw-gap*3)/4);
+    const cardH=100;
+    const rowH=cardH+gap;
+    const canEquip=game.screen==='prepare'||game.screen==='victory';
+    const panelH=game.bpSelectedIndex!==null?220:0;
+
+    // Header
+    ctx.textAlign='center';
+    ctx.font='bold 16px sans-serif';
+    ctx.fillStyle='#ffd700';
+    const bpTitle=game.screen==='playing'?'背包 ('+bp.length+'/8)':'背包 ('+bp.length+')';
+    ctx.fillText(bpTitle,W/2,24);
+    ctx.font='11px sans-serif';
+    ctx.fillStyle='#888';
+    ctx.fillText('点击包按钮关闭',W/2,42);
+
+    // Grid
+    const gridY=54;
+    const availH=H-gridY-panelH-10;
+    const gridW=cols*cellW+(cols-1)*gap;
+    const gridX=(W-gridW)/2;
+    const rows=Math.ceil(bp.length/cols);
+    const maxScroll=Math.max(0,rows*rowH-availH);
+    game.bpScroll=Math.min(game.bpScroll,maxScroll);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(gridX-4,gridY,gridW+8,availH);
+    ctx.clip();
+
+    ctx.textAlign='center';
+    if(bp.length===0){
+      ctx.fillStyle='#555';
+      ctx.font='14px sans-serif';
+      ctx.fillText('背包为空',W/2,gridY+availH/2);
+    }else{
+      const scrollY=game.bpScroll;
+      for(let i=0;i<bp.length;i++){
+        const col=i%cols,row=Math.floor(i/cols);
+        const rowY=gridY+row*rowH-scrollY;
+        if(rowY+cardH<gridY||rowY>gridY+availH)continue;
+        const cx=gridX+col*(cellW+gap),cy=rowY;
+        const item=bp[i];
+        const isSelected=i===game.bpSelectedIndex;
+
+        // Card background + quality-colored border
+        ctx.fillStyle='#1a1a2e';
+        ctx.strokeStyle=QUALITY_COLORS[item.quality]||'#555';
+        ctx.lineWidth=isSelected?3:2;
+        roundRect(ctx,cx,cy,cellW,cardH,6);
+        ctx.fill();ctx.stroke();
+
+        // ilvl
+        ctx.fillStyle=QUALITY_COLORS[item.quality]||'#aaa';
+        ctx.font='bold 9px sans-serif';
+        ctx.fillText('Lv.'+item.ilvl,cx+cellW/2,cy+12);
+
+        // Item name
+        ctx.font='bold 13px sans-serif';
+        ctx.fillText(item.name,cx+cellW/2,cy+36);
+
+        // Stat value
+        ctx.font='11px sans-serif';
+        if(item.stat==='artifact'&&item.desc){
+          ctx.fillStyle='#ffaa44';
+          ctx.font='9px sans-serif';
+          ctx.fillText(item.desc,cx+cellW/2,cy+54);
+        }else{
+          ctx.fillStyle='#ccc';
+          ctx.fillText((statLabels[item.stat]||'?')+'+'+item.statValue,cx+cellW/2,cy+54);
+        }
+
+        // Legendary tag
+        if(item.power){
+          ctx.fillStyle='#ff6600';
+          ctx.font='bold 8px sans-serif';
+          ctx.fillText('★传奇',cx+cellW/2,cy+72);
+        }
+
+        // Small discard button (top-right corner)
+        const dx=cx+cellW-16,dy=cy-4,dw=16,dh=16;
+        const dhover=game.mouseX>=dx&&game.mouseX<=dx+dw&&game.mouseY>=dy&&game.mouseY<=dy+dh;
+        ctx.fillStyle=dhover?'#ff4444':'#662222';
+        ctx.fillRect(dx,dy,dw,dh);
+        ctx.fillStyle='#fff';
+        ctx.font='bold 10px sans-serif';
+        ctx.fillText('✕',dx+dw/2,dy+dh/2+3);
+
+        // Discard click
+        if(dhover&&game.mouseDown&&!game.clickProcessed){
+          game.clickProcessed=true;
+          game.drops.push({x:game.player.x+(Math.random()-0.5)*160,y:game.player.y+(Math.random()-0.5)*160,slot:item.slot,quality:item.quality,ilvl:item.ilvl,statValue:item.statValue,stat:item.stat,name:item.name,color:item.color,power:item.power||null,artifactId:item.artifactId||null,setName:item.setName||null,desc:item.desc||null,bobPhase:Math.random()*Math.PI*2});
+          game.backpack.splice(i,1);
+          if(game.bpSelectedIndex===i)game.bpSelectedIndex=null;
+          else if(game.bpSelectedIndex!==null&&game.bpSelectedIndex>i)game.bpSelectedIndex--;
+          saveGame();
+          ctx.restore();return;
+        }
+      }
+    }
+    ctx.restore();
+
+    // Card selection tap (after discard checks, before panel close)
+    if(game.mouseDown&&!game.clickProcessed&&game.mouseY>=gridY&&game.mouseY<=gridY+availH){
+      const scrollY=game.bpScroll;
+      for(let i=0;i<bp.length;i++){
+        const col=i%cols,row=Math.floor(i/cols);
+        const rowY=gridY+row*rowH-scrollY;
+        if(rowY+cardH<gridY||rowY>gridY+availH)continue;
+        const cx=gridX+col*(cellW+gap),cy=rowY;
+        if(game.mouseX>=cx&&game.mouseX<=cx+cellW&&game.mouseY>=cy&&game.mouseY<=cy+cardH){
+          game.clickProcessed=true;
+          if(game.bpSelectedIndex===i){
+            game.bpSelectedIndex=null;
+          }else{
+            game.bpSelectedIndex=i;
+          }
+          break;
+        }
+      }
+    }
+
+    // Close selection when tapping empty area above panel
+    if(game.mouseDown&&!game.clickProcessed&&game.bpSelectedIndex!==null&&game.mouseY<H-220){
+      game.clickProcessed=true;
+      game.bpSelectedIndex=null;
+    }
+
+    // Scrollbar
+    if(maxScroll>0){
+      const sbX=gridX+gridW+6,sbY=gridY,sbH=availH,sbW=6;
+      ctx.fillStyle='#222';
+      ctx.fillRect(sbX,sbY,sbW,sbH);
+      const thumbH=Math.max(30,sbH*(availH/(rows*rowH)));
+      const thumbY=sbY+(sbH-thumbH)*(game.bpScroll/maxScroll);
+      ctx.fillStyle='#666';
+      roundRect(ctx,sbX,thumbY,sbW,thumbH,3);
+      ctx.fill();
+    }
+
+    // Bottom compare panel
+    if(game.bpSelectedIndex!==null){
+      const idx=game.bpSelectedIndex;
+      const item=bp[idx];
+      if(!item){game.bpSelectedIndex=null;return;}
+      const py=H-220;
+      const eqSource=game.sandboxEquipment||game.equipment;
+      const equipped=eqSource[item.slot];
+
+      // Panel background
+      ctx.fillStyle='rgba(10,10,25,0.97)';
+      ctx.fillRect(0,py,W,220);
+      // Gold top border
+      ctx.strokeStyle='#ffd700';
+      ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();
+
+      // Left column: current equipment
+      const leftX=20,colW=W/2-30;
+      ctx.textAlign='center';
+      ctx.fillStyle='#888';
+      ctx.font='11px sans-serif';
+      ctx.fillText('当前装备',leftX+colW/2,py+18);
+      if(equipped){
+        ctx.fillStyle=QUALITY_COLORS[equipped.quality]||'#aaa';
+        ctx.font='bold 12px sans-serif';
+        ctx.fillText(equipped.name,leftX+colW/2,py+40);
+        ctx.fillStyle='#ccc';
+        ctx.font='11px sans-serif';
+        if(equipped.stat==='artifact'&&equipped.desc){
+          ctx.fillStyle='#ffaa44';
+          ctx.font='10px sans-serif';
+          ctx.fillText(equipped.desc,leftX+colW/2,py+60);
+        }else{
+          ctx.fillText((statDesc[equipped.stat]||'')+' +'+equipped.statValue,leftX+colW/2,py+60);
+        }
+      }else{
+        ctx.fillStyle='#555';
+        ctx.font='12px sans-serif';
+        ctx.fillText('（空槽位）',leftX+colW/2,py+40);
+      }
+
+      // Center arrow
+      ctx.fillStyle='#ffd700';
+      ctx.font='bold 28px sans-serif';
+      ctx.fillText('→',W/2,py+50);
+
+      // Right column: selected item
+      const rightX=W/2+10;
+      ctx.fillStyle='#888';
+      ctx.font='11px sans-serif';
+      ctx.fillText('选中物品',rightX+colW/2,py+18);
+      ctx.fillStyle=QUALITY_COLORS[item.quality]||'#aaa';
+      ctx.font='bold 12px sans-serif';
+      ctx.fillText(item.name,rightX+colW/2,py+40);
+      ctx.font='11px sans-serif';
+      if(equipped&&item.stat!=='artifact'){
+        const hVal=item.statValue,eVal=equipped.statValue,diff=hVal-eVal;
+        if(diff>0){
+          ctx.fillStyle='#44ff44';
+          ctx.fillText((statDesc[item.stat]||'')+' +'+hVal+' ↑(+'+diff+')',rightX+colW/2,py+60);
+        }else if(diff<0){
+          ctx.fillStyle='#ff4444';
+          ctx.fillText((statDesc[item.stat]||'')+' +'+hVal+' ↓('+diff+')',rightX+colW/2,py+60);
+        }else{
+          ctx.fillStyle='#ccc';
+          ctx.fillText((statDesc[item.stat]||'')+' +'+hVal,rightX+colW/2,py+60);
+        }
+      }else if(item.stat==='artifact'&&item.desc){
+        ctx.fillStyle='#ffaa44';
+        ctx.font='10px sans-serif';
+        ctx.fillText(item.desc,rightX+colW/2,py+60);
+      }else{
+        ctx.fillStyle='#ffd700';
+        ctx.font='bold 11px sans-serif';
+        ctx.fillText((statDesc[item.stat]||'')+' +'+item.statValue+' ✦新',rightX+colW/2,py+60);
+      }
+
+      // Bottom buttons
+      const btnY=py+220-46;
+      if(canEquip){
+        const eqBtnW=120,eqBtnX=W/2-eqBtnW-12;
+        ctx.fillStyle='#225522';ctx.strokeStyle='#44aa44';ctx.lineWidth=1;
+        roundRect(ctx,eqBtnX,btnY,eqBtnW,36,6);
+        ctx.fill();ctx.stroke();
+        ctx.fillStyle='#44ff44';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+        ctx.fillText('装备',eqBtnX+eqBtnW/2,btnY+24);
+        // Equip button click
+        if(game.mouseX>=eqBtnX&&game.mouseX<=eqBtnX+eqBtnW&&game.mouseY>=btnY&&game.mouseY<=btnY+36&&game.mouseDown&&!game.clickProcessed){
+          game.clickProcessed=true;
+          equipFromBackpack(idx);
+          game.bpSelectedIndex=null;
+        }
+      }
+      const disBtnW=120;
+      const disBtnX=canEquip?W/2+12:W/2-disBtnW/2;
+      ctx.fillStyle='#552222';ctx.strokeStyle='#aa4444';ctx.lineWidth=1;
+      roundRect(ctx,disBtnX,btnY,disBtnW,36,6);
+      ctx.fill();ctx.stroke();
+      ctx.fillStyle='#ff4444';ctx.font='bold 14px sans-serif';ctx.textAlign='center';
+      ctx.fillText('丢弃',disBtnX+disBtnW/2,btnY+24);
+      // Discard button click
+      if(game.mouseX>=disBtnX&&game.mouseX<=disBtnX+disBtnW&&game.mouseY>=btnY&&game.mouseY<=btnY+36&&game.mouseDown&&!game.clickProcessed){
+        game.clickProcessed=true;
+        const ditem=bp[idx];
+        if(ditem){
+          game.drops.push({x:game.player.x+(Math.random()-0.5)*160,y:game.player.y+(Math.random()-0.5)*160,slot:ditem.slot,quality:ditem.quality,ilvl:ditem.ilvl,statValue:ditem.statValue,stat:ditem.stat,name:ditem.name,color:ditem.color,power:ditem.power||null,artifactId:ditem.artifactId||null,setName:ditem.setName||null,desc:ditem.desc||null,bobPhase:Math.random()*Math.PI*2});
+          game.backpack.splice(idx,1);
+          game.bpSelectedIndex=null;
+          saveGame();
+        }
+      }
+
+      // Hint text
+      ctx.textAlign='center';
+      ctx.fillStyle='#555';
+      ctx.font='10px sans-serif';
+      ctx.fillText('点击空白区域关闭',W/2,btnY+36+10);
+    }
+    return;
+  }
+
+  // === DESKTOP VERSION (unchanged) ===
   ctx.fillStyle='rgba(0,0,0,0.7)';
   ctx.fillRect(0,0,W,H);
   game.hoveredItem=null;
