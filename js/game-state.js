@@ -79,6 +79,7 @@ export const game = {
   showLoadoutPanel: true,        // loadout panel visible toggle
   loadoutTab: 'presets',         // 'presets' | 'custom'
   slotPicker: null,               // which slot's picker popup is open
+  prepareTab: 'equip',            // 'equip' | 'stages' — mobile portrait tab
 };
 
 // Character management helpers

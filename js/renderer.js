@@ -109,6 +109,252 @@ function renderMenu(){
 // --- Prepare ---
 function renderPrepare(){
   const W=canvas.width,H=canvas.height;
+  const isMobile='ontouchstart' in window;
+
+  if(isMobile){
+    ctx.fillStyle='#0a0a12';ctx.fillRect(0,0,W,H);
+    game.hoveredItem=null;
+    prepButtons=[];
+    equipSlots=[];
+    ctx.textAlign='center';
+
+    // --- Title ---
+    ctx.font='bold 28px sans-serif';
+    ctx.fillStyle='#ffd700';
+    ctx.fillText('准备战斗',W/2,36);
+
+    // --- Character bar (centered group) ---
+    const activeChar=getActiveCharacter();
+    const charName=activeChar?activeChar.name:'--';
+    const charBarY=46;
+    const charH=28;
+
+    ctx.font='13px sans-serif';
+    const label='角色：';
+    const labelW=ctx.measureText(label).width;
+    ctx.font='bold 14px sans-serif';
+    const nameW=ctx.measureText(charName).width;
+    ctx.font='11px sans-serif';
+    const switchLabel='切换 ▶';
+    const switchLabelW=ctx.measureText(switchLabel).width;
+    const switchW=switchLabelW+14;
+    const newLabel='+新';
+    const newLabelW=ctx.measureText(newLabel).width;
+    const newW=newLabelW+14;
+
+    const totalGroupW=labelW+4+nameW+10+switchW+6+newW;
+    const groupStartX=W/2-totalGroupW/2;
+
+    ctx.font='13px sans-serif';
+    ctx.fillStyle='#888';
+    ctx.textAlign='left';
+    ctx.fillText(label,groupStartX,charBarY+charH/2+5);
+
+    const nameX=groupStartX+labelW+4;
+    ctx.fillStyle='#ffd700';
+    ctx.font='bold 14px sans-serif';
+    ctx.fillText(charName,nameX,charBarY+charH/2+5);
+
+    // Switch button
+    const switchBX=nameX+nameW+10,switchBY=charBarY;
+    const switchBH=charH;
+    const switchHover=game.mouseX>=switchBX&&game.mouseX<=switchBX+switchW&&game.mouseY>=switchBY&&game.mouseY<=switchBY+switchBH;
+    ctx.fillStyle=switchHover?'#335577':'#1a2a3a';
+    ctx.strokeStyle=switchHover?'#88ccff':'#4488ff';ctx.lineWidth=1;
+    roundRect(ctx,switchBX,switchBY,switchW,switchBH,4);
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle='#8af';ctx.font='11px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(switchLabel,switchBX+switchW/2,switchBY+switchBH/2+4);
+
+    // New character button
+    const newBX=switchBX+switchW+6,newBY=charBarY;
+    const newBH=charH;
+    const newHover=game.mouseX>=newBX&&game.mouseX<=newBX+newW&&game.mouseY>=newBY&&game.mouseY<=newBY+newBH;
+    ctx.fillStyle=newHover?'#335533':'#1a2a1a';
+    ctx.strokeStyle=newHover?'#88ff88':'#44aa44';ctx.lineWidth=1;
+    roundRect(ctx,newBX,newBY,newW,newBH,4);
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle='#8f8';ctx.font='11px sans-serif';
+    ctx.textAlign='center';
+    ctx.fillText(newLabel,newBX+newW/2,newBY+newBH/2+4);
+
+    // Char bar button actions
+    prepButtons.push({x:switchBX,y:switchBY,w:switchW,h:switchBH,action:()=>{game.showCharSelect=true;}});
+    prepButtons.push({x:newBX,y:newBY,w:newW,h:newBH,action:()=>{
+      const name=prompt('输入角色名称:','勇者'+(game.characters.length+1));
+      if(name===null)return;
+      const c=createCharacter(name.trim()||('勇者'+(game.characters.length+1)));
+      syncPlayerToChar();
+      game.characters.push(c);
+      game.activeCharacterId=c.id;
+      syncCharToPlayer();
+      const st=calcPlayerStats();
+      game.player.maxHp=st.maxHP;game.player.hp=st.maxHP;
+      game.player.atk=st.atk;game.player.cdr=st.cdr;
+      game.player.bulletSpeed=st.bulletSpeed;game.player.pickupRange=st.pickupRange;game.player.fireRate=st.fireRate;
+      saveGame();
+    }});
+
+    // --- Stats row ---
+    const stats=calcPlayerStats();
+    const statsY=86,statsH=32;
+    const statsW=W-40,statsX=20;
+    ctx.fillStyle='#111122';ctx.strokeStyle='#334';ctx.lineWidth=1;
+    roundRect(ctx,statsX,statsY,statsW,statsH,6);
+    ctx.fill();ctx.stroke();
+    ctx.textAlign='center';
+    ctx.font='13px sans-serif';
+    ctx.fillStyle='#ccc';
+    const statsText='Lv.'+game.player.level+' | ATK '+stats.atk+' | HP '+stats.maxHP+' | CDR '+stats.cdr+'% | Coins '+game.soulCoins;
+    ctx.fillText(statsText,W/2,statsY+statsH/2+5);
+
+    // --- Tab selectors ---
+    const tabsY=130,tabH=36;
+    const tabW=(W-60)/2,tabGap=10;
+    const tab1X=(W-2*tabW-tabGap)/2,tab2X=tab1X+tabW+tabGap;
+
+    // Tab: 装备 & 属性
+    {
+      const active=game.prepareTab==='equip';
+      ctx.fillStyle=active?'#112244':'#111122';
+      ctx.strokeStyle=active?'#ffd700':'#444';
+      ctx.lineWidth=active?2:1;
+      roundRect(ctx,tab1X,tabsY,tabW,tabH,4);
+      ctx.fill();ctx.stroke();
+      ctx.fillStyle=active?'#ffd700':'#888';
+      ctx.font='bold 15px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('装备 & 属性',tab1X+tabW/2,tabsY+tabH/2+5);
+      prepButtons.push({x:tab1X,y:tabsY,w:tabW,h:tabH,action:()=>{game.prepareTab='equip';}});
+    }
+
+    // Tab: 关卡选择
+    {
+      const active=game.prepareTab==='stages';
+      ctx.fillStyle=active?'#112244':'#111122';
+      ctx.strokeStyle=active?'#ffd700':'#444';
+      ctx.lineWidth=active?2:1;
+      roundRect(ctx,tab2X,tabsY,tabW,tabH,4);
+      ctx.fill();ctx.stroke();
+      ctx.fillStyle=active?'#ffd700':'#888';
+      ctx.font='bold 15px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('关卡选择',tab2X+tabW/2,tabsY+tabH/2+5);
+      prepButtons.push({x:tab2X,y:tabsY,w:tabW,h:tabH,action:()=>{game.prepareTab='stages';}});
+    }
+
+    // Overlays
+    if(game.showCharSelect){renderCharSelect();return;}
+    if(game.selectedEquipSlot){renderEquipDetail();}
+
+    // --- Tab content ---
+    if(game.prepareTab==='equip'){
+      const eqW=W-40,eqX=20;
+      const eqY=tabsY+tabH+16;
+      const eqH=360;
+      renderEquipGrid(eqX,eqY,eqW,eqH,game.equipment,equipSlots,prepButtons);
+
+      // Testfield button below grid
+      const tfBtnW=200,tfBtnH=44;
+      const tfBtnX=W/2-tfBtnW/2;
+      const tfBtnY=eqY+eqH+20;
+      const tfHover=game.mouseX>=tfBtnX&&game.mouseX<=tfBtnX+tfBtnW&&game.mouseY>=tfBtnY&&game.mouseY<=tfBtnY+tfBtnH;
+      ctx.fillStyle=tfHover?'#2a2a1a':'#1a1a0a';
+      ctx.strokeStyle=tfHover?'#ffd700':'#886600';
+      ctx.lineWidth=tfHover?2:1;
+      roundRect(ctx,tfBtnX,tfBtnY,tfBtnW,tfBtnH,6);
+      ctx.fill();ctx.stroke();
+      ctx.fillStyle='#ffd700';
+      ctx.font='bold 16px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('⚔ 测试场',tfBtnX+tfBtnW/2,tfBtnY+tfBtnH/2+6);
+      prepButtons.push({x:tfBtnX,y:tfBtnY,w:tfBtnW,h:tfBtnH,text:'测试场',action:()=>{startTestfield();}});
+    }else if(game.prepareTab==='stages'){
+      const stageTitleY=tabsY+tabH+16;
+      ctx.textAlign='center';
+      ctx.font='bold 16px sans-serif';
+      ctx.fillStyle='#ffd700';
+      ctx.fillText('选择关卡',W/2,stageTitleY);
+
+      const itemH=66;
+      const listX=20,listW=W-40;
+      const listStartY=stageTitleY+10;
+
+      for(let i=0;i<10;i++){
+        const unlocked=game.unlockedStages[i];
+        const by=listStartY+i*itemH;
+        const selected=game.stageIndex===i;
+
+        const bg=selected?'#1a2a4a':(unlocked?'#111122':'#0d0d18');
+        const bd=selected?'#4488ff':(unlocked?'#334':'#222');
+        ctx.fillStyle=bg;
+        ctx.strokeStyle=bd;
+        ctx.lineWidth=selected?2:1;
+        roundRect(ctx,listX,by,listW,itemH-4,6);
+        ctx.fill();ctx.stroke();
+
+        ctx.textAlign='left';
+        ctx.fillStyle=unlocked?'#8af':'#555';
+        ctx.font='bold 14px sans-serif';
+        ctx.fillText(STAGES[i].name,listX+14,by+24);
+
+        ctx.fillStyle=unlocked?'#888':'#444';
+        ctx.font='11px sans-serif';
+        ctx.fillText(DIFFICULTY[i].desc,listX+14,by+46);
+
+        if(!unlocked){
+          ctx.textAlign='right';
+          ctx.fillStyle='#555';
+          ctx.font='18px sans-serif';
+          ctx.fillText('🔒',listX+listW-14,by+itemH/2+5);
+          ctx.textAlign='left';
+        }else if(selected){
+          ctx.textAlign='right';
+          ctx.fillStyle='#4488ff';
+          ctx.font='11px sans-serif';
+          ctx.fillText('当前',listX+listW-14,by+itemH/2+5);
+          ctx.textAlign='left';
+        }
+
+        if(unlocked){
+          prepButtons.push({
+            x:listX,y:by,w:listW,h:itemH-4,
+            text:STAGES[i].name,
+            idx:i,
+            enabled:true,
+            type:'stageSelect',
+            action:()=>{game.stageIndex=i;},
+          });
+        }
+      }
+
+      // Testfield button at bottom
+      const tfBtnW=200,tfBtnH=44;
+      const tfBtnX=W/2-tfBtnW/2;
+      const tfBtnY=H-tfBtnH-10;
+      const tfHover=game.mouseX>=tfBtnX&&game.mouseX<=tfBtnX+tfBtnW&&game.mouseY>=tfBtnY&&game.mouseY<=tfBtnY+tfBtnH;
+      ctx.fillStyle=tfHover?'#2a2a1a':'#1a1a0a';
+      ctx.strokeStyle=tfHover?'#ffd700':'#886600';
+      ctx.lineWidth=tfHover?2:1;
+      roundRect(ctx,tfBtnX,tfBtnY,tfBtnW,tfBtnH,6);
+      ctx.fill();ctx.stroke();
+      ctx.fillStyle='#ffd700';
+      ctx.font='bold 16px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText('⚔ 测试场',tfBtnX+tfBtnW/2,tfBtnY+tfBtnH/2+6);
+      prepButtons.push({x:tfBtnX,y:tfBtnY,w:tfBtnW,h:tfBtnH,text:'测试场',action:()=>{startTestfield();}});
+    }
+
+    // Compare tooltip
+    if(game.hoveredItem && !game.selectedEquipSlot){
+      renderCompareTooltip(game.hoveredItem);
+    }
+
+    return;
+  }
+
+  // --- Desktop layout (unchanged) ---
   ctx.fillStyle='#0a0a12';ctx.fillRect(0,0,W,H);
   game.hoveredItem=null;
   ctx.textAlign='center';
