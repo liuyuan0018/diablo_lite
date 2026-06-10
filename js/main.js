@@ -10,10 +10,10 @@ import { startAmbient } from './audio.js';
 import { initMobile } from './mobile.js';
 
 function syncCanvasSize(){
-  const isMobile = 'ontouchstart' in window;
+  const isMobile = 'ontouchstart' in window || window.FORCE_MOBILE;
   if (isMobile) {
-    canvas.width = 1080;
-    canvas.height = 1920;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   } else {
     canvas.width = 1920;
     canvas.height = 1080;

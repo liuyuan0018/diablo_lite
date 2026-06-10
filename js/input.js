@@ -115,6 +115,11 @@ export function registerInputHandlers(){
   },{passive:false});
 
   function fitCanvas() {
+    const isMobile = 'ontouchstart' in window || window.FORCE_MOBILE;
+    if (isMobile) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
     const maxW = window.innerWidth;
     const maxH = window.innerHeight;
     const scale = Math.min(maxW / canvas.width, maxH / canvas.height);
