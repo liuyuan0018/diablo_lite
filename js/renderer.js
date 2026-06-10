@@ -2252,6 +2252,8 @@ export function renderCompareTooltip(hoveredItem){
 
 // --- Victory ---
 function renderVictory(){
+  // NOTE: renderVictory is dead code — no code path sets game.screen = 'victory'.
+  // Kept for reference; does not need mobile adaptation.
   const W=canvas.width,H=canvas.height;
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   ctx.textAlign='center';
