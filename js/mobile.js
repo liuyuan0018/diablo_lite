@@ -92,11 +92,24 @@ export function initMobile() {
         continue;
       }
 
-      // 5) Canvas touch (menus, stage select, etc.)
+      // 5) Canvas touch — in playing mode, start skill drag; otherwise menus
       if (canvasTouchId !== null) continue;
       e.preventDefault();
-      canvasTouchId = t.identifier;
-      startCanvasTouch(t);
+      if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
+        // Direct drag-to-cast from canvas using current active skill
+        game.skillDrag.active = true;
+        game.skillDrag.skillIdx = game.activeSkill;
+        game.skillDrag.touchId = t.identifier;
+        const wc = getWorldCoords(t);
+        game.skillDrag.worldX = wc.x;
+        game.skillDrag.worldY = wc.y;
+        canvasTouchId = t.identifier;
+        touchStartX = t.clientX; touchStartY = t.clientY;
+        hasMoved = false;
+      } else {
+        canvasTouchId = t.identifier;
+        startCanvasTouch(t);
+      }
     }
   }, { passive: false });
 
@@ -159,16 +172,16 @@ export function initMobile() {
   document.addEventListener('touchend', (e) => {
     for (const t of e.changedTouches) {
       if (t.identifier === joyTouchId) resetJoystick();
-      else if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
       else if (t.identifier === game.skillDrag.touchId) endSkillDrag(t);
+      else if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
     }
   });
 
   document.addEventListener('touchcancel', (e) => {
     for (const t of e.changedTouches) {
       if (t.identifier === joyTouchId) resetJoystick();
-      else if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
       else if (t.identifier === game.skillDrag.touchId) cancelSkillDrag();
+      else if (t.identifier === canvasTouchId) { canvasTouchId = null; game.mouseDown = false; }
     }
   });
 
@@ -184,6 +197,8 @@ export function initMobile() {
     const idx = game.skillDrag.skillIdx;
     game.skillDrag.active = false;
     game.skillDrag.touchId = null;
+    canvasTouchId = null;
+    game.mouseDown = false;
     if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
       const wc = getWorldCoords(touch);
       game.activeSkill = idx;
@@ -195,6 +210,8 @@ export function initMobile() {
   function cancelSkillDrag() {
     game.skillDrag.active = false;
     game.skillDrag.touchId = null;
+    canvasTouchId = null;
+    game.mouseDown = false;
     skillBtns.forEach(b => b.classList.remove('on'));
   }
 
