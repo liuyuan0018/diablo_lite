@@ -258,4 +258,71 @@ export function initMobile() {
     });
   };
   requestAnimationFrame(origRender);
+
+  // === Mouse fallback for desktop mobile testing (FORCE_MOBILE) ===
+  if (window.FORCE_MOBILE) {
+    let mouseId = 'mouse';
+    document.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      const t = { identifier: mouseId, clientX: e.clientX, clientY: e.clientY, target: e.target, changedTouches: [{ identifier: mouseId, clientX: e.clientX, clientY: e.clientY }] };
+      const target = e.target;
+
+      if (target.closest('#joystickZone')) {
+        e.preventDefault();
+        if (joyTouchId !== null) return;
+        joyTouchId = mouseId;
+        joyCenter = getJoyCenter();
+        updateJoystick(t);
+        return;
+      }
+      if (target.closest('#skillBtns')) return;
+
+      if (target.closest('#btnBackpack')) {
+        e.preventDefault();
+        if (game.screen === 'playing') {
+          if (game.showPauseMenu) game.showPauseMenu = false;
+          game.showBackpack = !game.showBackpack;
+          if (game.showBackpack) game.bpScroll = 0;
+        }
+        return;
+      }
+
+      if (target.closest('#btnPause')) {
+        e.preventDefault();
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        return;
+      }
+
+      if (canvasTouchId !== null) return;
+      e.preventDefault();
+      if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
+        game.skillDrag.active = true;
+        game.skillDrag.skillIdx = game.activeSkill;
+        game.skillDrag.touchId = mouseId;
+        const wc = getWorldCoords(t);
+        game.skillDrag.worldX = wc.x;
+        game.skillDrag.worldY = wc.y;
+        canvasTouchId = mouseId;
+        touchStartX = t.clientX; touchStartY = t.clientY;
+        hasMoved = false;
+      } else {
+        canvasTouchId = mouseId;
+        startCanvasTouch(t);
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      const t = { identifier: mouseId, clientX: e.clientX, clientY: e.clientY };
+      if (joyTouchId === mouseId) updateJoystick(t);
+      else if (canvasTouchId === mouseId) handleCanvasMove(t);
+      else if (game.skillDrag.touchId === mouseId) updateSkillDrag(t);
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      const t = { identifier: mouseId, clientX: e.clientX, clientY: e.clientY };
+      if (joyTouchId === mouseId) resetJoystick();
+      else if (game.skillDrag.touchId === mouseId) endSkillDrag(t);
+      else if (canvasTouchId === mouseId) { canvasTouchId = null; game.mouseDown = false; }
+    });
+  }
 }

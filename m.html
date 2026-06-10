@@ -47,34 +47,6 @@ canvas{display:block;cursor:crosshair}
 <script type="module" src="js/main.js"></script>
 <script>
 window.ontouchstart=function(){};window.FORCE_MOBILE=true;
-// Clone mouse events as touch events so mobile UI works with desktop mouse
-(function(){
-  var active=false;
-  document.addEventListener('mousedown',function(e){
-    active=true;
-    var t=new TouchEvent('touchstart',{bubbles:true,cancelable:true,
-      changedTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
-      touches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
-      targetTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})]});
-    e.target.dispatchEvent(t);
-  });
-  document.addEventListener('mousemove',function(e){
-    if(!active)return;
-    var t=new TouchEvent('touchmove',{bubbles:true,cancelable:true,
-      changedTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
-      touches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
-      targetTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})]});
-    e.target.dispatchEvent(t);
-  });
-  document.addEventListener('mouseup',function(e){
-    active=false;
-    var t=new TouchEvent('touchend',{bubbles:true,cancelable:true,
-      changedTouches:[new Touch({identifier:0,target:e.target,clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY,radiusX:1,radiusY:1,rotationAngle:0,force:1})],
-      touches:[],
-      targetTouches:[]});
-    e.target.dispatchEvent(t);
-  });
-})();
 </script>
 </body>
 </html>
