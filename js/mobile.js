@@ -2,6 +2,7 @@ import { game } from './game-state.js';
 import { canvas } from './canvas.js';
 import { clamp } from './helpers.js';
 import { castSkill } from './skills.js';
+import { toCanvasXY } from './input.js';
 
 let joyTouchId = null;
 let joyCenter = { x: 0, y: 0 };
@@ -42,16 +43,14 @@ export function initMobile() {
   }
 
   function getWorldCoords(touch) {
-    const rect = canvas.getBoundingClientRect();
-    const sx = touch.clientX - rect.left;
-    const sy = touch.clientY - rect.top;
-    return { x: clamp(sx + game.camera.x, 0, 20000), y: clamp(sy + game.camera.y, 0, 20000) };
+    const p = toCanvasXY(touch.clientX, touch.clientY);
+    return { x: clamp(p.x + game.camera.x, 0, 20000), y: clamp(p.y + game.camera.y, 0, 20000) };
   }
 
   function startCanvasTouch(t) {
-    const rect = canvas.getBoundingClientRect();
-    game.mouseX = t.clientX - rect.left;
-    game.mouseY = t.clientY - rect.top;
+    const p = toCanvasXY(t.clientX, t.clientY);
+    game.mouseX = p.x;
+    game.mouseY = p.y;
     game.mouseDown = true;
     game.clickProcessed = false;
     touchStartX = t.clientX; touchStartY = t.clientY;
@@ -103,17 +102,16 @@ export function initMobile() {
 
   // === Unified touchmove ===
   function handleCanvasMove(touch) {
-    const rect = canvas.getBoundingClientRect();
-    const cx = touch.clientX - rect.left;
-    const cy = touch.clientY - rect.top;
-    game.mouseX = cx; game.mouseY = cy;
+    const p = toCanvasXY(touch.clientX, touch.clientY);
+    game.mouseX = p.x; game.mouseY = p.y;
 
     const dx = Math.abs(touch.clientX - touchStartX);
     const dy = Math.abs(touch.clientY - touchStartY);
     if (dx > 8 || dy > 8) hasMoved = true;
     if (!hasMoved) return;
 
-    const deltaY = touchStartY - touch.clientY;
+    const scaleY = canvas.height / canvas.getBoundingClientRect().height;
+    const deltaY = (touchStartY - touch.clientY) * scaleY;
     touchStartX = touch.clientX; touchStartY = touch.clientY;
 
     const W = canvas.width, H = canvas.height;
@@ -136,7 +134,7 @@ export function initMobile() {
       const ground = game.drops ? game.drops.filter(d => d.slot) : [];
       const groundViewH = Math.min(160, H * 0.28);
       const bpY = H - 210, bpViewH = 140;
-      if (cy > bpY - 8) {
+      if (game.mouseY > bpY - 8) {
         const cols = Math.min(8, Math.floor((W - 40) / (cellW + gap)));
         const rows = Math.ceil(game.backpack.length / cols);
         const maxScroll = Math.max(0, rows * rowH - bpViewH);

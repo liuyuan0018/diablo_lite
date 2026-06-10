@@ -6,6 +6,17 @@ import { canvas } from './canvas.js';
 import { startTestStage, exitTestfieldToPrepare } from './gameplay.js';
 import { clamp } from './helpers.js';
 
+export function toCanvasXY(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+}
+
+function canvasScaleY() {
+  return canvas.height / canvas.getBoundingClientRect().height;
+}
+
 export function registerInputHandlers(){
   document.addEventListener('keydown',e=>{
     if(e.key==='1'){e.preventDefault();game.activeSkill=0;}
@@ -46,9 +57,9 @@ export function registerInputHandlers(){
   });
 
   canvas.addEventListener('mousemove',e=>{
-    const rect=canvas.getBoundingClientRect();
-    game.mouseX=e.clientX-rect.left;
-    game.mouseY=e.clientY-rect.top;
+    const p = toCanvasXY(e.clientX, e.clientY);
+    game.mouseX = p.x;
+    game.mouseY = p.y;
   });
 
   canvas.addEventListener('mousedown',e=>{
@@ -66,6 +77,7 @@ export function registerInputHandlers(){
 
   canvas.addEventListener('wheel',e=>{
     e.preventDefault();
+    const s = canvasScaleY();
     const W=canvas.width;
     const H=canvas.height;
     if(game.showCharSelect){
@@ -74,7 +86,7 @@ export function registerInputHandlers(){
       const itemH=56;
       const maxScroll=Math.max(0,game.characters.length*itemH-listH);
       if(game.charScroll===undefined)game.charScroll=0;
-      game.charScroll=clamp(game.charScroll-e.deltaY*0.5,0,maxScroll);
+      game.charScroll=clamp(game.charScroll-e.deltaY*s,0,maxScroll);
     }else if(game.showBackpack){
       const cols=5,gap=8,cellW=90,rowH=cellW+gap+32;
       const pw=Math.min(680,W-20),ph=Math.min(460,canvas.height-60);
@@ -82,7 +94,7 @@ export function registerInputHandlers(){
       const gridY=py+58, viewH=ph-90;
       const rows=Math.ceil(game.backpack.length/cols);
       const maxScroll=Math.max(0,rows*rowH-viewH);
-      game.bpScroll=clamp(game.bpScroll-e.deltaY*0.5,0,maxScroll);
+      game.bpScroll=clamp(game.bpScroll-e.deltaY*s,0,maxScroll);
     }else if(game.screen==='victory'){
       const cellW=88,cellH=80,gap=6,rowH=cellH+gap;
       const ground=game.drops.filter(d=>d.slot);
@@ -92,35 +104,26 @@ export function registerInputHandlers(){
         const cols=Math.min(8,Math.floor((W-40)/(cellW+gap)));
         const rows=Math.ceil(game.backpack.length/cols);
         const maxScroll=Math.max(0,rows*rowH-bpViewH);
-        game.bpScroll=clamp(game.bpScroll-e.deltaY*0.5,0,maxScroll);
+        game.bpScroll=clamp(game.bpScroll-e.deltaY*s,0,maxScroll);
       }else{
         const cols=Math.min(8,Math.floor((W-40)/(cellW+gap)));
         const rows=Math.ceil(ground.length/cols);
         const maxScroll=Math.max(0,rows*rowH-groundViewH);
-        game.groundScroll=clamp(game.groundScroll-e.deltaY*0.5,0,maxScroll);
+        game.groundScroll=clamp(game.groundScroll-e.deltaY*s,0,maxScroll);
       }
     }
   },{passive:false});
 
-  const isMobile = 'ontouchstart' in window;
-  window.addEventListener('resize',()=>{
-    if (isMobile && window.visualViewport) {
-      canvas.width = window.visualViewport.width;
-      canvas.height = window.visualViewport.height;
-      canvas.style.width = window.visualViewport.width + 'px';
-      canvas.style.height = window.visualViewport.height + 'px';
-    } else {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-  });
+  function fitCanvas() {
+    const maxW = window.innerWidth;
+    const maxH = window.innerHeight;
+    const scale = Math.min(maxW / canvas.width, maxH / canvas.height);
+    canvas.style.width = (canvas.width * scale) + 'px';
+    canvas.style.height = (canvas.height * scale) + 'px';
+  }
 
-  if (isMobile && window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      canvas.width = window.visualViewport.width;
-      canvas.height = window.visualViewport.height;
-      canvas.style.width = window.visualViewport.width + 'px';
-      canvas.style.height = window.visualViewport.height + 'px';
-    });
+  window.addEventListener('resize', fitCanvas);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fitCanvas);
   }
 }

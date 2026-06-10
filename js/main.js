@@ -11,16 +11,22 @@ import { initMobile } from './mobile.js';
 
 function syncCanvasSize(){
   const isMobile = 'ontouchstart' in window;
-  if (isMobile && window.visualViewport) {
-    const vw = window.visualViewport;
-    canvas.width = vw.width;
-    canvas.height = vw.height;
-    canvas.style.width = vw.width + 'px';
-    canvas.style.height = vw.height + 'px';
+  if (isMobile) {
+    canvas.width = 1080;
+    canvas.height = 1920;
   } else {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = 1920;
+    canvas.height = 1080;
   }
+  fitCanvas();
+}
+
+function fitCanvas() {
+  const maxW = window.innerWidth;
+  const maxH = window.innerHeight;
+  const scale = Math.min(maxW / canvas.width, maxH / canvas.height);
+  canvas.style.width = (canvas.width * scale) + 'px';
+  canvas.style.height = (canvas.height * scale) + 'px';
 }
 
 function init(){
