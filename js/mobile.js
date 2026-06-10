@@ -235,13 +235,18 @@ export function initMobile() {
   // === Update skill button CD text & control visibility ===
   const joystickZone2 = document.getElementById('joystickZone');
   const skillBtnsContainer = document.getElementById('skillBtns');
+  const btnBackpack2 = document.getElementById('btnBackpack');
+  const btnPause2 = document.getElementById('btnPause');
   const origRender = () => {
     if (!('ontouchstart' in window)) return;
     requestAnimationFrame(() => {
-      // Show joystick + skill buttons only during gameplay
+      // Show controls only during gameplay (not menu/prepare/victory/death)
       const playing = game.screen === 'playing' && !game.showPauseMenu;
+      const playingOrPrep = playing || game.screen === 'prepare' || game.screen === 'victory';
       if (joystickZone2) joystickZone2.style.display = playing ? 'block' : 'none';
       if (skillBtnsContainer) skillBtnsContainer.style.display = playing ? 'flex' : 'none';
+      if (btnBackpack2) btnBackpack2.style.display = playingOrPrep ? '' : 'none';
+      if (btnPause2) btnPause2.style.display = playing ? '' : 'none';
 
       skillBtns.forEach(btn => {
         const idx = parseInt(btn.dataset.skill);
@@ -293,9 +298,10 @@ export function initMobile() {
         return;
       }
 
-      if (canvasTouchId !== null) return;
-      e.preventDefault();
+      // Only handle canvas for skill drag during gameplay; otherwise let input.js handle it
       if (game.screen === 'playing' && !game.showBackpack && !game.showPauseMenu) {
+        if (canvasTouchId !== null) return;
+        e.preventDefault();
         game.skillDrag.active = true;
         game.skillDrag.skillIdx = game.activeSkill;
         game.skillDrag.touchId = mouseId;
@@ -305,10 +311,8 @@ export function initMobile() {
         canvasTouchId = mouseId;
         touchStartX = t.clientX; touchStartY = t.clientY;
         hasMoved = false;
-      } else {
-        canvasTouchId = mouseId;
-        startCanvasTouch(t);
       }
+      // On non-playing screens, let normal mouse handling work (input.js handles canvas clicks)
     });
 
     document.addEventListener('mousemove', (e) => {
