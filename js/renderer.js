@@ -44,6 +44,7 @@ export function render(){
 // --- Menu ---
 function renderMenu(){
   const W=canvas.width,H=canvas.height;
+  const isMobile = 'ontouchstart' in window;
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   for(let i=0;i<30;i++){
     const x=(Math.sin(Date.now()/1000+i)*0.5+0.5)*W;
@@ -52,19 +53,19 @@ function renderMenu(){
     ctx.beginPath();ctx.arc(x,y,2+Math.sin(Date.now()/1000+i*3)*1,0,Math.PI*2);ctx.fill();
   }
   ctx.textAlign='center';
-  ctx.font=`bold ${W<400?36:64}px sans-serif`;
+  ctx.font=`bold ${isMobile?52:(W<400?36:64)}px sans-serif`;
   ctx.fillStyle='#ff6b35';
   ctx.fillText('DIABLO LITE',W/2,H*0.3);
-  ctx.font=`${W<400?14:20}px sans-serif`;
+  ctx.font=`${isMobile?18:(W<400?14:20)}px sans-serif`;
   ctx.fillStyle='#888';
   ctx.fillText('轻量版暗黑风刷怪游戏',W/2,H*0.3+50);
-  const bw=220,bh=56;
+  const bw=isMobile?280:220,bh=isMobile?64:56;
   const bx=W/2-bw/2,by=H*0.5;
   menuButtons=[{x:bx,y:by,w:bw,h:bh,text:'开始游戏',action:()=>{game.screen='prepare';game.showBackpack=false;game.showPauseMenu=false;stopAmbient();}}];
   drawButton(bx,by,bw,bh,'开始游戏','#6b3a1a','#ff8c42','#ffd700');
 
   // Export / Import buttons
-  const smBW=100,smBH=32,smGap=12;
+  const smBW=isMobile?110:100,smBH=isMobile?36:32,smGap=12;
   const smBX=W/2-smBW-smGap/2,smBY=by+bh+20;
   const expHover=game.mouseX>=smBX&&game.mouseX<=smBX+smBW&&game.mouseY>=smBY&&game.mouseY<=smBY+smBH;
   ctx.fillStyle=expHover?'#2a3a2a':'#1a2a1a';
@@ -1564,18 +1565,19 @@ function renderHUD(){
 
 export function renderPauseMenu(){
   const W=canvas.width,H=canvas.height;
+  const isMobile = 'ontouchstart' in window;
   ctx.fillStyle='rgba(0,0,0,0.7)';
   ctx.fillRect(0,0,W,H);
-  const pw=300,ph=200;
+  const pw=isMobile?400:300,ph=isMobile?260:200;
   const px=(W-pw)/2,py=(H-ph)/2;
   ctx.fillStyle='#1a1a2e';ctx.strokeStyle='#ff6b35';ctx.lineWidth=2;
   roundRect(ctx,px,py,pw,ph,10);
   ctx.fill();ctx.stroke();
   ctx.textAlign='center';
-  ctx.font='bold 20px sans-serif';
+  ctx.font='bold '+(isMobile?24:20)+'px sans-serif';
   ctx.fillStyle='#ff6b35';
   ctx.fillText('暂停',px+pw/2,py+40);
-  ctx.font='13px sans-serif';
+  ctx.font=(isMobile?14:13)+'px sans-serif';
   ctx.fillStyle='#aaa';
   if (game.bossDefeated) {
     ctx.fillText('确定要返回准备界面吗？',px+pw/2,py+75);
@@ -1587,7 +1589,7 @@ export function renderPauseMenu(){
     ctx.fillStyle='#aaa';
     ctx.fillText('确定要逃跑吗？',px+pw/2,py+95);
   }
-  const bw=100,bh=36;
+  const bw=isMobile?130:100,bh=isMobile?42:36;
   const bx1=px+pw/2-bw-12,by=py+120;
   const bx2=px+pw/2+12;
   pauseButtons=[
@@ -2444,16 +2446,17 @@ function equipFromBackpack(idx){
 // --- Death ---
 function renderDeath(){
   const W=canvas.width,H=canvas.height;
+  const isMobile = 'ontouchstart' in window;
   ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   ctx.textAlign='center';
-  ctx.font='bold 48px sans-serif';
+  ctx.font='bold '+(isMobile?56:48)+'px sans-serif';
   ctx.fillStyle='#cc0000';
   ctx.fillText('你死了',W/2,H*0.3);
-  ctx.font='18px sans-serif';
+  ctx.font=(isMobile?20:18)+'px sans-serif';
   ctx.fillStyle='#ccc';
   ctx.fillText('击杀数: '+game.kills, W/2, H*0.4);
   ctx.fillText('等级: '+game.player.level, W/2, H*0.44);
-  const bw=200,bh=50;
+  const bw=isMobile?260:200,bh=isMobile?56:50;
   const bx=W/2-bw/2,by=H*0.55;
   deathButtons=[{x:bx,y:by,w:bw,h:bh,text:'返回主菜单',action:()=>{game.screen='menu';game.showBackpack=false;game.showPauseMenu=false;startAmbient('menu');}}];
   drawButton(bx,by,bw,bh,'返回主菜单','#3a1a1a','#aaa','#ff4444');
