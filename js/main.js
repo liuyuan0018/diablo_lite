@@ -12,8 +12,8 @@ import { initMobile } from './mobile.js';
 function syncCanvasSize(){
   const isMobile = 'ontouchstart' in window || window.FORCE_MOBILE;
   if (isMobile) {
-    canvas.width = Math.min(window.innerWidth, window.innerHeight);
-    canvas.height = Math.max(window.innerWidth, window.innerHeight);
+    canvas.width = 750;
+    canvas.height = 1334;
   } else {
     canvas.width = 1920;
     canvas.height = 1080;

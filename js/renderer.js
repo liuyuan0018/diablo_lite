@@ -440,7 +440,7 @@ function renderPrepare(){
   ];
 
   const stats=calcPlayerStats();
-  const narrow = W < 640;
+  const narrow = W < 900;
   // Stats panel — on narrow screens, span full width at top
   const spx = narrow ? 10 : 40;
   const spw = narrow ? W - 20 : 280;
