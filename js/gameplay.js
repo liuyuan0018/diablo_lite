@@ -28,6 +28,7 @@ import { playSFX, startAmbient, stopAmbient } from './audio.js';
 export function startTestStage(){
   game.screen='playing';
   game.isTestStage=true;
+  game.bpSelectedIndex = null;
   game.stageIndex=0;
   game.time=0;
   game.kills=0;
@@ -88,6 +89,7 @@ export function startGame(stageIndex){
   game.isTestStage=false;
   game.showBackpack=false;
   game.showPauseMenu=false;
+  game.bpSelectedIndex = null;
   game.stageIndex=stageIndex;
   game.time=0;
   game.kills=0;
@@ -208,6 +210,12 @@ export function exitTestfieldToPrepare() {
 
 export function processClick(){
   if(!game.mouseDown||game.clickProcessed)return;
+  // Mobile: tap above bottom compare panel closes selection
+  if('ontouchstart' in window&&game.showBackpack&&game.bpSelectedIndex!==null&&game.mouseY<canvas.height-220){
+    game.clickProcessed=true;
+    game.bpSelectedIndex=null;
+    return;
+  }
   if(game.showBackpack)return;
   game.clickProcessed=true;
   if (game.screen === 'testfield') {
